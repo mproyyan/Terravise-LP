@@ -2,59 +2,66 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  /* Architectural & Geological Palette */
-  --color-cream: #f8f7f4;
-  --color-stone-surface: #f4f2ec;
-  --color-slate-viewer: #121514;
-  --color-slate-darker: #0b0d0c;
+  /* Rapidkert & Terravise Earthy Architectural Design System */
+  --color-soil: #171814;
+  --color-soil-2: #1f211b;
+  --color-soil-3: #2a2d25;
+  --color-paper: #f4f2ec;
+  --color-limestone: #e8e5da;
+  --color-limestone-2: #dedacd;
 
-  /* Brand & Geotechnical Colors */
-  --color-geo-green: #1c3127;
-  --color-geo-emerald: #10b981;
-  --color-geo-amber: #f59e0b;
-  --color-geo-blue: #2563eb;
+  /* Earth Science Accent Tokens */
+  --color-moss: #627056;
+  --color-moss-lift: #7c8c6c;
+  --color-clay: #a56f52;
+  --color-clay-txt: #845942;
+  --color-clay-lift: #b78c75;
+  --color-water: #6e8794;
 
-  /* Soil Horizon Stratigraphy */
-  --color-soil-sand: #d4a373;
-  --color-soil-sand-light: #e9c46a;
-  --color-soil-silt: #588157;
-  --color-soil-silt-dark: #3a5a40;
-  --color-soil-clay: #a0522d;
-  --color-soil-clay-light: #bc6c25;
-  --color-soil-stratum: #e76f51;
-  --color-soil-bedrock: #403d39;
+  /* Stratigraphy Horizon Colors */
+  --color-strata-sand: #d4a373;
+  --color-strata-silt: #588157;
+  --color-strata-clay: #a0522d;
+  --color-strata-bearing: #e76f51;
 
-  /* Fonts */
+  /* Typography */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
-  /* Keyframe Animations */
-  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-radar: radar 2.5s ease-out infinite;
-
-  @keyframes pulse-slow {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  @keyframes radar {
-    0% {
-      transform: scale(0.6);
-      opacity: 0.9;
-    }
-    100% {
-      transform: scale(2.2);
-      opacity: 0;
-    }
-  }
+  /* Transitions */
+  --ease-architectural: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Custom Base Styling */
+/* Base Setup */
 html {
   scroll-behavior: smooth;
-  background-color: #f8f7f4;
-  color: #1c1917;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: #f4f2ec;
+  color: #171814;
+  font-feature-settings: "kern" 1, "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* Rapidkert Brutalist Editorial Typography */
+.display-title {
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+  font-weight: 800;
+  text-wrap: balance;
+}
+
+.ln-in {
+  padding-left: clamp(0px, 4.2vw, 4rem);
+}
+
+.ln-in2 {
+  padding-left: clamp(0px, 8.4vw, 8rem);
 }
 
 /* Technical Monospace Number Alignment */
@@ -62,17 +69,40 @@ html {
   font-variant-numeric: tabular-nums;
 }
 
-/* Custom Depth Rail Scroll Indicator */
+/* Focus Ring for Keyboard Accessibility (UI/UX Pro Max Priority 1) */
+:focus-visible {
+  outline: 2px solid #a56f52;
+  outline-offset: 3px;
+}
+
+/* Geological Crosshatching SVG Patterns */
+.bg-hatch-sand {
+  background-image: radial-gradient(#d4a373 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.bg-hatch-clay {
+  background-image: repeating-linear-gradient(45deg, #a0522d, #a0522d 1px, transparent 1px, transparent 8px);
+}
+
+.bg-hatch-silt {
+  background-image: repeating-linear-gradient(-45deg, #588157, #588157 1px, transparent 1px, transparent 6px);
+}
+
+.bg-hatch-bearing {
+  background-image: repeating-linear-gradient(0deg, #e76f51, #e76f51 1.5px, transparent 1.5px, transparent 6px);
+}
+
+/* Architectural Survey Depth Rail Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #f8f7f4;
+  background: #f4f2ec;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
-  border-radius: 3px;
+  background: #dedacd;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
+  background: #845942;
 }

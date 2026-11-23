@@ -13,14 +13,14 @@ export const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   SliderProps
 >(({ className, label, valueDisplay, unit, value, ...props }, ref) => (
-  <div className="w-full space-y-1.5">
+  <div className="w-full space-y-2">
     {(label || valueDisplay) && (
       <div className="flex items-center justify-between text-xs font-mono">
-        {label && <span className="text-stone-500 uppercase tracking-wider">{label}</span>}
+        {label && <span className="text-[#5c5f55] uppercase tracking-wider">{label}</span>}
         {valueDisplay && (
-          <span className="font-semibold text-stone-900 tabular-nums">
+          <span className="font-semibold text-[#171814] tabular-nums">
             {valueDisplay}
-            {unit && <span className="text-stone-400 font-normal ml-0.5">{unit}</span>}
+            {unit && <span className="text-[#5c5f55] font-normal ml-0.5">{unit}</span>}
           </span>
         )}
       </div>
@@ -28,16 +28,16 @@ export const Slider = React.forwardRef<
     <SliderPrimitive.Root
       ref={ref}
       className={cn(
-        "relative flex w-full touch-none select-none items-center cursor-pointer py-1",
+        "relative flex w-full touch-none select-none items-center cursor-pointer py-2 min-h-[36px]",
         className
       )}
       value={value}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-stone-200">
-        <SliderPrimitive.Range className="absolute h-full bg-stone-900" />
+      <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-none bg-[#dedacd]">
+        <SliderPrimitive.Range className="absolute h-full bg-[#171814]" />
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-stone-900 bg-white ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:scale-110 active:scale-95" />
+      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-none border border-[#171814] bg-[#f4f2ec] ring-offset-[#f4f2ec] transition-colors focus-visible:outline-2 focus-visible:outline-[#845942] disabled:pointer-events-none disabled:opacity-50 hover:bg-white" />
     </SliderPrimitive.Root>
   </div>
 ))

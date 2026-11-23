@@ -1,43 +1,43 @@
 import { PlateHeader } from "../ui/PlateHeader"
 import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"
-import { Flame, AlertTriangle, Scale } from "lucide-react"
+import { AlertCircle, Clock, Database } from "lucide-react"
 
 export function ProblemSection() {
   const { problem } = SITE_CONTENT
 
-  const getIcon = (index: number) => {
+  const getCardIcon = (index: number) => {
     switch (index) {
       case 0:
-        return <Flame className="w-5 h-5 text-amber-600" />
+        return <Clock className="w-4 h-4 text-[#845942]" />
       case 1:
-        return <AlertTriangle className="w-5 h-5 text-rose-600" />
+        return <AlertCircle className="w-4 h-4 text-[#a0522d]" />
       case 2:
       default:
-        return <Scale className="w-5 h-5 text-stone-700" />
+        return <Database className="w-4 h-4 text-[#5c5f55]" />
     }
   }
 
   return (
     <section
       id="problem"
-      className="py-24 bg-[#F8F7F4] border-b border-stone-200 scroll-mt-12"
+      className="py-24 bg-[#f4f2ec] border-b border-[#171814]/15 scroll-mt-12"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Architectural Plate Header */}
         <PlateHeader
           number="01"
-          title="The Engineering Dilemma"
-          metaRight="Blind Grid Paradox"
+          title="Investigation limits"
+          metaRight="Fixed grid spacing errors"
           tone="light"
         />
 
         {/* Section Heading */}
         <div className="max-w-3xl mb-16 space-y-4">
-          <h2 className="font-sans font-black text-3xl sm:text-4xl text-stone-950 uppercase tracking-tight">
+          <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#171814] uppercase tracking-[-0.035em] leading-[0.92]">
             {problem.heading}
           </h2>
-          <p className="font-sans text-stone-700 text-base sm:text-lg leading-relaxed">
+          <p className="font-sans text-[#5c5f55] text-base sm:text-lg leading-relaxed">
             {problem.subheading}
           </p>
         </div>
@@ -47,39 +47,37 @@ export function ProblemSection() {
           {problem.cards.map((card, idx) => (
             <div
               key={card.number}
-              className="bg-white border border-stone-300/90 p-6 sm:p-8 flex flex-col justify-between hover:border-stone-900 transition-colors shadow-xs group"
+              className="bg-[#f8f7f4] border border-[#171814]/15 p-6 sm:p-8 flex flex-col justify-between hover:border-[#171814] transition-colors shadow-xs group"
             >
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-                  <span className="font-mono text-xs font-bold text-stone-400 group-hover:text-stone-900 transition-colors">
+                <div className="flex items-center justify-between border-b border-[#171814]/10 pb-3">
+                  <span className="font-mono text-xs font-bold text-[#845942]">
                     {card.number}
                   </span>
-                  <Badge
-                    variant={idx === 0 ? "amber" : idx === 1 ? "clay" : "slate"}
-                  >
+                  <Badge variant={idx === 0 ? "amber" : idx === 1 ? "clay" : "slate"}>
                     {card.badge}
                   </Badge>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-stone-100 border border-stone-200">
-                    {getIcon(idx)}
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-[#dedacd]/40 border border-[#171814]/10">
+                    {getCardIcon(idx)}
                   </div>
-                  <h3 className="font-sans font-bold text-lg text-stone-950 tracking-tight">
+                  <h3 className="font-sans font-bold text-lg text-[#171814] tracking-tight">
                     {card.title}
                   </h3>
                 </div>
 
-                <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed">
+                <p className="font-sans text-xs sm:text-sm text-[#5c5f55] leading-relaxed">
                   {card.description}
                 </p>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-stone-100 font-mono text-xs flex items-center justify-between text-stone-800">
-                <span className="text-[10px] uppercase text-stone-400 tracking-wider">
-                  Direct Impact:
+              <div className="mt-8 pt-4 border-t border-[#171814]/10 font-mono text-xs flex items-center justify-between text-[#171814]">
+                <span className="text-[10px] uppercase text-[#5c5f55] tracking-wider">
+                  Result
                 </span>
-                <span className="font-bold text-stone-900 text-right">
+                <span className="font-bold text-[#171814] text-right">
                   {card.impact}
                 </span>
               </div>

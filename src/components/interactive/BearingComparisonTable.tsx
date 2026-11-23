@@ -4,36 +4,36 @@ import { CheckCircle2, ArrowDown } from "lucide-react"
 
 export function BearingComparisonTable() {
   return (
-    <div className="w-full bg-white border border-stone-200 overflow-hidden shadow-xs">
-      <div className="px-5 py-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3 bg-stone-50/70">
+    <div className="w-full bg-[#f8f7f4] border border-[#171814]/15 overflow-hidden shadow-xs">
+      <div className="px-5 py-4 border-b border-[#171814]/10 flex flex-wrap items-center justify-between gap-3 bg-[#dedacd]/25">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs font-semibold uppercase tracking-wider text-stone-800">
-            Bearing Strata Foundation Verification
+          <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#171814]">
+            Bearing layer foundation verification
           </span>
           <Badge variant="emerald" className="text-[10px]">
-            Target Met: qc ≥ 15 MPa
+            Target met: qc &gt;= 15 MPa
           </Badge>
         </div>
-        <span className="font-mono text-[11px] text-stone-500">
-          Pile Cutoff Datum: El. +18.40 m
+        <span className="font-mono text-[11px] text-[#5c5f55]">
+          Cutoff datum: El. +18.40 m
         </span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left font-mono text-xs border-collapse">
           <thead>
-            <tr className="border-b border-stone-200 bg-stone-100/60 text-stone-600 uppercase text-[10px] tracking-wider">
+            <tr className="border-b border-[#171814]/10 bg-[#dedacd]/35 text-[#5c5f55] uppercase text-[10px] tracking-wider">
               <th className="py-3 px-4">Sounding ID</th>
               <th className="py-3 px-4">Northing</th>
               <th className="py-3 px-4">Easting</th>
-              <th className="py-3 px-4">Bearing Top ($z_b$)</th>
+              <th className="py-3 px-4">Bearing depth</th>
               <th className="py-3 px-4">Cone qc</th>
               <th className="py-3 px-4">Soil Ic</th>
-              <th className="py-3 px-4">Pile Toe Directive</th>
-              <th className="py-3 px-4 text-right">Status</th>
+              <th className="py-3 px-4">Pile toe schedule</th>
+              <th className="py-3 px-4 text-right">Verification</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100 text-stone-800">
+          <tbody className="divide-y divide-[#171814]/5 text-[#171814]">
             {MOCK_BEARING_POINTS.map((pt) => {
               const isRecommended = pt.id === "spot-2-rec"
               return (
@@ -41,36 +41,36 @@ export function BearingComparisonTable() {
                   key={pt.id}
                   className={`transition-colors ${
                     isRecommended
-                      ? "bg-emerald-50/60 font-semibold"
-                      : "hover:bg-stone-50"
+                      ? "bg-[#627056]/10 font-semibold"
+                      : "hover:bg-[#dedacd]/20"
                   }`}
                 >
                   <td className="py-3.5 px-4 font-bold flex items-center gap-2">
                     {isRecommended && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                      <span className="w-1.5 h-1.5 bg-[#627056] shrink-0" />
                     )}
                     <span>{pt.pointName}</span>
                   </td>
-                  <td className="py-3.5 px-4 text-stone-600">{pt.northing}</td>
-                  <td className="py-3.5 px-4 text-stone-600">{pt.easting}</td>
-                  <td className="py-3.5 px-4 font-bold text-amber-700 tabular-nums">
+                  <td className="py-3.5 px-4 text-[#5c5f55]">{pt.northing}</td>
+                  <td className="py-3.5 px-4 text-[#5c5f55]">{pt.easting}</td>
+                  <td className="py-3.5 px-4 font-bold text-[#845942] tabular-nums">
                     {pt.depthM} m
                   </td>
                   <td className="py-3.5 px-4 tabular-nums">
-                    <span className="text-emerald-700 font-bold">{pt.qcMpa}</span>{" "}
-                    <span className="text-[10px] text-stone-400">MPa</span>
+                    <span className="text-[#627056] font-bold">{pt.qcMpa}</span>{" "}
+                    <span className="text-[10px] text-[#5c5f55]">MPa</span>
                   </td>
-                  <td className="py-3.5 px-4 text-stone-600 tabular-nums">
+                  <td className="py-3.5 px-4 text-[#5c5f55] tabular-nums">
                     {pt.icValue}
                   </td>
-                  <td className="py-3.5 px-4 text-stone-700 flex items-center gap-1.5">
-                    <ArrowDown className="w-3 h-3 text-stone-400 shrink-0" />
+                  <td className="py-3.5 px-4 text-[#171814] flex items-center gap-1.5">
+                    <ArrowDown className="w-3.5 h-3.5 text-[#5c5f55] shrink-0" />
                     <span>{pt.pileRecommendation}</span>
                   </td>
                   <td className="py-3.5 px-4 text-right">
-                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-bold">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      Defensible
+                    <span className="inline-flex items-center gap-1 text-[11px] text-[#627056] font-bold">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Confirmed
                     </span>
                   </td>
                 </tr>
@@ -80,13 +80,13 @@ export function BearingComparisonTable() {
         </table>
       </div>
 
-      <div className="p-4 bg-stone-50 border-t border-stone-200 flex flex-wrap items-center justify-between gap-4 font-mono text-[11px] text-stone-600">
+      <div className="p-4 bg-[#dedacd]/25 border-t border-[#171814]/10 flex flex-wrap items-center justify-between gap-4 font-mono text-[11px] text-[#5c5f55]">
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-stone-400" />
-          <span>Minimum contiguous embedment verified: &gt; 2.0 meters</span>
+          <span className="w-1.5 h-1.5 bg-[#845942]" />
+          <span>Minimum continuous thickness confirmed: greater than 2.0 meters</span>
         </div>
-        <div className="text-stone-500">
-          Export available: CSV / LandXML / Bentley gINT
+        <div>
+          Formats available: CSV, LandXML, Bentley gINT
         </div>
       </div>
     </div>

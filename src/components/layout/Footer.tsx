@@ -2,98 +2,97 @@ import { Compass, HardHat, FileText, ExternalLink } from "lucide-react"
 
 export function Footer() {
   return (
-    <footer className="bg-[#121514] text-[#E8E5DA] border-t border-stone-800 pt-16 pb-12 select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-stone-800/80">
+    <footer className="bg-[#171814] text-[#e8e5da] border-t border-[#e8e5da]/15 pt-16 pb-12 select-none">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-[#e8e5da]/15">
           {/* Brand & Identity */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-stone-100 text-stone-900 flex items-center justify-center font-mono font-black text-sm">
+              <div className="w-8 h-8 bg-[#e8e5da] text-[#171814] flex items-center justify-center font-mono font-black text-xs">
                 TV
               </div>
-              <span className="font-sans font-black tracking-tight text-xl text-stone-100">
+              <span className="font-sans font-black tracking-tight text-xl text-[#e8e5da] uppercase">
                 TERRAVISE
               </span>
             </div>
-            <p className="text-stone-400 text-sm max-w-sm leading-relaxed font-sans">
-              Intelligent, on-device geotechnical site investigation copilot.
-              Replacing blind uniform drilling schedules with reinforcement
-              learning exploration and defensible stopping criteria.
+            <p className="text-[#e8e5da]/70 text-xs sm:text-sm max-w-sm leading-relaxed font-sans">
+              On-device geotechnical investigation system. Directs CPT sounding
+              locations using reinforcement learning and verified ground certainty stopping criteria.
             </p>
-            <div className="flex items-center gap-4 text-xs font-mono text-stone-500 pt-2">
+            <div className="flex items-center gap-3 text-xs font-mono text-[#e8e5da]/40 pt-2">
               <span className="flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5 text-emerald-500" />
-                Datum: DGN95 / UTM 48S
+                <Compass className="w-3.5 h-3.5 text-[#7c8c6c]" />
+                Datum: DGN95, UTM 48S
               </span>
               <span>•</span>
-              <span>Release V4.6.2</span>
+              <span>Release 4.6.2</span>
             </div>
           </div>
 
           {/* Quick Technical Jump */}
           <div className="md:col-span-3 space-y-3">
-            <span className="font-mono text-xs uppercase tracking-widest text-stone-400 block font-semibold">
-              Platform Architecture
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#b78c75] block font-bold">
+              Investigation stages
             </span>
-            <ul className="space-y-2 text-xs font-mono text-stone-400">
+            <ul className="space-y-2 text-xs font-mono text-[#e8e5da]/60">
               <li>
-                <a href="#problem" className="hover:text-amber-400 transition-colors">
-                  01 // The Blind Grid Dilemma
+                <a href="#problem" className="hover:text-[#e8e5da] transition-colors py-1 block">
+                  01. Fixed grid limits
                 </a>
               </li>
               <li>
-                <a href="#dqn" className="hover:text-amber-400 transition-colors">
-                  02 // DQN Active Policy
+                <a href="#dqn" className="hover:text-[#e8e5da] transition-colors py-1 block">
+                  02. DQN coordinate selection
                 </a>
               </li>
               <li>
-                <a href="#stop" className="hover:text-amber-400 transition-colors">
-                  03 // Ground Certainty Metric
+                <a href="#stop" className="hover:text-[#e8e5da] transition-colors py-1 block">
+                  03. Ground certainty metric
                 </a>
               </li>
               <li>
-                <a href="#voxel" className="hover:text-amber-400 transition-colors">
-                  04 // 3D Voxel Strata Slicing
+                <a href="#voxel" className="hover:text-[#e8e5da] transition-colors py-1 block">
+                  04. 3D soil volume inspection
                 </a>
               </li>
               <li>
-                <a href="#stratum" className="hover:text-amber-400 transition-colors">
-                  05 // Bearing Pile Verification
+                <a href="#stratum" className="hover:text-[#e8e5da] transition-colors py-1 block">
+                  05. Bearing stratum criteria
                 </a>
               </li>
               <li>
-                <a href="#workflow" className="hover:text-amber-400 transition-colors">
-                  06 // Field Rig Workflow
+                <a href="#workflow" className="hover:text-[#e8e5da] transition-colors py-1 block">
+                  06. Field rig sequence
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Statutory & Standards */}
+          {/* Standards */}
           <div className="md:col-span-4 space-y-3">
-            <span className="font-mono text-xs uppercase tracking-widest text-stone-400 block font-semibold">
-              Standards & Integrity
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#b78c75] block font-bold">
+              Test standards and codes
             </span>
-            <ul className="space-y-2.5 text-xs text-stone-400 font-sans">
+            <ul className="space-y-3 text-xs text-[#e8e5da]/70 font-sans">
               <li className="flex items-start gap-2">
-                <HardHat className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                <HardHat className="w-4 h-4 text-[#dedacd] mt-0.5 shrink-0" />
                 <span>
-                  <strong>ASTM D5778:</strong> Standard Test Method for Electronic
-                  Friction Cone & Piezocone Penetration Testing of Soils.
+                  <strong>ASTM D5778.</strong> Standard test method for electronic
+                  friction cone and piezocone penetration testing of soils.
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <FileText className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                <FileText className="w-4 h-4 text-[#dedacd] mt-0.5 shrink-0" />
                 <span>
-                  <strong>SNI 8460:2017:</strong> Persyaratan perancangan geoteknik
-                  Indonesia untuk fondasi tiang dan stabilitas tanah.
+                  <strong>SNI 8460:2017.</strong> Indonesian geotechnical design standard
+                  for deep pile foundations and soil stability.
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <ExternalLink className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                <ExternalLink className="w-4 h-4 text-[#7c8c6c] mt-0.5 shrink-0" />
                 <span>
-                  <strong>Robertson SBT (1990/2010):</strong> Automated Soil
-                  Behavior Type Index computation from normalized cone parameters.
+                  <strong>Robertson SBT (1990/2010).</strong> Automated soil
+                  behavior type index calculation from normalized cone parameters.
                 </span>
               </li>
             </ul>
@@ -101,14 +100,13 @@ export function Footer() {
         </div>
 
         {/* Disclaimer Note */}
-        <div className="mt-8 pt-6 border-t border-stone-800/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs font-mono text-stone-500">
-          <p className="max-w-3xl leading-relaxed text-[11px]">
-            <strong className="text-stone-400">ENGINEERING DISCLAIMER:</strong> Terravise is an advanced engineering
-            decision-support tool designed to assist licensed geotechnical professionals.
-            Recommendations, spatial uncertainty assessments, and stopping criteria supplement—but do not replace—professional
+        <div className="mt-8 pt-6 border-t border-[#e8e5da]/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs font-mono text-[#e8e5da]/50">
+          <p className="max-w-3xl leading-relaxed text-[10px]">
+            ENGINEERING NOTICE: Terravise supports licensed geotechnical engineers with computational analysis.
+            Calculations, uncertainty ranges, and stopping metrics support but do not replace professional
             engineering judgment, local statutory building codes, or mandatory geological investigation standards.
           </p>
-          <div className="shrink-0 text-[11px] text-stone-500">
+          <div className="shrink-0 text-[10px]">
             © {new Date().getFullYear()} Terravise Technologies. All rights reserved.
           </div>
         </div>

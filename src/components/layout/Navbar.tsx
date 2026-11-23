@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
 import { Button } from "../ui/Button"
-import { Badge } from "../ui/Badge"
 import { Compass, ShieldCheck } from "lucide-react"
 
 interface NavbarProps {
@@ -12,7 +11,7 @@ export function Navbar({ onRequestPilot }: NavbarProps) {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 40)
+      setScrolled(window.scrollY > 30)
     }
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
@@ -20,88 +19,92 @@ export function Navbar({ onRequestPilot }: NavbarProps) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 select-none ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-colors duration-300 select-none ${
         scrolled
-          ? "bg-[#F8F7F4]/90 backdrop-blur-md border-b border-stone-200/80 py-3 shadow-xs"
+          ? "bg-[#f4f2ec]/95 backdrop-blur-md border-b border-[#171814]/15 py-3 shadow-xs"
           : "bg-transparent py-5"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between">
         {/* Brand & Coordinate Tag */}
         <div className="flex items-center gap-3">
-          <a href="#hero" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-none bg-stone-900 text-stone-100 flex items-center justify-center font-mono font-bold text-sm tracking-tighter border border-stone-800 group-hover:bg-[#1C3127] transition-colors">
+          <a
+            href="#hero"
+            aria-label="Terravise home"
+            className="flex items-center gap-3 group min-h-[44px] min-w-[44px]"
+          >
+            <div className="w-8 h-8 rounded-none bg-[#171814] text-[#e8e5da] flex items-center justify-center font-mono font-bold text-xs tracking-tight border border-[#171814] group-hover:bg-[#627056] transition-colors">
               TV
             </div>
             <div className="flex flex-col">
-              <span className="font-sans font-black tracking-tight text-stone-950 text-base leading-none">
+              <span className="font-sans font-black tracking-tighter text-[#171814] text-base leading-none uppercase">
                 TERRAVISE
               </span>
-              <span className="font-mono text-[10px] text-stone-500 tracking-widest uppercase mt-0.5">
-                GEOTECHNICAL COPILOT
+              <span className="font-mono text-[9px] text-[#5c5f55] tracking-[0.16em] uppercase mt-0.5">
+                GEOTECHNICAL FIELD SYSTEM
               </span>
             </div>
           </a>
 
-          <div className="hidden xl:flex items-center ml-4 pl-4 border-l border-stone-300 gap-2">
-            <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-stone-500">
-              <Compass className="w-2.5 h-2.5 mr-1 text-emerald-600" />
-              UTM 48S
-            </Badge>
-            <span className="font-mono text-[10px] text-stone-400">
-              E 704120 • N 9309850
+          <div className="hidden xl:flex items-center ml-4 pl-4 border-l border-[#171814]/15 gap-2 text-xs font-mono text-[#5c5f55]">
+            <Compass className="w-3.5 h-3.5 text-[#627056]" />
+            <span className="text-[10px] tracking-wider uppercase">
+              UTM 48S. 704120m E, 9309850m N
             </span>
           </div>
         </div>
 
         {/* Navigation Anchors */}
-        <nav className="hidden md:flex items-center gap-6 font-mono text-xs tracking-wider uppercase text-stone-600">
+        <nav
+          aria-label="Primary navigation"
+          className="hidden md:flex items-center gap-8 font-mono text-[11px] tracking-[0.14em] uppercase text-[#5c5f55]"
+        >
           <a
             href="#problem"
-            className="hover:text-stone-950 transition-colors py-1"
+            className="hover:text-[#171814] transition-colors py-2 min-h-[44px] flex items-center"
           >
-            The Dilemma
+            01. Limits
           </a>
           <a
             href="#dqn"
-            className="hover:text-stone-950 transition-colors py-1"
+            className="hover:text-[#171814] transition-colors py-2 min-h-[44px] flex items-center"
           >
-            DQN Policy
+            02. DQN policy
           </a>
           <a
             href="#voxel"
-            className="hover:text-stone-950 transition-colors py-1"
+            className="hover:text-[#171814] transition-colors py-2 min-h-[44px] flex items-center"
           >
-            3D Voxel
+            03. 3D volume
           </a>
           <a
             href="#stratum"
-            className="hover:text-stone-950 transition-colors py-1"
+            className="hover:text-[#171814] transition-colors py-2 min-h-[44px] flex items-center"
           >
-            Bearing Strata
+            04. Bearing layer
           </a>
           <a
             href="#workflow"
-            className="hover:text-stone-950 transition-colors py-1"
+            className="hover:text-[#171814] transition-colors py-2 min-h-[44px] flex items-center"
           >
-            Workflow
+            05. Field sequence
           </a>
         </nav>
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-stone-200/50 border border-stone-300/60 font-mono text-[10px] text-stone-600">
-            <ShieldCheck className="w-3 h-3 text-emerald-600" />
-            <span>M4 Neural Ready</span>
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-[#dedacd]/50 border border-[#171814]/15 font-mono text-[10px] text-[#5c5f55]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#627056]" />
+            <span>M4 Neural engine</span>
           </div>
 
           <Button
             size="sm"
             variant="primary"
             onClick={onRequestPilot}
-            className="font-mono"
+            className="font-mono text-xs tracking-wider"
           >
-            Request Pilot Access
+            Request pilot access
           </Button>
         </div>
       </div>

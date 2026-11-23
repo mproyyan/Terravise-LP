@@ -12,15 +12,15 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const baseStyles =
-    "inline-flex items-center gap-1.5 px-2 py-0.5 font-mono text-[11px] font-medium tracking-widest uppercase rounded-sm select-none"
+    "inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] font-medium tracking-[0.14em] uppercase rounded-none select-none"
 
   const variants = {
-    default: "bg-stone-200/80 text-stone-700 border border-stone-300",
-    emerald: "bg-emerald-500/10 text-emerald-700 border border-emerald-500/30",
-    amber: "bg-amber-500/10 text-amber-700 border border-amber-500/30",
-    clay: "bg-[#BC6C25]/10 text-[#845942] border border-[#BC6C25]/30",
-    slate: "bg-[#1C3127]/10 text-[#1C3127] border border-[#1C3127]/25",
-    outline: "bg-transparent text-stone-600 border border-stone-300",
+    default: "bg-[#dedacd]/60 text-[#171814] border border-[#171814]/15",
+    emerald: "bg-[#627056]/15 text-[#627056] border border-[#627056]/30",
+    amber: "bg-[#d4a373]/20 text-[#845942] border border-[#d4a373]/40",
+    clay: "bg-[#a0522d]/15 text-[#845942] border border-[#a0522d]/30",
+    slate: "bg-[#171814]/10 text-[#171814] border border-[#171814]/20",
+    outline: "bg-transparent text-[#5c5f55] border border-[#171814]/20",
   }
 
   return (

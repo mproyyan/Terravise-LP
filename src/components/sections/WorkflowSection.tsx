@@ -8,24 +8,24 @@ export function WorkflowSection() {
   return (
     <section
       id="workflow"
-      className="py-24 bg-[#121514] text-[#E8E5DA] border-b border-stone-800 scroll-mt-12"
+      className="py-24 bg-[#171814] text-[#e8e5da] border-b border-[#e8e5da]/15 scroll-mt-12"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Plate Header */}
         <PlateHeader
           number="06"
-          title="Field Rig Sequence"
-          metaRight="End-to-End Campaign Flow"
+          title="Field rig sequence"
+          metaRight="Linear operational protocol"
           tone="dark"
         />
 
         {/* Section Heading */}
         <div className="max-w-3xl mb-16 space-y-4">
-          <h2 className="font-sans font-black text-3xl sm:text-4xl text-stone-100 uppercase tracking-tight">
-            From First Probe to Foundation Handover.
+          <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#e8e5da] uppercase tracking-[-0.035em] leading-[0.92]">
+            Four stages from first probe to pile schedule
           </h2>
-          <p className="font-sans text-stone-400 text-base sm:text-lg leading-relaxed">
-            A cohesive four-stage field protocol deployed directly on iPadOS alongside your CPT exploration crew.
+          <p className="font-sans text-[#e8e5da]/70 text-base sm:text-lg leading-relaxed">
+            A cohesive field protocol deployed directly on iPadOS alongside the exploration crew.
           </p>
         </div>
 
@@ -34,35 +34,35 @@ export function WorkflowSection() {
           {workflow.map((step) => (
             <div
               key={step.stepNumber}
-              className="bg-[#171A19] border border-stone-800 p-6 flex flex-col justify-between hover:border-stone-700 transition-colors group"
+              className="bg-[#1f211b] border border-[#e8e5da]/15 p-6 flex flex-col justify-between hover:border-[#e8e5da]/40 transition-colors group"
             >
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-stone-800 pb-3 font-mono text-xs">
-                  <span className="font-bold text-amber-500 text-sm">
+                <div className="flex items-center justify-between border-b border-[#e8e5da]/15 pb-3 font-mono text-xs">
+                  <span className="font-bold text-[#b78c75] text-sm tabular-nums">
                     {step.stepNumber}
                   </span>
-                  <Badge variant="outline" className="text-[9px] text-stone-400 border-stone-700">
+                  <Badge variant="outline" className="text-[9px] text-[#e8e5da]/60 border-[#e8e5da]/20">
                     {step.badgeText}
                   </Badge>
                 </div>
 
                 <div>
-                  <h3 className="font-sans font-black text-xl text-stone-100 tracking-tight">
+                  <h3 className="font-sans font-bold text-xl text-[#e8e5da] tracking-tight">
                     {step.title}
                   </h3>
-                  <div className="font-mono text-[11px] text-stone-500 uppercase tracking-wider mt-0.5">
+                  <div className="font-mono text-[10px] text-[#e8e5da]/50 uppercase tracking-wider mt-0.5">
                     {step.subtitle}
                   </div>
                 </div>
 
-                <p className="font-sans text-xs text-stone-400 leading-relaxed">
+                <p className="font-sans text-xs text-[#e8e5da]/70 leading-relaxed">
                   {step.description}
                 </p>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-stone-800/80 font-mono text-[11px] text-emerald-400 flex items-center justify-between">
-                <span className="text-[10px] uppercase text-stone-500">
-                  Deliverable:
+              <div className="mt-8 pt-4 border-t border-[#e8e5da]/15 font-mono text-[11px] text-[#7c8c6c] flex items-center justify-between">
+                <span className="text-[10px] uppercase text-[#e8e5da]/40">
+                  Deliverable
                 </span>
                 <span className="text-right font-medium">
                   {step.deliverable}

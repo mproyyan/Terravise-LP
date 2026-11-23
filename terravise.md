@@ -1,6 +1,6 @@
 # Terravise Platform Architecture & Technical Reference
 
-> Master engineering reference, machine learning architecture, data models, and application workflows for Terravise (derived from the codebase at `/Users/royyan/Developments/ada/challenge-6/GeoSome`, where it was formerly designated as GeoSome). This document serves as the single source of truth for copywriting, landing page development, and geotechnical domain concepts.
+> Master engineering reference, machine learning architecture, data models, and application workflows for Terravise. This document serves as the single source of truth for copywriting, landing page development, and geotechnical domain concepts.
 
 ---
 

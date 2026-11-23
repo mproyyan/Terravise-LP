@@ -2,25 +2,26 @@ import type { WorkflowStep } from "../types"
 
 export const SITE_CONTENT = {
   hero: {
-    badge: "Apple silicon field system. Autonomous CPT navigation",
+    badge: "Native iPadOS app. Apple silicon M-series",
     titleLine1: "A defensible foundation starts",
     titleLine2: "below the blind grid.",
     subtitle:
-      "Terravise directs cone penetration testing rigs in real time. On-device SchemaGAN generative models and reinforcement learning agents replace fixed grid spacing with data-guided sounding locations.",
-    primaryCta: "Request pilot access",
-    secondaryCta: "Download CPT template",
+      "Terravise directs CPT rig exploration in real time. On-device SchemaGAN generative models and reinforcement learning agents replace rigid borehole grids with data-guided sounding locations.",
+    primaryCta: "Download on App Store",
+    secondaryCta: "Download sample CPT file",
+    appStoreUrl: "https://apps.apple.com/app/terravise",
     specPoints: [
-      { label: "Ground certainty target", value: "84.2%" },
       { label: "Rig hours saved", value: "35% to 45%" },
-      { label: "Neural inference latency", value: "82 ms" },
-      { label: "Test standard", value: "ASTM D5778 and SNI 8460" },
+      { label: "On-device latency", value: "82 ms" },
+      { label: "Neural engine", value: "100% offline Core ML" },
+      { label: "Standard test code", value: "ASTM D5778 and SNI 8460" },
     ],
   },
   problem: {
     tag: "01 / Investigation limits",
     heading: "Fixed grid spacing creates two costly errors",
     subheading:
-      "Standard site investigations space soundings 25 to 50 meters apart. In uniform soil, the crew drills redundant soundings. In layered soil, the fixed spacing skips soft clay pockets and dipping rock layers.",
+      "Standard site investigations space soundings 25 to 50 meters apart in uniform squares. In homogeneous soil, the crew drills redundant soundings. In layered ground, fixed spacing skips soft clay pockets and dipping rock layers.",
     cards: [
       {
         number: "01",
@@ -34,7 +35,7 @@ export const SITE_CONTENT = {
         number: "02",
         title: "Undetected soft clay lenses",
         description:
-          "Soft sensitive marine clay pockets often measure less than 20 meters across. Fixed grids place boreholes on either side, missing the weak zone entirely.",
+          "Soft sensitive marine clay pockets often measure less than 20 meters across. Fixed grids place boreholes on either side, missing the weak zone until foundation settlement occurs.",
         impact: "Differential settlement risk",
         badge: "Structural hazard",
       },
@@ -42,7 +43,7 @@ export const SITE_CONTENT = {
         number: "03",
         title: "Stopping by budget, not data",
         description:
-          "Drilling campaigns stop when contract hours expire. Terravise measures mathematical model entropy, so engineers know when additional soundings stop adding data.",
+          "Drilling campaigns stop when contract budgets expire. Terravise measures model entropy and strata stability, so engineers know when additional soundings stop adding data.",
         impact: "Defensible stopping data",
         badge: "Contract limit",
       },
@@ -52,14 +53,14 @@ export const SITE_CONTENT = {
     tag: "02 / Next sounding selection",
     heading: "Reinforcement learning selects each sounding coordinate",
     subheading:
-      "The on-device deep Q-network evaluates candidate coordinates across the site boundary. It routes the CPT rig to the coordinate that resolves the largest strata uncertainty.",
+      "The on-device deep Q-network evaluates candidate coordinates across the site boundary using 29 engineered features. It routes the CPT rig to the coordinate that resolves the largest strata uncertainty.",
     recommendationTitle: "DQN target coordinate. Spot 2",
     tabs: [
       {
         id: "gap",
         label: "Data gap",
         description:
-          "The coordinate sits 16.2 meters from sounding B-01. No soundings exist within a 4.0 meter radius under the primary structural core.",
+          "The coordinate sits 16.2 meters from sounding B-01. No soundings exist within a 4.0 meter radius under the main structural core.",
       },
       {
         id: "transition",
@@ -75,25 +76,14 @@ export const SITE_CONTENT = {
       },
     ],
   },
-  dynamicStop: {
-    tag: "03 / Stopping criteria",
-    heading: "Ground certainty reaches 84.2%",
-    subheading:
-      "When model entropy across the building footprint drops below statutory limits, Terravise issues a practical stop recommendation.",
-    certaintyValue: 84.2,
-    threshold: 80.0,
-    statusText: "CPT coverage is sufficient. Practical stop criteria met.",
-    explanation:
-      "Drilling beyond 80% certainty adds less than 0.8% new data while adding 4,200 dollars in daily crawler operating expenses.",
-  },
   voxel: {
-    tag: "04 / Subsurface volume",
+    tag: "03 / Subsurface volume",
     heading: "Interactive 3D soil volume inspection",
     subheading:
-      "Cut through the soil volume with Easting and Northing sliders. Inspect layer continuity from ground level down to 25.0 meters depth.",
+      "Inspect continuous stratigraphy synthesized by SchemaGAN V4.2. Use dual Easting and Northing slicing controls to inspect layers from ground level down to 25.0 meters depth.",
   },
   bearing: {
-    tag: "05 / Bearing layer verification",
+    tag: "04 / Bearing layer verification",
     heading: "Competent strata depth and pile schedules",
     subheading:
       "Map the top of competent bearing soil across all completed soundings. Transfer confirmed pile toe termination depths directly to structural design teams.",
@@ -101,46 +91,46 @@ export const SITE_CONTENT = {
   workflow: [
     {
       stepNumber: "01",
-      title: "Stream rig telemetry",
-      subtitle: "Live CPT data ingestion",
+      title: "Boundary definition",
+      subtitle: "MapKit satellite mapping",
       description:
-        "Stream cone resistance, sleeve friction, and pore pressure at 20 millimeters per second through Bluetooth or load AGS4 and CSV files.",
-      deliverable: "Normalized Robertson SBT profile",
-      badgeText: "Field input",
+        "Draw structural building footprints directly on high-resolution satellite maps. Support tap-to-add coordinates, UTM Zone 48S inputs, and real-time polygon area calculations.",
+      deliverable: "Georeferenced site polygon and area",
+      badgeText: "BoundaryCreationView",
     },
     {
       stepNumber: "02",
-      title: "Synthesize 3D strata",
-      subtitle: "SchemaGAN simulation",
+      title: "CPT telemetry ingestion",
+      subtitle: "Multi-instrument file parsing",
       description:
-        "Generative models calculate 3D soil property distributions across the site boundary, marking soft clay pockets and dipping rock planes.",
-      deliverable: "3D soil volume and entropy map",
-      badgeText: "Neural processing",
+        "Import standard CSV and Excel (.xlsx) files directly on the rig. Terravise automatically maps column headers for Electrical CPT, CPTm Bicone, and CPTu piezocone instruments.",
+      deliverable: "Normalized Robertson SBT profiles",
+      badgeText: "CPTRecommendationView",
     },
     {
       stepNumber: "03",
-      title: "Direct the next sounding",
-      subtitle: "DQN coordinate guidance",
+      title: "DQN active rig routing",
+      subtitle: "29-feature candidate evaluation",
       description:
-        "The reinforcement learning agent ranks candidate locations and directs the rig operator to the coordinate with maximum information gain.",
-      deliverable: "UTM coordinates and technical rationale",
-      badgeText: "Rig routing",
+        "The on-device reinforcement learning agent ranks candidate locations within the boundary polygon. It displays target coordinates with transparent rationale cards.",
+      deliverable: "Target coordinates and rationale cards",
+      badgeText: "DQN V4.6-A Core ML",
     },
     {
       stepNumber: "04",
-      title: "Confirm stopping and export",
-      subtitle: "Engineering deliverables",
+      title: "3D voxel and bearing analysis",
+      subtitle: "RealityKit foundation handoff",
       description:
-        "Confirm ground certainty past 80%. Export georeferenced pile toe elevation tables and bearing layer contours directly to DXF and CSV formats.",
-      deliverable: "CAD DXF, CSV, and PDF reports",
-      badgeText: "Final export",
+        "Inspect the 3D voxel volume with interactive Easting and Northing slicing cutters. Apply parametric criteria (qc >= 15 MPa, Ic <= 1.80) to export pile toe schedules.",
+      deliverable: "Pile toe schedule (CSV, LandXML, DXF)",
+      badgeText: "ResultAnalysisView",
     },
   ] as WorkflowStep[],
   trust: {
-    tag: "06 / Standards and data privacy",
+    tag: "05 / Standards and data privacy",
     heading: "Statutory standards. Offline on-device computation.",
     subheading:
-      "Built for standard geotechnical workflows. All neural calculations run on local device silicon with zero network transmission.",
+      "Built for geotechnical field workflows. All neural calculations run on local Apple silicon neural engines with zero network transmission.",
     badges: [
       {
         title: "Robertson 9-zone classification",
@@ -152,7 +142,7 @@ export const SITE_CONTENT = {
       },
       {
         title: "Offline neural computation",
-        desc: "SchemaGAN and DQN policies run on the local Apple neural engine. Field soundings never leave the device.",
+        desc: "SchemaGAN and DQN policies run on the local Apple neural engine. Field soundings never leave the iPad.",
       },
       {
         title: "ASTM D5778 and SNI 8460",
@@ -167,15 +157,15 @@ export const SITE_CONTENT = {
     },
     {
       q: "What file formats can the rig operator import in the field?",
-      a: "Terravise accepts direct serial and Bluetooth telemetry from digital CPT dataloggers, as well as AGS4, GEF, CSV, and Excel spreadsheets.",
+      a: "Terravise accepts direct serial and Bluetooth telemetry from digital CPT dataloggers, as well as AGS4, GEF, CSV, and Excel (.xlsx) spreadsheets.",
     },
     {
-      q: "How does the ground certainty metric decide when to stop?",
-      a: "Ground certainty measures residual spatial entropy across the 3D volume. When additional soundings yield less than 1.0% uncertainty reduction, the system recommends stopping.",
+      q: "Can Terravise run on an iPad without an internet connection?",
+      a: "Yes. Terravise runs completely offline on iPadOS. All Core ML neural models execute locally through the Apple neural engine.",
     },
     {
-      q: "Can Terravise run without internet access?",
-      a: "Yes. Terravise runs offline on Apple silicon hardware. Neural model evaluation executes locally through the Apple neural engine.",
+      q: "How does Terravise determine the foundation bearing layer?",
+      a: "The BearingRuleEngine evaluates voxels where cone resistance qc >= 15 MPa and Soil Behavior Index Ic <= 1.80 over a continuous vertical thickness >= 2.0 meters using 3D connected component clustering.",
     },
   ],
 }

@@ -3,12 +3,12 @@ import { Badge } from "../ui/Badge"
 import { ArrowRight, CheckCircle, ShieldCheck, FileSpreadsheet } from "lucide-react"
 
 interface FinalCtaSectionProps {
-  onRequestPilot: () => void
+  onOpenAppStore: () => void
   onDownloadTemplate: () => void
 }
 
 export function FinalCtaSection({
-  onRequestPilot,
+  onOpenAppStore,
   onDownloadTemplate,
 }: FinalCtaSectionProps) {
   return (
@@ -17,7 +17,7 @@ export function FinalCtaSection({
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <Badge variant="emerald" className="font-mono text-[10px] py-1 px-3">
             <span className="w-1.5 h-1.5 rounded-none bg-[#7c8c6c] inline-block mr-1.5" />
-            Field system ready
+            iPadOS field release
           </Badge>
 
           <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-6xl uppercase tracking-[-0.04em] text-[#e8e5da] leading-[0.92]">
@@ -26,28 +26,28 @@ export function FinalCtaSection({
 
           <p className="font-sans text-[#e8e5da]/70 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
             Eliminate blind grid exploration. Equip active CPT rigs with
-            reinforcement learning guidance and statutory ground certainty stopping criteria.
+            reinforcement learning guidance and on-device foundation bearing layer analysis.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Button
               variant="emerald"
               size="lg"
-              onClick={onRequestPilot}
-              className="text-white group"
+              onClick={onOpenAppStore}
+              className="text-white group flex items-center gap-2"
             >
-              <span>Request pilot access</span>
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              <span>Download on the App Store</span>
+              <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </Button>
 
             <Button
               variant="dark"
               size="lg"
               onClick={onDownloadTemplate}
-              className="text-[#e8e5da] hover:text-white"
+              className="text-[#e8e5da] hover:text-white flex items-center gap-2"
             >
-              <FileSpreadsheet className="w-4 h-4 mr-2 text-[#7c8c6c]" />
-              <span>Download CPT template (.csv)</span>
+              <FileSpreadsheet className="w-4 h-4 text-[#7c8c6c]" />
+              <span>Download sample CPT file (.csv)</span>
             </Button>
           </div>
 
@@ -62,7 +62,7 @@ export function FinalCtaSection({
             </span>
             <span className="flex items-center gap-1.5">
               <CheckCircle className="w-3.5 h-3.5 text-[#7c8c6c]" />
-              Standard ASTM D5778 compliance
+              Compatible with any standard CPT rig
             </span>
           </div>
         </div>

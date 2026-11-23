@@ -14,7 +14,7 @@ export function SubsurfaceVoxelSection() {
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Plate Header */}
         <PlateHeader
-          number="04"
+          number="03"
           title="Subsurface volume"
           metaRight="Voxel cross-section viewport"
           tone="dark"

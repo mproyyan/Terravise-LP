@@ -16,8 +16,8 @@ export function Footer() {
               </span>
             </div>
             <p className="text-[#e8e5da]/70 text-xs sm:text-sm max-w-sm leading-relaxed font-sans">
-              On-device geotechnical investigation system. Directs CPT sounding
-              locations using reinforcement learning and verified ground certainty stopping criteria.
+              Native iPadOS geotechnical investigation system. Directs CPT sounding
+              locations using on-device reinforcement learning and verified foundation bearing layer analysis.
             </p>
             <div className="flex items-center gap-3 text-xs font-mono text-[#e8e5da]/40 pt-2">
               <span className="flex items-center gap-1.5">
@@ -46,23 +46,18 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#stop" className="hover:text-[#e8e5da] transition-colors py-1 block">
-                  03. Ground certainty metric
-                </a>
-              </li>
-              <li>
                 <a href="#voxel" className="hover:text-[#e8e5da] transition-colors py-1 block">
-                  04. 3D soil volume inspection
+                  03. 3D soil volume inspection
                 </a>
               </li>
               <li>
                 <a href="#stratum" className="hover:text-[#e8e5da] transition-colors py-1 block">
-                  05. Bearing stratum criteria
+                  04. Bearing stratum criteria
                 </a>
               </li>
               <li>
                 <a href="#workflow" className="hover:text-[#e8e5da] transition-colors py-1 block">
-                  06. Field rig sequence
+                  05. iPadOS app workflow
                 </a>
               </li>
             </ul>

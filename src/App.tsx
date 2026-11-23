@@ -5,21 +5,19 @@ import { Footer } from "./components/layout/Footer"
 import { HeroSection } from "./components/sections/HeroSection"
 import { ProblemSection } from "./components/sections/ProblemSection"
 import { DQNRecommendationSection } from "./components/sections/DQNRecommendationSection"
-import { DynamicStopSection } from "./components/sections/DynamicStopSection"
 import { SubsurfaceVoxelSection } from "./components/sections/SubsurfaceVoxelSection"
 import { BearingStratumSection } from "./components/sections/BearingStratumSection"
 import { WorkflowSection } from "./components/sections/WorkflowSection"
 import { TechnicalTrustSection } from "./components/sections/TechnicalTrustSection"
 import { FinalCtaSection } from "./components/sections/FinalCtaSection"
-import { LeadIntakeModal } from "./components/interactive/LeadIntakeModal"
+import { SITE_CONTENT } from "./data/siteContent"
 import { Check } from "lucide-react"
 
 export function App() {
-  const [pilotModalOpen, setPilotModalOpen] = useState(false)
   const [downloadNotification, setDownloadNotification] = useState(false)
 
-  const handleRequestPilot = () => {
-    setPilotModalOpen(true)
+  const handleOpenAppStore = () => {
+    window.open(SITE_CONTENT.hero.appStoreUrl, "_blank", "noopener,noreferrer")
   }
 
   const handleDownloadTemplate = () => {
@@ -37,7 +35,7 @@ export function App() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.setAttribute("href", url)
-    link.setAttribute("download", "terravise_cpt_standard_template_v4.csv")
+    link.setAttribute("download", "terravise_cpt_sample_template.csv")
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -53,35 +51,28 @@ export function App() {
       <DepthSidebarTracker />
 
       {/* Sticky Architectural Navbar */}
-      <Navbar onRequestPilot={handleRequestPilot} />
+      <Navbar onOpenAppStore={handleOpenAppStore} />
 
       {/* Main Landing Sections Flow */}
       <main>
         <HeroSection
-          onRequestPilot={handleRequestPilot}
+          onOpenAppStore={handleOpenAppStore}
           onDownloadTemplate={handleDownloadTemplate}
         />
         <ProblemSection />
         <DQNRecommendationSection />
-        <DynamicStopSection />
         <SubsurfaceVoxelSection />
         <BearingStratumSection />
         <WorkflowSection />
         <TechnicalTrustSection />
         <FinalCtaSection
-          onRequestPilot={handleRequestPilot}
+          onOpenAppStore={handleOpenAppStore}
           onDownloadTemplate={handleDownloadTemplate}
         />
       </main>
 
       {/* Engineering Footer */}
       <Footer />
-
-      {/* Lead Intake Modal */}
-      <LeadIntakeModal
-        open={pilotModalOpen}
-        onOpenChange={setPilotModalOpen}
-      />
 
       {/* Floating Download Notification Toast */}
       {downloadNotification && (
@@ -90,8 +81,8 @@ export function App() {
             <Check className="w-3.5 h-3.5" />
           </div>
           <div>
-            <div className="font-bold text-[#e8e5da]">Template file downloaded</div>
-            <div className="text-[10px] text-[#e8e5da]/60">terravise_cpt_standard_template_v4.csv</div>
+            <div className="font-bold text-[#e8e5da]">Sample CPT file downloaded</div>
+            <div className="text-[10px] text-[#e8e5da]/60">terravise_cpt_sample_template.csv</div>
           </div>
         </div>
       )}

@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react"
 import { Button } from "../ui/Button"
-import { Compass, ShieldCheck } from "lucide-react"
+import { Compass, ShieldCheck, Download } from "lucide-react"
+import { SITE_CONTENT } from "../../data/siteContent"
 
 interface NavbarProps {
-  onRequestPilot: () => void
+  onOpenAppStore?: () => void
 }
 
-export function Navbar({ onRequestPilot }: NavbarProps) {
+export function Navbar({ onOpenAppStore }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -16,6 +17,14 @@ export function Navbar({ onRequestPilot }: NavbarProps) {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  const handleCtaClick = () => {
+    if (onOpenAppStore) {
+      onOpenAppStore()
+    } else {
+      window.open(SITE_CONTENT.hero.appStoreUrl, "_blank")
+    }
+  }
 
   return (
     <header
@@ -87,7 +96,7 @@ export function Navbar({ onRequestPilot }: NavbarProps) {
             href="#workflow"
             className="hover:text-[#171814] transition-colors py-2 min-h-[44px] flex items-center"
           >
-            05. Field sequence
+            05. App workflow
           </a>
         </nav>
 
@@ -95,16 +104,17 @@ export function Navbar({ onRequestPilot }: NavbarProps) {
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-[#dedacd]/50 border border-[#171814]/15 font-mono text-[10px] text-[#5c5f55]">
             <ShieldCheck className="w-3.5 h-3.5 text-[#627056]" />
-            <span>M4 Neural engine</span>
+            <span>iPadOS M-series</span>
           </div>
 
           <Button
             size="sm"
             variant="primary"
-            onClick={onRequestPilot}
-            className="font-mono text-xs tracking-wider"
+            onClick={handleCtaClick}
+            className="font-mono text-xs tracking-wider flex items-center gap-2"
           >
-            Request pilot access
+            <Download className="w-3.5 h-3.5" />
+            <span>App Store</span>
           </Button>
         </div>
       </div>

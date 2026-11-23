@@ -175,10 +175,10 @@ export const MOCK_EXISTING_SOUNDINGS: CptSoundingData[] = [
 ]
 
 export const DEPTH_STAGES = [
-  { depth: "0.0 m", label: "Ground level and UTM grid", sectionId: "hero" },
-  { depth: "-3.0 m", label: "SBT profiling", sectionId: "problem" },
-  { depth: "-8.5 m", label: "DQN coordinate target", sectionId: "dqn" },
-  { depth: "-12.0 m", label: "Ground certainty stopping", sectionId: "stop" },
-  { depth: "-16.0 m", label: "Bearing stratum qc >= 15 MPa", sectionId: "stratum" },
-  { depth: "-25.0 m", label: "Exploration limit", sectionId: "workflow" },
+  { depth: "0.0 m", label: "Ground level and boundary", sectionId: "hero" },
+  { depth: "-3.0 m", label: "Fixed grid dilemma", sectionId: "problem" },
+  { depth: "-8.5 m", label: "DQN coordinate selection", sectionId: "dqn" },
+  { depth: "-14.0 m", label: "3D subsurface volume", sectionId: "voxel" },
+  { depth: "-18.0 m", label: "Bearing layer verification", sectionId: "stratum" },
+  { depth: "-25.0 m", label: "iPadOS field workflow", sectionId: "workflow" },
 ]

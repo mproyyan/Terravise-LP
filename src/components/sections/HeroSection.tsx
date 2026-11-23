@@ -4,11 +4,11 @@ import { SITE_CONTENT } from "../../data/siteContent"
 import { ArrowRight, Download, Cpu, CheckCircle } from "lucide-react"
 
 interface HeroSectionProps {
-  onRequestPilot: () => void
+  onOpenAppStore: () => void
   onDownloadTemplate: () => void
 }
 
-export function HeroSection({ onRequestPilot, onDownloadTemplate }: HeroSectionProps) {
+export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionProps) {
   const { hero } = SITE_CONTENT
 
   return (
@@ -39,16 +39,16 @@ export function HeroSection({ onRequestPilot, onDownloadTemplate }: HeroSectionP
               {hero.subtitle}
             </p>
 
-            {/* Dual Actions */}
+            {/* Dual Actions with App Store CTA */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <Button
                 variant="primary"
                 size="lg"
-                onClick={onRequestPilot}
-                className="group"
+                onClick={onOpenAppStore}
+                className="group flex items-center gap-2"
               >
                 <span>{hero.primaryCta}</span>
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </Button>
 
               <Button
@@ -85,7 +85,7 @@ export function HeroSection({ onRequestPilot, onDownloadTemplate }: HeroSectionP
                 {/* iPad Status Bar */}
                 <div className="px-4 py-2 border-b border-stone-800 flex items-center justify-between text-[10px] font-mono text-stone-400 select-none bg-black/40">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#e8e5da]">TERRAVISE FIELD</span>
+                    <span className="font-bold text-[#e8e5da]">TERRAVISE IPADOS</span>
                     <span>•</span>
                     <span className="text-[#7c8c6c] flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-none bg-[#7c8c6c] animate-pulse" />
@@ -191,8 +191,8 @@ export function HeroSection({ onRequestPilot, onDownloadTemplate }: HeroSectionP
                       <span className="font-bold text-[#e8e5da]">Zone 8. Dense sand</span>
                     </div>
                     <div className="flex items-center justify-between text-stone-400">
-                      <span>Ground certainty:</span>
-                      <span className="font-bold text-[#7c8c6c]">84.2%. Stop ready</span>
+                      <span>DQN active policy:</span>
+                      <span className="font-bold text-[#7c8c6c]">29 features evaluated</span>
                     </div>
                   </div>
                 </div>

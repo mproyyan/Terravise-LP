@@ -13,19 +13,19 @@ export function WorkflowSection() {
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Plate Header */}
         <PlateHeader
-          number="06"
-          title="Field rig sequence"
-          metaRight="Linear operational protocol"
+          number="05"
+          title="iPadOS application workflow"
+          metaRight="Four native field stages"
           tone="dark"
         />
 
         {/* Section Heading */}
         <div className="max-w-3xl mb-16 space-y-4">
           <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#e8e5da] uppercase tracking-[-0.035em] leading-[0.92]">
-            Four stages from first probe to pile schedule
+            Four integrated steps from site boundary to foundation handoff
           </h2>
           <p className="font-sans text-[#e8e5da]/70 text-base sm:text-lg leading-relaxed">
-            A cohesive field protocol deployed directly on iPadOS alongside the exploration crew.
+            How geotechnical engineers and CPT rig operators use Terravise directly on Apple silicon iPadOS in the field.
           </p>
         </div>
 

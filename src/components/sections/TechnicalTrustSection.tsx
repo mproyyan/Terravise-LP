@@ -33,7 +33,7 @@ export function TechnicalTrustSection() {
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Plate Header */}
         <PlateHeader
-          number="07"
+          number="06"
           title="Standards and data privacy"
           metaRight="Statutory compliance"
           tone="light"

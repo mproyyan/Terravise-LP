@@ -20,7 +20,7 @@ export function BearingStratumSection() {
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Plate Header */}
         <PlateHeader
-          number="05"
+          number="04"
           title="Bearing layer verification"
           metaRight="Pile foundation criteria"
           tone="light"

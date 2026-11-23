@@ -1,257 +1,257 @@
 # Terravise Platform Architecture & Technical Reference
 
-> Dokumen acuan teknis, arsitektur sistem, algoritma machine learning, model data, dan alur aplikasi Terravise (sebelumnya bernama GeoSome pada repositori `/Users/royyan/Developments/ada/challenge-6/GeoSome`). Dokumen ini disusun sebagai sumber kebenaran (*single source of truth*) untuk copywriting, pengembangan landing page, dan pemahaman domain geoteknik.
+> Master engineering reference, machine learning architecture, data models, and application workflows for Terravise (derived from the codebase at `/Users/royyan/Developments/ada/challenge-6/GeoSome`, where it was formerly designated as GeoSome). This document serves as the single source of truth for copywriting, landing page development, and geotechnical domain concepts.
 
 ---
 
-## 1. Identitas Produk & Visi Rekayasa
+## 1. Product Identity and Engineering Vision
 
-### 1.1 Apa itu Terravise?
-Terravise adalah sistem komputasi geoteknik lapangan berbasis iPadOS (Apple Silicon M-Series) yang memandu kampanye investigasi tanah *Cone Penetration Testing* (CPT / Sondir) secara adaptif dan berlandaskan data matematis *real-time*.
+### 1.1 What Is Terravise?
+Terravise is an on-device geotechnical investigation system built for iPadOS on Apple silicon hardware. It guides field Cone Penetration Testing (CPT) campaigns dynamically, replacing fixed grid borehole schedules with real-time computational guidance.
 
-### 1.2 Masalah Rekayasa yang Diselesaikan
-Dalam investigasi geoteknik konvensional, penentuan titik uji sondir mengandalkan kisi kaku seragam (*rigid uniform grid*, misal: membuat lubang uji setiap 25–50 meter). Praktik ini memicu dua kegagalan rekayasa mendasar:
-1. **Pemborosan Biaya pada Tanah Seragam:** Pada formasi tanah homogen, kisi seragam menghasilkan *over-drilling* (pengeboran redundan), membakar anggaran dan waktu sewa alat berat (*rig mobilization*) untuk data yang sudah terbukti sama.
-2. **Titik Buta pada Tanah Kompleks:** Patahan, lapisan batuan miring (*dipping bedrock*), dan lensa lempung lunak sensitif (*soft sensitive marine clay*) kerap berukuran kurang dari 20 meter dan terlewat di antara celah kisi seragam. Kegagalan ini baru terdeteksi setelah struktur mengalami penurunan diferensial (*differential settlement*).
-3. **Kriteria Berhenti yang Sembarangan (*Arbitrary Contract Stopping*):** Pengeboran lapangan umumnya dihentikan saat kuota kontrak atau anggaran habis, bukan saat kepastian profil tanah telah terbukti secara matematis.
+### 1.2 The Engineering Problem
+Conventional site investigations mandate drilling soundings in rigid geometric grids (such as a borehole every 25 to 50 meters). This practice causes three fundamental engineering failures:
+1. **Redundant Drilling in Homogeneous Ground:** In uniform sand or silt, fixed grids repeat identical observations. Exploration crews spend days and thousands of dollars on redundant soundings that yield no new strata data.
+2. **Blind Spots in Layered Geology:** Faults, dipping bedrock interfaces, and soft sensitive marine clay pockets often measure under 20 meters across. Fixed grids place boreholes on either side, missing critical hazard pockets entirely until post-construction differential settlement occurs.
+3. **Arbitrary Stopping Criteria:** Drilling campaigns stop when contract budgets expire, not when the subsurface soil volume is mathematically understood with defensible certainty.
 
-### 1.3 Solusi Terravise
-Terravise menjalankan pipeline model generatif dalam perangkat (*on-device* Core ML) untuk merekonstruksi volume tanah 3D secara kontinu, merekomendasikan koordinat titik sondir berikutnya dengan perolehan informasi tertinggi, dan memberikan kriteria berhenti statistik yang dapat dipertanggungjawabkan (*defensible Practical STOP criteria*).
+### 1.3 The Terravise Solution
+Terravise executes an on-device Core ML neural pipeline to reconstruct a continuous 3D soil volume, recommend the next coordinate with the highest information gain, and provide a mathematically verified Practical STOP criterion.
 
-### 1.4 Persona Pengguna Utama
-1. **Lead Geotechnical Engineers & Konsultan Geoteknik:** Memerlukan tata letak investigasi yang hemat biaya dan dapat dipertanggungjawabkan secara hukum/teknis (*defensible*).
-2. **Kontraktor Rig CPT & Operator Lapangan:** Membutuhkan panduan navigasi alat berat di lapangan tanpa menunggu jeda analisis kantor berhari-hari.
-3. **Perancang Struktur & Fondasi Tiang:** Memerlukan elevasi kedalaman lapisan tanah keras (*bearing stratum top depth*) yang akurat untuk jadwal pemancangan tiang (*pile toe schedule*).
-4. **Project Directors & Pengembang Sipil:** Bertujuan memangkas 30%–50% biaya eksplorasi tanpa mengorbankan keselamatan struktural.
+### 1.4 Primary User Personas
+1. **Lead Geotechnical Engineers and Consultancies:** Require cost-effective, defensible investigation layouts that comply with statutory standards.
+2. **CPT Rig Contractors and Field Operators:** Need real-time coordinate routing on the rig without multi-day office reporting delays.
+3. **Foundation and Structural Designers:** Require exact bearing layer top depths across building column locations to establish pile toe schedules.
+4. **Project Directors and Civil Developers:** Aim to reduce exploration time by 30% to 50% without compromising structural safety.
 
 ---
 
-## 2. Arsitektur Komputasi Lapangan (`CPT3D-67` Engine)
+## 2. On-Device Neural Computing Pipeline (`CPT3D-67` Engine)
 
-Seluruh inferensi neural dieksekusi secara lokal di perangkat iPad menggunakan **Apple Neural Engine (Core ML)** tanpa ketergantungan koneksi internet (*100% offline-ready, zero cloud data leakage*).
+All neural inference executes offline on iPadOS hardware via the Apple neural engine. Field data never leaves the device.
 
 ```
-[ Lapisan Masukan CPT (1D Profiles) ]
-         │
-         ▼
-[ CPTGridConfig & Spasial Masukan ] ──> Grid 3D Teratur [nx, ny, nz] (dx, dy, dz = 1.0 m)
-         │
-         ├─────────────────────────────────────────┐
-         ▼                                         ▼
+[ 1D CPT Sounding Profiles ]
+              │
+              ▼
+[ CPTGridConfig & Spatial Mapping ] ──> 3D Regular Voxel Grid [nx, ny, nz] (dx, dy, dz = 1.0 m)
+              │
+              ├─────────────────────────────────────────┐
+              ▼                                         ▼
 [ SchemaGAN V4.2 Flexible ]               [ QCFS CNN V3 Core ML ]
-Rekonstruksi Volume 3D Ic                 Prediksi Volume Kontinu
-(Soil Behavior Type Index)                qc (MPa) & fs (kPa)
-         │                                         │
-         ▼                                         ▼
+3D Ic Volume Reconstruction               Continuous Volumetric Synthesis
+(Soil Behavior Type Index)                qc (MPa) and fs (kPa)
+              │                                         │
+              ▼                                         ▼
 [ Uncertainty V3 & Sufficiency ]          [ BearingRuleEngine ]
-Error Bounds & Coverage (>= 80%)          Filter qc >= 15 MPa, tebal >= 2m
-         │                                         │
-         ├──────────────────────────┐              ▼
-         ▼                          ▼        [ 3D Bearing Surface ]
-[ StratigraphicStop ]      [ DQN V4.6-A Policy ]    Kontur Kedalaman Tiang (zb)
-Kriteria Berhenti Nyata    Navigasi 29 Fitur
-(Practical STOP)           Koordinat Terbaik
+Error Bounds & Coverage (>= 80%)          Filter qc >= 15 MPa, thickness >= 2m
+              │                                         │
+              ├──────────────────────────┐              ▼
+              ▼                          ▼        [ 3D Bearing Surface ]
+[ StratigraphicStop ]      [ DQN V4.6-A Policy ]    Foundation Toe Depth (zb)
+Practical STOP Trigger     29-Feature Coordinate
+(Stops Drilling)           Guidance
 ```
 
 ### 2.1 Model 1: SchemaGAN V4.2 Flexible Core ML
-* **Identitas File:** `SchemaGAN_V4_2_Flexible.mlpackage`
-* **Fungsi:** Merekonstruksi volume 3D kontinu indeks tipe perilaku tanah (*Robertson Soil Behavior Type Index*, $I_c$) dari data CPT 1D yang tersebar (*sparse*).
-* **Parameter Normalisasi:**
+* **Package Path:** `SchemaGAN_V4_2_Flexible.mlpackage`
+* **Function:** Reconstructs a continuous 3D physical Robertson Soil Behavior Type Index ($I_c$) volume from sparse 1D CPT profiles.
+* **Normalization Constants:**
   $$\mu = 2.7903323310879604, \quad \sigma = 0.7723778445702414$$
-* **Mekanisme Kerja:**
-  1. Data titik sondir 1D dipetakan ke sel grid $3D$ $[nx, ny, nz]$.
-  2. Lapisan awal dibentuk menggunakan *Depth-aware Inverse Distance Weighting* (IDW).
-  3. Jaringan generatif menginferensikan kesinambungan lapisan geoteknik di area tak terobservasi.
-  4. Menghasilkan volume fisik $I_c$ dan mask validitas spasial tapak struktur.
+* **Processing Sequence:**
+  1. Snaps uploaded 1D soundings to nearest unoccupied 3D grid cells $[nx, ny, nz]$.
+  2. Initializes hidden domains using depth-aware Inverse Distance Weighting (IDW).
+  3. Evaluates 2D Euclidean distance maps to observed sites across the structural footprint.
+  4. Synthesizes continuous physical $I_c$ values and establishes the valid domain mask.
 
 ### 2.2 Model 2: QCFS CNN V3 Core ML
-* **Identitas File:** `QCFS_CNN_V3.mlpackage`
-* **Fungsi:** Memprediksi nilai kontinu tahanan ujung konus ($q_c$ dalam MPa) dan gesekan selimut ($f_s$ dalam kPa) di setiap voxel dalam domain proyek.
-* **Karakteristik:** Menjaga data pengukuran asli pada sel yang diobservasi dan melakukan sintesis volumetrik neural pada ruang antartitik.
+* **Package Path:** `QCFS_CNN_V3.mlpackage`
+* **Function:** Predicts continuous cone tip resistance ($q_c$ in MPa) and sleeve friction ($f_s$ in kPa) across all valid domain voxels.
+* **Mechanism:** Preserves direct sensor measurements at observed borehole locations while interpolating non-linear stress parameters throughout unobserved intervals.
 
-### 2.3 Model 3: DQN V4.6-A Core ML (Autonomous Rig Guidance)
-* **Identitas File:** `DQN_V4_6_A.mlpackage`
-* **Fungsi:** Agen *Reinforcement Learning* (Deep Q-Network) yang mengevaluasi seluruh kandidat koordinat legal di dalam batas tapak proyek dan memilih titik dengan nilai $Q$ tertinggi (*maximum information gain*).
-* **Vektor Masukan (29 Fitur Teknis):**
-  * **11 Fitur Konteks Global:**
-    1. Rasio kepadatan titik observasi terhadap ruang legal: $\log(1 + N_{\text{sites}}) / \log(1 + N_{\text{possible}})$
-    2. Skala dimensi sumbu X: $\log(1 + (nx \cdot dx) / 32)$
-    3. Skala dimensi sumbu Y: $\log(1 + (ny \cdot dy) / 32)$
-    4. Skala kedalaman sumbu Z: $\log(1 + (nz \cdot dz) / 16)$
-    5. Resolusi grid $dx$: $\log(1 + dx / 2)$
-    6. Resolusi grid $dy$: $\log(1 + dy / 2)$
-    7. Resolusi vertikal $dz$: $\log(1 + dz / 2)$
-    8. Rata-rata global nilai $I_c$ ternormalisasi
-    9. Deviasi standar global nilai $I_c$ ternormalisasi
-    10. Fraksi voxel valid dalam *bounding box*
-    11. Fraksi voxel terobservasi terhadap total valid
-  * **18 Fitur Kandidat Lokal:**
-    1. Jarak terdekat ke CPT yang sudah ada
-    2. Jumlah titik CPT yang berada dalam radius 4.0 meter
-    3. Gradien lateral $I_c$ lokal
-    4. s/d 11. Statistik statistik rata-rata dan varians pada 4 partisi interval kedalaman vertikal
-    12. Tipe tanah dangkal (*shallow soil classification zone*)
-    13. Tipe tanah dalam (*deep soil classification zone*)
-    14. Deviasi lateral $\Delta I_c$ terhadap klaster terdekat
-* **Batasan Spasial & Fisik:** Memastikan koordinat rekomendasi berada dalam poligon tapak, tidak menabrak titik yang sudah dibor, dan mematuhi jarak pemisahan fisik rig (*minimum separation distance*).
+### 2.3 Model 3: DQN V4.6-A Core ML (Autonomous Rig Routing)
+* **Package Path:** `DQN_V4_6_A.mlpackage`
+* **Function:** A Deep Q-Network that evaluates all legal candidate coordinates within the project boundary and recommends the location with the maximum Q-value (highest information gain).
+* **Input Vector (29 Engineered Features):**
+  * **11 Global Context Features:**
+    1. Observation density ratio: $\log(1 + N_{\text{sites}}) / \log(1 + N_{\text{possible}})$
+    2. Easting dimension scale: $\log(1 + (nx \cdot dx) / 32)$
+    3. Northing dimension scale: $\log(1 + (ny \cdot dy) / 32)$
+    4. Vertical depth scale: $\log(1 + (nz \cdot dz) / 16)$
+    5. Grid spacing $dx$: $\log(1 + dx / 2)$
+    6. Grid spacing $dy$: $\log(1 + dy / 2)$
+    7. Vertical layer resolution $dz$: $\log(1 + dz / 2)$
+    8. Global mean of standardized $I_c$ ($z_{\text{rec}}$)
+    9. Global standard deviation of standardized $I_c$ ($z_{\text{rec}}$)
+    10. Fraction of valid domain voxels within bounding grid
+    11. Fraction of observed voxels relative to valid domain
+  * **18 Local Candidate Features:**
+    1. Distance to nearest completed CPT sounding
+    2. Number of soundings within a 4.0 meter radius
+    3. Lateral $I_c$ gradient
+    4. through 11. Mean and variance of predicted $I_c$ across 4 depth partitions
+    12. Predicted shallow soil classification (Robertson zone 1 to 9)
+    13. Predicted deep soil classification (Robertson zone 1 to 9)
+    14. Lateral offset magnitude ($\Delta I_c$) relative to adjacent soundings
+* **Physical Constraints:** Evaluates only coordinates inside the boundary polygon, outside completed drill holes, and compliant with minimum rig separation requirements.
 
-### 2.4 Model 4: Uncertainty V3 & Sufficiency Engine
-* **Fungsi:** Mengukur ketidakpastian residual model (*voxel entropy*) dan batas galat terkalibrasi ($|I_c - I_{c,\text{true}}| \le 0.15$).
-* **Predicted Coverage Metric:** Proporsi volume valid tak terobservasi yang memiliki batas kepastian $\le 0.15$. Target operasional eksplorasi ditetapkan pada **$\ge 80.0\%$**.
+### 2.4 Model 4: Uncertainty V3 and Sufficiency Engine
+* **Function:** Computes residual model entropy and calibrated error bounds ($|I_c - I_{c,\text{true}}| \le 0.15$).
+* **Predicted Coverage Metric:** The fraction of unobserved valid voxels with a calibrated error bound $\le 0.15$. The exploratory policy target is **$\ge 80.0\%$**.
 
-### 2.5 Kebijakan Penghentian Nyata: Practical Dynamic STOP
-* **Identitas Kebijakan:** `practical-dynamic-stop-research-1` (kontrak beku hasil riset geoteknik).
-* **3 Kondisi Mutlak untuk Status STOP:**
-  1. **Dukungan Spasial Global:** Rasio jarak persentil 95 ($P_{95}$) $\le 1.0$ dan jarak maksimum $\le 1.75$ terhadap batas tapak.
-  2. **Stabilitas Stratigrafi Terkini:** Titik CPT mutakhir tidak mengubah batas unit lapisan utama, kontinuitas lapisan, dan tidak menunjukkan perbedaan profil terukur pada $\ge 2$ kedalaman berurutan.
-  3. **Cakupan Model Cukup:** Metrik *Uncertainty V3 predicted coverage* mencapai $\ge 0.80$ (80%).
-* **Perilaku Sistem:**
-  * Saat kondisi STOP tercapai, sistem mematikan rekomendasi titik CPT berikutnya (*suppress DQN dispatch*) dan menampilkan status:
+### 2.5 Practical Dynamic STOP Policy
+* **Policy Identifier:** `practical-dynamic-stop-research-1`
+* **Three Mandatory Conditions for STOP:**
+  1. **Global Physical Support:** The 95th percentile distance ratio ($P_{95}$) is $\le 1.0$ and maximum distance ratio is $\le 1.75$ relative to boundary boundaries.
+  2. **Strata Stability:** The latest genuine sounding causes zero coherent revisions to main reconstructed layer boundaries or continuity, and shows zero profile mismatch across two or more consecutive vertical depth steps.
+  3. **Sufficient Model Coverage:** Uncertainty V3 predicted coverage reaches $\ge 0.80$ (80%).
+* **Operational Behavior:**
+  * Once triggered, the system suppresses further DQN candidate generation and displays:
     > *"CPT coverage is sufficient. Current CPT data meets the assessment requirements."*
-  * Pengguna tetap diperbolehkan mengunggah data manual, namun sistem menyatakan bahwa penambahan titik sondir lebih lanjut tidak lagi bernilai ekonomis.
+  * Manual sounding uploads remain enabled, but the system informs the operator that additional soundings yield under 0.8% marginal data gain while incurring standard rig mobilization costs.
 
 ---
 
-## 3. Parameter Geoteknik & Standar Uji
+## 3. Geotechnical Physics, Parameters, and Test Standards
 
-### 3.1 Tipe Instrumen CPT yang Didukung
-| Tipe Alat | Kolom Wajib Berkas Masukan | Format Satuan |
+### 3.1 Supported CPT Instrument Types
+| Instrument Type | Required File Header Columns | Engineering Units |
 | :--- | :--- | :--- |
-| **Electrical CPT** | `depth_(m)`, `qc_(MPa)`, `fs_(kPa)` | Kedalaman (m), Tahanan Ujung (MPa), Hambatan Pelekat (kPa) |
-| **CPTm Bicone (Mekanikal)** | `depth_(cm)`, `Cw_(kg/cm2)`, `Tw_(kg/cm2)` | Kedalaman (cm), Tahanan Konus & Total ($kg/cm^2$) |
-| **CPTu (Piezocone)** | `depth_(m)`, `qc_(MPa)`, `fs_(kPa)`, `u2_(kPa)` | Ditambah Tekanan Air Pori Dinamis $u_2$ (kPa) |
+| **Electrical CPT** | `depth_(m)`, `qc_(MPa)`, `fs_(kPa)` | Depth (m), Tip Resistance (MPa), Sleeve Friction (kPa) |
+| **CPTm Bicone (Mechanical)** | `depth_(cm)`, `Cw_(kg/cm2)`, `Tw_(kg/cm2)` | Depth (cm), Cone and Total Resistance ($kg/cm^2$) |
+| **CPTu (Piezocone)** | `depth_(m)`, `qc_(MPa)`, `fs_(kPa)`, `u2_(kPa)` | Adds Dynamic Penetration Pore Pressure $u_2$ (kPa) |
 
-### 3.2 Parameter Geometri Alat Standar
-* Rasio luas netto konus ($\alpha$ / *net area ratio*): `0.80`
-* Diameter konus: `3.57 cm` (Luas proyeksi ujung: $10\text{ cm}^2$)
-* Diameter selimut gesek (*sleeve*): `3.57 cm`
-* Panjang selimut gesek: `13.3 cm` (Luas selimut: $150\text{ cm}^2$)
-* Laju penetrasi standar: `20 mm/detik` (sesuai ASTM D5778)
+### 3.2 Standard Equipment Geometry
+* Net area ratio ($\alpha$): `0.80`
+* Cone tip diameter: `3.57 cm` (Projected tip area: $10\text{ cm}^2$)
+* Friction sleeve diameter: `3.57 cm`
+* Friction sleeve length: `13.3 cm` (Sleeve surface area: $150\text{ cm}^2$)
+* Penetration rate: `20 mm/s` (ASTM D5778 standard test rate)
 
-### 3.3 Klasifikasi Perilaku Tanah (Robertson 9-Zone SBT)
-Berdasarkan nilai ambang batas indeks perilaku tanah ($I_c$ cutoffs: $1.31, 2.05, 2.60, 2.95, 3.60$):
-1. **Zone 1:** Sensitive fine-grained soil ($I_c \ge 3.60$, dangkal) - *Bahaya konsolidasi tinggi*
-2. **Zone 2:** Clay - organic soil ($I_c \ge 3.20$)
+### 3.3 Robertson (1990/2010) Normalized Soil Behavior Types (SBT)
+Soil zones classified via Robertson $I_c$ cutoffs ($1.31, 2.05, 2.60, 2.95, 3.60$):
+1. **Zone 1:** Sensitive fine-grained soil ($I_c \ge 3.60$, shallow) - High settlement risk
+2. **Zone 2:** Clay to organic soil ($I_c \ge 3.20$)
 3. **Zone 3:** Clays: clay to silty clay ($2.95 \le I_c < 3.20$)
-4. **Zone 4:** Silt mixtures: clayey silt & silty clay ($2.60 \le I_c < 2.95$)
+4. **Zone 4:** Silt mixtures: clayey silt and silty clay ($2.60 \le I_c < 2.95$)
 5. **Zone 5:** Sand mixtures: silty sand to sandy silt ($2.30 \le I_c < 2.60$)
 6. **Zone 6:** Sands: clean sands to silty sands ($1.65 \le I_c < 2.30$)
-7. **Zone 7:** Dense sand to gravelly sand ($I_c < 1.65$) - *Target tanah keras*
+7. **Zone 7:** Dense sand to gravelly sand ($I_c < 1.65$) - Primary foundation target
 8. **Zone 8:** Stiff sand to clayey sand
-9. **Zone 9:** Stiff fine grained
+9. **Zone 9:** Stiff fine-grained
 
 ---
 
-## 4. Mesin Evaluasi Lapisan Keras Fondasi (`BearingRuleEngine`)
+## 4. Foundation Bearing Layer Engine (`BearingRuleEngine`)
 
-### 4.1 Definisi Kriteria Lapisan Pendukung Tiang (*Bearing Layer*)
-Lapisan tanah keras yang layak memikul beban tiang fondasi ditentukan secara parametrik:
-1. **Tahanan Konus Minimum ($q_c$):** Default $\ge 15.0\text{ MPa}$ (rentang penyesuaian: $5.0 - 30.0\text{ MPa}$).
-2. **Indeks SBT Maksimum ($I_c$):** Default $\le 1.80$ (memastikan material berbutir kasar/pasir padat, bukan lempung keras kaku).
-3. **Ketebalan Kontinu Minimum:** Default $\ge 2.0\text{ meter}$ (mencegah penumpuan pada lensa tipis mengambang / *false refusal*).
-4. **Jejak Lateral Minimum (*Footprint Fraction*):** Minimum $5\%$ dari luas tapak bangunan.
+### 4.1 Parametric Criteria for Competent Bearing Soil
+The engine identifies competent strata for structural pile design using four configurable parameters:
+1. **Minimum Cone Tip Resistance ($q_c$):** Default $\ge 15.0\text{ MPa}$ (adjustable from $5.0$ to $30.0\text{ MPa}$).
+2. **Maximum Soil Behavior Index ($I_c$):** Default $\le 1.80$ (ensures granular coarse soil rather than stiff expansive clay).
+3. **Minimum Contiguous Thickness:** Default $\ge 2.0\text{ meters}$ (prevents termination on thin floating lenses or false refusal).
+4. **Minimum Lateral Footprint Fraction:** At least $5\%$ of total building footprint area.
 
-### 4.2 Analisis Komponen Terhubung 3D (6-Neighbor Connected Components)
-Voxel yang memenuhi ambang batas $q_c$ dikelompokkan berdasarkan keterhubungan 6-arah dalam ruang 3D. Hanya badan tanah keras yang memiliki ketebalan vertikal $\ge 2\text{ m}$ dan penyebaran lateral cukup yang diakui sebagai lapisan tanah pendukung (*bearing layer component*).
+### 4.2 3D Connected Component Analysis (6-Neighbor Connectivity)
+Candidate voxels satisfying the $q_c$ threshold undergo 6-neighbor connectivity clustering in 3D space. Only clusters maintaining continuous vertical thickness $\ge 2.0\text{ m}$ and meeting lateral area thresholds qualify as true bearing layer components.
 
-### 4.3 Keluaran Rekayasa (*Deliverables*)
-* **Top Depth ($z_b$):** Kedalaman puncak tanah keras di setiap kolom tapak struktur.
-* **Bottom Depth & Thickness:** Ketebalan efektif badan tanah keras.
-* **Pile Toe Directive:** Rekomendasi elevasi terminasi ujung tiang (contoh: *Toe at -16.0m with 1.2m socket embedment*).
-* **Export Format:** Kompatibel dengan CSV, LandXML, dan Bentley gINT.
+### 4.3 Engineering Outputs
+* **Top Depth ($z_b$):** Elevation of the upper boundary of competent soil at every building column grid point.
+* **Contiguous Thickness:** Verified vertical thickness of the bearing unit.
+* **Pile Toe Directives:** Recommended toe termination depths (for example: *Toe at -16.0m with 1.2m socket embedment*).
+* **Export Formats:** Exports directly to CSV, LandXML, and Bentley gINT.
 
 ---
 
-## 5. Alur Pengguna & Arsitektur Layar Aplikasi (iPadOS)
+## 5. iPadOS Application Architecture and User Workflows
 
 ```
-[ 1. Project Management ] ──> Buat / Pilih Proyek, Tinjau Riwayat
-         │
-         ▼
-[ 2. Boundary Definition ] ──> Gambar Poligon Batas Tapak di Peta Satelit
-         │
-         ▼
-[ 3. CPT Recommendation ]  ──> Unggah Data Sondir Lapangan (CSV / XLSX)
-         │                    Melihat Koordinat Target Rekomendasi (DQN)
-         │                    Membaca Rationale: "Why this point?"
-         │                    Memantau Metrik Ground Certainty & Status STOP
-         ▼
-[ 4. Result Analysis ]     ──> Tab 1: Soil Interpolation (Voxel Slicing 3D)
-                              Tab 2: Bearing Layer (Kontur Tanah Keras & Komparasi Tiang)
+[ 1. Project Management ] ──> Create or Open Projects, Review History
+              │
+              ▼
+[ 2. Boundary Definition ] ──> Draw Structural Footprint on Satellite Map
+              │
+              ▼
+[ 3. CPT Recommendation ]  ──> Ingest Live Rig Telemetry (CSV / XLSX)
+              │                 Review DQN Recommended Coordinate
+              │                 Inspect Rationale: "Why this point?"
+              │                 Track Ground Certainty and Practical STOP Banner
+              ▼
+[ 4. Result Analysis ]     ──> Tab 1: Soil Interpolation (3D Voxel Slicing)
+                               Tab 2: Bearing Layer (Strata Contours and Pile Schedules)
 ```
 
-### 5.1 Layar 1: Manajemen Proyek (`HomePage`)
-* Menampilkan daftar proyek yang tersimpan dengan metadata: nama proyek, tanggal modifikasi, jumlah titik CPT, dan luas area poligon.
-* Latar belakang kontur topografi (*topography contours*).
-* Tombol aksi: `StartProjectButton` (+ Proyek Baru).
+### 5.1 Screen 1: Project Management (`HomePage`)
+* Lists stored site exploration projects with metadata: project title, last modified timestamp, completed CPT sounding count, and boundary area.
+* Features a topographic contour visual backdrop.
+* Action button: `StartProjectButton` (+ New Project).
 
-### 5.2 Layar 2: Penentuan Batas Investigasi (`BoundaryCreationView`)
-* Menggunakan peta interaktif MapKit (tampilan satelit resolusi tinggi).
-* Interaksi penambahan koordinat melalui ketukan peta (*tap-to-add*) atau input numerik langsung (Latitude/Longitude atau proyeksi UTM Easting/Northing).
-* Kalkulasi otomatis luas poligon dalam meter persegi ($m^2$) dan hektare ($ha$), titik berat (*centroid*), dan keliling batas tapak.
-* Validasi topologi poligon (mencegah garis potong mandiri / *self-intersection*).
+### 5.2 Screen 2: Boundary Definition (`BoundaryCreationView`)
+* Utilizes high-resolution MapKit satellite views.
+* Supports coordinate entry via direct map taps or manual coordinate entry (Latitude/Longitude or UTM Zone 48S Easting/Northing).
+* Computes polygon surface area in square meters ($m^2$) and hectares ($ha$), center coordinates, and perimeter.
+* Validates polygon geometry to prevent self-intersecting boundaries.
 
-### 5.3 Layar 3: Navigasi Rekomendasi Titik Sondir (`CPTRecommendationView`)
-* **Peta Lapangan:** Menampilkan poligon batas tapak, titik CPT yang telah diuji (lingkaran abu-abu dengan label ID dan kedalaman), serta pin radar menyala (*emerald crosshair*) pada titik target rekomendasi.
-* **Lembar Kerja Bawah (*Bottom Sheet*):**
-  * **Kartu Rekomendasi Utama:** Menampilkan nama titik (contoh: *Spot 2* atau *Recommendation Point 2*), koordinat UTM, jarak terdekat ke titik eksisting, dan tingkat keyakinan (*confidence level*).
-  * **Bagian "Why this point?":** Menjelaskan alasan pemilihan koordinat dalam 3 kriteria transparan:
-    1. *Data Gap Optimization:* Mengisi kekosongan spasial terbesar di bawah beban inti struktur (contoh: 16.2 m dari titik terdekat, 0 titik dalam radius 4 m).
-    2. *Stratigraphic Transition:* Mendeteksi batas lapisan kritis (contoh: prediksi pasir bersih berganti menjadi lempung lunak di kedalaman 8.5 m).
-    3. *Soil Behavior Anomaly:* Mengidentifikasi divergensi perilaku tanah ($\Delta I_c = 0.18$) terhadap klaster sekitarnya.
-  * **Karakterisasi Stratigrafi Lapangan:** Status keterpenuhan formasi (*Sufficient / Insufficient / Undetermined*).
-  * **Banner Kepastian Tanah (*Practical STOP*):** Tampil saat *predicted coverage* mencapai $\ge 80\%$, memberikan rekomendasi legal untuk menyelesaikan pengujian sondir.
-  * **Daftar Data Sondir (*CPT Data List*):** Lembar peninjau seluruh berkas CPT yang telah diunggah lengkap dengan grafik profil tahanan konus.
+### 5.3 Screen 3: CPT Ingestion and Navigation (`CPTRecommendationView`)
+* **Map Layer:** Displays boundary polygon, completed CPT sounding markers, and an animated crosshair over the recommended sounding coordinate.
+* **Bottom Sheet Hierarchy:**
+  * **Primary Recommendation Card:** Displays spot label (such as Spot 2), UTM coordinates, distance to nearest CPT, and confidence level.
+  * **"Why this point?" Rationale:** Provides transparent criteria:
+    1. *Data Gap:* Fills the largest spatial void under heavy structural core loads (for example: 16.2 m gap, 0 soundings in 4 m radius).
+    2. *Stratigraphic Shift:* Flags predicted formation boundaries (for example: clean sand terminating into soft clay at 8.5 m depth).
+    3. *Soil Behavior Anomaly:* Highlights localized lateral variations ($\Delta I_c = 0.18$) compared to adjacent soundings.
+  * **Stratigraphic Characterization:** Reports formation stability status (*Sufficient / Insufficient / Undetermined*).
+  * **Practical STOP Banner:** Appears when predicted coverage reaches $\ge 80\%$, confirming statutory sufficiency.
+  * **CPT Data List:** Displays all completed soundings with depth curves and sensor logs.
 
-### 5.4 Layar 4: Analisis Voxel 3D & Tanah Keras (`ResultAnalysisView`)
-Menyediakan dua mode navigasi di pojok kanan atas:
+### 5.4 Screen 4: 3D Subsurface Voxel and Bearing Layer (`ResultAnalysisView`)
+Provides two viewing modes in the top navigation bar:
 1. **Mode 1: Soil Interpolation (`threeDLayer`):**
-   * Visualisasi RealityKit 3D volumetrik penampang tanah.
-   * Kartu kontrol irisan (*Slicing Control*): Slider sumbu Easting ($X$) dan Northing ($Z$) untuk membelah tanah secara melintang maupun membujur.
-   * Warna horizon tanah mengikuti 9 zona palet Robertson dengan tekstur geologi nyata (pasir, lanau, lempung, kerikil).
-   * Menampilkan batang sondir virtual (*sounding rods*) yang menembus tanah.
+   * RealityKit 3D volumetric soil rendering.
+   * Slicing controls: Dual range sliders for Easting ($X$) and Northing ($Z$) cuts to reveal interior stratigraphy.
+   * Applies the Robertson 9-zone geotechnical color palette with physical soil textures (sand, silt, clay, gravel).
+   * Displays virtual sounding rods at completed probe locations.
 2. **Mode 2: Bearing Layer (`bearingLayer`):**
-   * Menampilkan kontur permukaan 3D lapisan tanah pendukung fondasi (*bearing stratum*).
-   * Slider kriteria parametrik: $q_c$ (MPa), $I_c$, dan ketebalan minimum (m).
-   * Peta kontur elevasi lapisan keras dengan gradien warna kedalaman (*depth legend*).
-   * Popover titik bor: Menampilkan kedalaman puncak tanah keras ($z_b$), jarak terdekat, dan rekomendasi tiang pancang.
-   * Lembar komparasi data tiang (*Compare Data Sheet*): Tabel rekapitulasi elevasi ujung tiang di semua kolom untuk serah terima ke tim perancang struktur.
+   * Displays the 3D top surface of the competent bearing layer.
+   * Features parametric sliders for $q_c$ (MPa), $I_c$, and minimum layer thickness (m).
+   * Generates elevation contour maps with depth color legends.
+   * Column inspection popover: Displays top depth ($z_b$), nearest CPT distance, and pile toe recommendations.
+   * Compare Data Sheet: A comparative table of pile toe elevations across all building columns for structural engineering handoff.
 
 ---
 
-## 6. Glosarium Istilah Geoteknik & Kode Sistem
+## 6. Technical Glossary and System Codes
 
-| Istilah / Kode | Definisi Teknis | Terjemahan Bahasa Indonesia |
+| Technical Term | Definition | Indonesian Equivalent |
 | :--- | :--- | :--- |
-| **CPT / Sondir** | *Cone Penetration Testing*: Uji penetrasi konus kuasi-statis ke dalam tanah. | Uji Penetrasi Konus / Uji Sondir |
-| **$q_c$ (Cone Resistance)** | Tahanan ujung konus terhadap penetrasi tanah, diukur dalam MPa atau $kg/cm^2$. | Tahanan Ujung Konus |
-| **$f_s$ (Sleeve Friction)** | Gesekan tanah terhadap selimut konus di atas ujung penusuk, diukur dalam kPa. | Hambatan Pelekat / Gesekan Selimut |
-| **$u_2$ (Pore Pressure)** | Tekanan air pori dinamis yang timbul saat konus menembus formasi tanah permeabilitas rendah. | Tekanan Air Pori Dinamis |
-| **$R_f$ (Friction Ratio)** | Rasio antara hambatan pelekat terhadap tahanan ujung konus ($R_f = f_s / q_c \times 100\%$). | Rasio Gesekan |
-| **$I_c$ (SBT Index)** | *Soil Behavior Type Index* menurut Robertson (1990/2010), menunjukkan tipe tanah berdasarkan sifat mekanis penetrasi. | Indeks Tipe Perilaku Tanah |
-| **Bearing Stratum** | Formasi tanah padat atau batuan yang memenuhi kriteria tahanan dan ketebalan untuk memikul tiang fondasi. | Lapisan Tanah Keras / Lapisan Pendukung Fondasi |
-| **Ground Certainty** | Nilai statistik cakupan volume tanah valid yang memiliki batas galat terkalibrasi $\le 0.15$ ($Coverage \ge 80\%$). | Kepastian Formasi Bawah Permukaan |
-| **Practical STOP** | Keputusan penghentian pemboran sondir karena penambahan titik baru tidak lagi menghasilkan data baru yang signifikan. | Kriteria Penghentian Statutori / Penghentian Praktis |
-| **Information Gain** | Besarnya penurunan ketidakpastian matematis model pada suatu koordinat target pemboran. | Perolehan Informasi |
-| **Differential Settlement** | Penurunan fondasi yang tidak merata antar kolom bangunan, pemicu keretakan struktural utama. | Penurunan Diferensial |
-| **UTM (Universal Transverse Mercator)** | Sistem proyeksi koordinat kartesian berbasis meter di permukaan bumi (contoh: UTM Zone 48S). | Sistem Koordinat UTM |
+| **CPT / Sondir** | Cone Penetration Testing: Quasi-static penetration of an instrumented cone into soil. | Uji Penetrasi Konus / Uji Sondir |
+| **$q_c$ (Cone Resistance)** | Total resistance against the cone tip, measured in MPa or $kg/cm^2$. | Tahanan Ujung Konus |
+| **$f_s$ (Sleeve Friction)** | Frictional resistance against the cylindrical sleeve above the cone tip, in kPa. | Hambatan Pelekat / Gesekan Selimut |
+| **$u_2$ (Pore Pressure)** | Dynamic pore water pressure measured behind the cone tip during penetration. | Tekanan Air Pori Dinamis |
+| **$R_f$ (Friction Ratio)** | Ratio of sleeve friction to cone resistance: $R_f = (f_s / q_c) \times 100\%$. | Rasio Gesekan |
+| **$I_c$ (SBT Index)** | Soil Behavior Type Index from normalized cone parameters (Robertson 1990/2010). | Indeks Tipe Perilaku Tanah |
+| **Bearing Stratum** | Dense granular soil or rock competent to support structural deep pile loads. | Lapisan Tanah Keras / Pendukung Fondasi |
+| **Ground Certainty** | Statistical volume coverage where calibrated model error bounds are $\le 0.15$ ($\ge 80\%$). | Kepastian Formasi Bawah Permukaan |
+| **Practical STOP** | Decision criterion that halts drilling when additional soundings yield negligible new data. | Kriteria Penghentian Praktis |
+| **Information Gain** | Reduction in spatial model entropy achieved by drilling a given coordinate. | Perolehan Informasi |
+| **Differential Settlement** | Non-uniform foundation settlement between adjacent building columns. | Penurunan Diferensial Fondasi |
+| **UTM Coordinates** | Universal Transverse Mercator Cartesian metric grid system (e.g., UTM Zone 48S). | Sistem Koordinat UTM |
 
 ---
 
-## 7. Pedoman Penulisan Copywriting & Pernyataan Nilai (Value Propositions)
+## 7. Copywriting Guidelines and Value Propositions
 
-Berdasarkan aturan **`unslop`** dan integritas domain geoteknik:
+Derived directly from verified system algorithms and the unslop rule set:
 
-### 7.1 Pernyataan Kunci (Boleh Digunakan)
-* *"A defensible foundation starts below the blind grid."* (Fondasi yang dapat dipertanggungjawabkan dimulai di bawah kisi buta).
-* *"From blind uniform drilling to mathematical certainty."* (Dari pengeboran seragam tanpa arah menuju kepastian matematis).
-* *"35% to 45% rig mobilization hours saved without missing critical weak lenses."* (Hemat 35% hingga 45% jam operasional rig tanpa melewatkan lensa lempung lunak).
-* *"On-device Apple silicon neural computation. Zero telemetry off device."* (Komputasi neural lokal Apple Silicon. Nol transmisi data keluar perangkat).
-* *"ASTM D5778 and SNI 8460:2017 compliant methodology."* (Metodologi selaras dengan standar ASTM D5778 dan SNI 8460:2017).
+### 7.1 Approved Statements
+* *"A defensible foundation starts below the blind grid."*
+* *"From blind uniform drilling to mathematical certainty."*
+* *"Save 35% to 45% of rig mobilization hours without missing critical soft lenses."*
+* *"On-device Apple silicon neural computation. Zero telemetry off device."*
+* *"Compliant with ASTM D5778 and SNI 8460:2017 deep foundation standards."*
 
-### 7.2 Kata & Pola yang Dilarang (AI Slop Anti-Patterns)
-* **Dilarang menggunakan tanda pisah panjang (*em dash* `—` atau *en dash* `–`)**: Gunakan tanda titik atau koma.
-* **Dilarang memakai kata klise AI**: *additionally, crucial, delve, enhance, foster, landscape, pivotal, showcase, testament, underscore, vibrant, copilot*.
-* **Dilarang menggunakan metafora abstrak tanpa mekanisme**: Jangan sebut *"harnessing the power of AI"*, sebutlah *"DQN agent ranks candidate coordinates by maximum information gain"*.
-* **Dilarang menggunakan klaim tanpa angka**: Selalu sertakan fakta konkret: $q_c \ge 15\text{ MPa}$, tebal $\ge 2.0\text{ m}$, kecepatan $20\text{ mm/s}$, cakupan $\ge 80\%$.
-* **Dilarang menggunakan emoji dekoratif** di seluruh materi resmi engineering.
+### 7.2 Prohibited Patterns (AI Slop Anti-Patterns)
+* **Never use em dashes (`—`) or en dashes (`–`)**: Use standard periods or commas.
+* **Never use AI buzzwords**: *additionally, crucial, delve, enhance, foster, landscape, pivotal, showcase, testament, underscore, vibrant, copilot*.
+* **Never use vague metaphors without mechanisms**: Do not say *"harnessing AI capabilities"*; specify *"the DQN agent ranks candidate coordinates by maximum information gain"*.
+* **Never make claims without numbers**: Always provide concrete facts: $q_c \ge 15\text{ MPa}$, thickness $\ge 2.0\text{ m}$, penetration rate $20\text{ mm/s}$, coverage target $\ge 80\%$.
+* **Never use decorative emojis** in formal engineering documentation.

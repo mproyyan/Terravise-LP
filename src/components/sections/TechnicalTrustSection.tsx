@@ -5,6 +5,7 @@ import {
   useScroll,
   useTransform,
   useSpring,
+  useMotionValueEvent,
   useReducedMotion,
 } from "framer-motion"
 import { PlateHeader } from "../ui/PlateHeader"
@@ -21,6 +22,7 @@ import {
 } from "lucide-react"
 
 const willChangeTransform = { willChange: "transform" } as const
+const willChangeAll = { willChange: "transform, opacity" } as const
 
 function PillarMicroSchematic({ index, isActive }: { index: number; isActive: boolean }) {
   if (index === 0) {
@@ -51,10 +53,10 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
                 style={{ backgroundColor: zoneColors[i] }}
                 initial={{ height: "25%" }}
                 animate={{
-                  height: isActive ? `${h}%` : `${Math.max(25, h * 0.65)}%`,
-                  opacity: i >= 5 ? 1 : 0.6,
+                  height: isActive ? `${h}%` : `${Math.max(25, h * 0.55)}%`,
+                  opacity: isActive ? (i >= 5 ? 1 : 0.75) : 0.4,
                 }}
-                transition={{ type: "spring", stiffness: 220, damping: 18, delay: i * 0.03 }}
+                transition={{ type: "spring", stiffness: 220, damping: 18, delay: i * 0.02 }}
               />
               <span className="text-[7px] text-[#EFE7DE]/50">Z{i + 1}</span>
             </div>
@@ -80,7 +82,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
           height="68"
           viewBox="0 0 68 68"
           className="shrink-0"
-          animate={{ rotate: isActive ? 45 : 0, scale: isActive ? 1.06 : 1 }}
+          animate={{ rotate: isActive ? 45 : 0, scale: isActive ? 1.08 : 0.95 }}
           transition={{ type: "spring", stiffness: 180, damping: 16 }}
         >
           <circle
@@ -127,7 +129,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
                   : i % 4 === 0
                     ? "#7A421D"
                     : "#271C14",
-                opacity: isActive ? 0.9 : 0.65,
+                opacity: isActive ? 0.95 : 0.45,
               }}
               transition={{ duration: 0.3, delay: i * 0.02 }}
             />
@@ -177,7 +179,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
           fill="#FAD9BA"
           stroke="#FAD9BA"
           strokeWidth="1.2"
-          animate={{ x: isActive ? 4 : 0 }}
+          animate={{ x: isActive ? 5 : 0 }}
           transition={{ type: "spring", stiffness: 250, damping: 16 }}
         />
         <text x="188" y="25" fill="#FAD9BA" fontSize="7" fontWeight="bold">
@@ -195,26 +197,41 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
 
 export function TechnicalTrustSection() {
   const { trust, faq } = SITE_CONTENT
-  const sectionRef = useRef<HTMLElement>(null)
+  const pillarsTrackRef = useRef<HTMLDivElement>(null)
   const shouldReduceMotion = useReducedMotion()
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [activePillar, setActivePillar] = useState<number>(0)
+  const [pillarSubProgress, setPillarSubProgress] = useState<number>(0)
 
+  // Dedicated 240vh sticky scroll track for the 4 Specification Plates (100% scroll-driven)
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
+    target: pillarsTrackRef,
+    offset: ["start start", "end end"],
   })
 
   const smoothScroll = useSpring(scrollYProgress, {
-    stiffness: 100,
+    stiffness: 110,
     damping: 26,
     restDelta: 0.001,
   })
 
   // Differential Column Parallax for the 4 Specification Plates
-  const yColA = useTransform(smoothScroll, [0, 1], shouldReduceMotion ? [0, 0] : [28, -28])
-  const yColB = useTransform(smoothScroll, [0, 1], shouldReduceMotion ? [0, 0] : [-22, 22])
-  const yBgBand = useTransform(smoothScroll, [0, 1], shouldReduceMotion ? [0, 0] : [-50, 50])
+  const yColA = useTransform(smoothScroll, [0, 1], shouldReduceMotion ? [0, 0] : [24, -24])
+  const yColB = useTransform(smoothScroll, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 20])
+  const yBgBand = useTransform(smoothScroll, [0, 1], shouldReduceMotion ? [0, 0] : [-45, 45])
+
+  // Purely scroll-driven specification plate spotlight (0%–25% = Spec 01, 25%–50% = Spec 02, 50%–75% = Spec 03, 75%–100% = Spec 04)
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    const clamped = Math.max(0, Math.min(0.9999, latest))
+    const rawIdx = clamped * 4
+    const nextIdx = Math.floor(rawIdx)
+    const subProg = rawIdx - nextIdx
+
+    if (nextIdx !== activePillar) {
+      setActivePillar(nextIdx)
+    }
+    setPillarSubProgress(subProg)
+  })
 
   const toggleFaq = (idx: number) => {
     setOpenFaq(openFaq === idx ? null : idx)
@@ -236,129 +253,172 @@ export function TechnicalTrustSection() {
 
   return (
     <section
-      ref={sectionRef}
       id="trust"
-      className="relative py-28 bg-[#FBF7F2] border-b border-[#1C130D]/15 scroll-mt-12 overflow-hidden"
+      className="relative bg-[#FBF7F2] border-b border-[#1C130D]/15 scroll-mt-12"
     >
-      {/* Parallax Drafting Table Architectural Background Lines */}
-      <motion.div
-        style={{ y: yBgBand, ...willChangeTransform }}
-        className="absolute inset-0 pointer-events-none select-none overflow-hidden"
-      >
-        <div
-          className="absolute inset-0 opacity-[0.045]"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, #1C130D 1px, transparent 1px), linear-gradient(to bottom, #1C130D 1px, transparent 1px)",
-            backgroundSize: "56px 56px",
-          }}
-        />
-        <div className="hidden xl:block absolute left-8 top-24 font-mono text-[10px] tracking-[0.3em] text-[#1C130D]/20 uppercase">
-          + STATUTORY COMPLIANCE // ASTM D5778 // SNI 8460:2017 // ROBERTSON 1990/2010 +
-        </div>
-      </motion.div>
+      {/* Part A: 240vh Sticky Scroll-Driven Specification Plates Track */}
+      <div ref={pillarsTrackRef} className="relative h-[240vh]">
+        <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center py-16">
+          {/* Parallax Drafting Table Architectural Background Lines */}
+          <motion.div
+            style={{ y: yBgBand, ...willChangeTransform }}
+            className="absolute inset-0 pointer-events-none select-none overflow-hidden"
+          >
+            <div
+              className="absolute inset-0 opacity-[0.045]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to right, #1C130D 1px, transparent 1px), linear-gradient(to bottom, #1C130D 1px, transparent 1px)",
+                backgroundSize: "56px 56px",
+              }}
+            />
+            <div className="hidden xl:block absolute left-8 top-20 font-mono text-[10px] tracking-[0.3em] text-[#1C130D]/25 uppercase">
+              + STATUTORY COMPLIANCE // ASTM D5778 // SNI 8460:2017 // ROBERTSON 1990/2010 +
+            </div>
+          </motion.div>
 
-      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-        {/* Plate Header */}
-        <PlateHeader
-          number="06"
-          title="Standards and data privacy"
-          metaRight="Statutory compliance & engineering dossier"
-          tone="light"
-        />
+          <div className="max-w-[1560px] w-full mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+            {/* Plate Header */}
+            <PlateHeader
+              number="06"
+              title="Standards and data privacy"
+              metaRight="Scroll-driven specification inspection"
+              tone="light"
+              className="mb-6"
+            />
 
-        {/* Section Heading */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
-          <div className="max-w-3xl space-y-4">
-            <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92]">
-              {trust.heading}
-            </h2>
-            <p className="font-sans text-[#63554B] text-base sm:text-lg leading-relaxed">
-              {trust.subheading}
-            </p>
-          </div>
+            {/* Section Heading + Scroll Spotlight Progress */}
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
+              <div className="max-w-3xl space-y-3">
+                <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92]">
+                  {trust.heading}
+                </h2>
+                <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed">
+                  {trust.subheading}
+                </p>
+              </div>
 
-          <div className="flex items-center gap-2 font-mono text-xs bg-[#EFE7DE] border border-[#1C130D]/15 px-3.5 py-2 shrink-0">
-            <ShieldCheck className="w-4 h-4 text-[#5A3008]" />
-            <span className="text-[#1C130D] font-bold uppercase tracking-wider">
-              Verified Field Spec v4.6
-            </span>
-          </div>
-        </div>
-
-        {/* 4 Interactive Parallax Specification Plates */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-28">
-          {trust.badges.map((badge, idx) => {
-            const isSelected = activePillar === idx
-            const isOddCol = idx % 2 === 1
-
-            return (
-              <motion.div
-                key={badge.title}
-                style={{
-                  y: isOddCol ? yColB : yColA,
-                  ...willChangeTransform,
-                }}
-                onMouseEnter={() => setActivePillar(idx)}
-                onClick={() => setActivePillar(idx)}
-                className={`relative bg-[#FAF5EE] border p-5 flex flex-col justify-between transition-colors cursor-pointer select-none shadow-xs ${
-                  isOddCol ? "lg:mt-6" : ""
-                } ${
-                  isSelected
-                    ? "border-[#5A3008] bg-white shadow-xl"
-                    : "border-[#1C130D]/15 hover:border-[#1C130D]/40"
-                }`}
-              >
-                {/* Shared LayoutId Magnetic Architectural Frame */}
-                {isSelected && (
+              <div className="w-full lg:w-72 bg-[#EFE7DE] border border-[#1C130D]/15 p-3 font-mono text-xs shrink-0 select-none">
+                <div className="flex items-center justify-between text-[10px] mb-1.5">
+                  <span className="text-[#7A421D] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#5A3008]" />
+                    Auto-inspecting spec
+                  </span>
+                  <span className="text-[#1C130D] font-bold tabular-nums">
+                    SPEC 0{activePillar + 1} / 04
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-[#E3D7C8] overflow-hidden">
                   <motion.div
-                    layoutId="trust-active-plate"
-                    transition={{ type: "spring", stiffness: 280, damping: 26 }}
-                    className="absolute inset-0 border-2 border-[#5A3008] pointer-events-none z-20"
+                    style={{
+                      scaleX: smoothScroll,
+                      transformOrigin: "0% 50%",
+                      ...willChangeTransform,
+                    }}
+                    className="h-full w-full bg-[#5A3008]"
                   />
-                )}
-
-                <div className="space-y-4">
-                  {/* Top Plate Number & Code Tag */}
-                  <div className="flex items-center justify-between font-mono text-[10px] border-b border-[#1C130D]/10 pb-2.5">
-                    <span className="font-bold text-[#7A421D] flex items-center gap-1.5">
-                      {getPillarIcon(idx)}
-                      <span>SPEC 0{idx + 1}</span>
-                    </span>
-                    <Badge variant={isSelected ? "emerald" : "default"} className="text-[9px] py-0.5">
-                      {idx === 0
-                        ? "SBTn 9-ZONE"
-                        : idx === 1
-                          ? "UTM 48S"
-                          : idx === 2
-                            ? "CORE ML ANE"
-                            : "ASTM / SNI"}
-                    </Badge>
-                  </div>
-
-                  {/* Interactive Animated Micro-Schematic */}
-                  <PillarMicroSchematic index={idx} isActive={isSelected} />
-
-                  <div className="pt-1 space-y-2">
-                    <h3 className="font-sans font-bold text-lg text-[#1C130D] tracking-tight">
-                      {badge.title}
-                    </h3>
-                    <p className="font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed">
-                      {badge.desc}
-                    </p>
-                  </div>
                 </div>
+              </div>
+            </div>
 
-                <div className="mt-5 pt-3 border-t border-[#1C130D]/10 flex items-center justify-between font-mono text-[10px] text-[#7A421D]">
-                  <span>STATUS</span>
-                  <span className="font-bold text-[#1C130D]">FIELD VERIFIED</span>
-                </div>
-              </motion.div>
-            )
-          })}
+            {/* 4 Scroll-Driven Parallax Specification Plates (Zero Click/Hover Required) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {trust.badges.map((badge, idx) => {
+                const isSelected = activePillar === idx
+                const isPast = idx < activePillar
+                const isOddCol = idx % 2 === 1
+
+                return (
+                  <motion.div
+                    key={badge.title}
+                    style={{
+                      y: isOddCol ? yColB : yColA,
+                      ...willChangeAll,
+                    }}
+                    animate={{
+                      scale: isSelected ? 1.03 : 0.97,
+                      opacity: isSelected ? 1 : isPast ? 0.62 : 0.48,
+                    }}
+                    transition={{ type: "spring", stiffness: 220, damping: 24 }}
+                    className={`relative bg-[#FAF5EE] border p-5 flex flex-col justify-between transition-colors select-none ${
+                      isSelected
+                        ? "border-[#5A3008] bg-white shadow-2xl z-20"
+                        : "border-[#1C130D]/15 shadow-xs z-10"
+                    }`}
+                  >
+                    {/* Shared LayoutId Magnetic Architectural Frame */}
+                    {isSelected && (
+                      <motion.div
+                        layoutId="trust-active-plate"
+                        transition={{ type: "spring", stiffness: 280, damping: 26 }}
+                        className="absolute inset-0 border-2 border-[#5A3008] pointer-events-none z-20"
+                      />
+                    )}
+
+                    <div className="space-y-4">
+                      {/* Top Plate Number & Code Tag */}
+                      <div className="flex items-center justify-between font-mono text-[10px] border-b border-[#1C130D]/10 pb-2.5">
+                        <span className="font-bold text-[#7A421D] flex items-center gap-1.5">
+                          {getPillarIcon(idx)}
+                          <span>SPEC 0{idx + 1}</span>
+                        </span>
+                        <Badge
+                          variant={isSelected ? "emerald" : "default"}
+                          className="text-[9px] py-0.5"
+                        >
+                          {idx === 0
+                            ? "SBTn 9-ZONE"
+                            : idx === 1
+                              ? "UTM 48S"
+                              : idx === 2
+                                ? "CORE ML ANE"
+                                : "ASTM / SNI"}
+                        </Badge>
+                      </div>
+
+                      {/* Scroll-Activated Animated Micro-Schematic */}
+                      <PillarMicroSchematic index={idx} isActive={isSelected} />
+
+                      <div className="pt-1 space-y-2">
+                        <h3 className="font-sans font-bold text-lg text-[#1C130D] tracking-tight">
+                          {badge.title}
+                        </h3>
+                        <p className="font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed">
+                          {badge.desc}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-3 border-t border-[#1C130D]/10 space-y-2">
+                      <div className="flex items-center justify-between font-mono text-[10px] text-[#7A421D]">
+                        <span>{isSelected ? "ACTIVE IN SCROLL" : "STATUS"}</span>
+                        <span className="font-bold text-[#1C130D]">FIELD VERIFIED</span>
+                      </div>
+
+                      {/* Per-Plate Scroll Sub-Progress Bar */}
+                      <div className="w-full h-1 bg-[#E3D7C8] overflow-hidden">
+                        <div
+                          className="h-full bg-[#5A3008] transition-all duration-75"
+                          style={{
+                            width: isSelected
+                              ? `${Math.round(pillarSubProgress * 100)}%`
+                              : isPast
+                                ? "100%"
+                                : "0%",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Spring-Physics Engineering Dossier FAQ */}
+      {/* Part B: Technical Engineering Dossier FAQ (Kept interactive click-to-toggle as requested) */}
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 pb-28 pt-8 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-[#1C130D]/15 gap-4">
             <div>
@@ -385,7 +445,6 @@ export function TechnicalTrustSection() {
                     isOpen ? "bg-white" : "hover:bg-[#EFE7DE]/40"
                   }`}
                 >
-                  {/* Shared LayoutId Active Dossier Indicator Bar */}
                   {isOpen && (
                     <motion.div
                       layoutId="faq-active-bar"

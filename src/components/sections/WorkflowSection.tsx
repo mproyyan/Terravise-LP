@@ -16,7 +16,6 @@ import {
   FileSpreadsheet,
   Cpu,
   Boxes,
-  ArrowUpRight,
   CheckCircle2,
   Sparkles,
 } from "lucide-react"
@@ -373,286 +372,286 @@ export function WorkflowSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const shouldReduceMotion = useReducedMotion()
   const [activeStep, setActiveStep] = useState<number>(0)
-  const [userLockedStep, setUserLockedStep] = useState<boolean>(false)
+  const [stepSubProgress, setStepSubProgress] = useState<number>(0)
 
+  // Dedicated 300vh sticky scroll track: 0.0 -> 1.0 maps strictly across the 4 workflow steps
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start end", "end start"],
+    offset: ["start start", "end end"],
   })
 
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 110,
+    stiffness: 120,
     damping: 26,
     restDelta: 0.001,
   })
 
-  // Parallax offsets for odd vs even cards and background blueprint watermark
-  const yOddColumn = useTransform(
-    smoothProgress,
-    [0, 1],
-    shouldReduceMotion ? [0, 0] : [36, -36]
-  )
-  const yEvenColumn = useTransform(
-    smoothProgress,
-    [0, 1],
-    shouldReduceMotion ? [0, 0] : [-28, 28]
-  )
   const yWatermark = useTransform(
     smoothProgress,
     [0, 1],
-    shouldReduceMotion ? [0, 0] : [-70, 70]
+    shouldReduceMotion ? [0, 0] : [60, -60]
   )
-  const pipelineFill = useTransform(smoothProgress, [0.18, 0.78], [0, 1])
+  const yViewportFloat = useTransform(
+    smoothProgress,
+    [0, 1],
+    shouldReduceMotion ? [0, 0] : [18, -18]
+  )
 
-  // Automatically advance the active workflow schematic as the user scrolls through Section 05
+  // Purely scroll-driven step switching (0%–25% = 01, 25%–50% = 02, 50%–75% = 03, 75%–100% = 04)
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (userLockedStep) return
-    if (latest < 0.34) {
-      setActiveStep(0)
-    } else if (latest < 0.48) {
-      setActiveStep(1)
-    } else if (latest < 0.62) {
-      setActiveStep(2)
-    } else {
-      setActiveStep(3)
+    const clamped = Math.max(0, Math.min(0.9999, latest))
+    const rawStep = clamped * 4
+    const nextIdx = Math.floor(rawStep)
+    const subProg = rawStep - nextIdx
+
+    if (nextIdx !== activeStep) {
+      setActiveStep(nextIdx)
     }
+    setStepSubProgress(subProg)
   })
 
   return (
     <section
       ref={sectionRef}
       id="workflow"
-      className="relative py-28 bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12 overflow-hidden"
+      className="relative h-[300vh] bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12"
     >
-      {/* Parallax Architectural Blueprint Background Grid & Watermark */}
-      <motion.div
-        style={{ y: yWatermark, ...willChangeTransform }}
-        className="absolute inset-0 pointer-events-none select-none overflow-hidden"
-      >
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, #FAD9BA 1px, transparent 1px), linear-gradient(to bottom, #FAD9BA 1px, transparent 1px)",
-            backgroundSize: "64px 64px",
-          }}
-        />
-        <div className="hidden xl:block absolute -right-10 top-16 font-mono font-black text-[180px] leading-none text-[#EFE7DE]/[0.025] tracking-tighter">
-          STAGE 0{activeStep + 1}
-        </div>
-      </motion.div>
-
-      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-        {/* Plate Header */}
-        <PlateHeader
-          number="05"
-          title="iPadOS application workflow"
-          metaRight="Scroll-driven telemetry pipeline"
-          tone="dark"
-        />
-
-        {/* Top Heading + Scroll-Linked Pipeline Progress Rail */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-14">
-          <div className="max-w-3xl space-y-4">
-            <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92]">
-              Four integrated steps from site boundary to foundation handoff
-            </h2>
-            <p className="font-sans text-[#EFE7DE]/70 text-base sm:text-lg leading-relaxed">
-              How geotechnical engineers and CPT rig operators use Terravise directly on Apple
-              silicon iPadOS in the field. Scroll or select any stage to inspect its field telemetry
-              module.
-            </p>
+      {/* Sticky Viewport Stage pinned during the 300vh scroll journey */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center py-16">
+        {/* Parallax Architectural Blueprint Background Grid & Watermark */}
+        <motion.div
+          style={{ y: yWatermark, ...willChangeTransform }}
+          className="absolute inset-0 pointer-events-none select-none overflow-hidden"
+        >
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, #FAD9BA 1px, transparent 1px), linear-gradient(to bottom, #FAD9BA 1px, transparent 1px)",
+              backgroundSize: "64px 64px",
+            }}
+          />
+          <div className="hidden xl:block absolute -right-6 bottom-8 font-mono font-black text-[170px] leading-none text-[#EFE7DE]/[0.03] tracking-tighter">
+            STAGE 0{activeStep + 1}
           </div>
+        </motion.div>
 
-          {/* Scroll-Driven Telemetry Progress Bar */}
-          <div className="w-full lg:w-80 bg-[#271C14] border border-[#EFE7DE]/15 p-3.5 font-mono text-xs shrink-0">
-            <div className="flex items-center justify-between text-[10px] mb-2">
-              <span className="text-[#FAD9BA] uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3" />
-                Field pipeline progress
-              </span>
-              <span className="text-[#EFE7DE] font-bold">
-                STEP 0{activeStep + 1} / 04
-              </span>
+        <div className="max-w-[1560px] w-full mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+          {/* Plate Header */}
+          <PlateHeader
+            number="05"
+            title="iPadOS application workflow"
+            metaRight="Scroll-driven field telemetry sequence"
+            tone="dark"
+            className="mb-6"
+          />
+
+          {/* Top Compact Heading + Overall Scroll Progress Bar */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+            <div className="max-w-2xl space-y-2">
+              <h2 className="font-sans font-black text-2xl sm:text-4xl xl:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92]">
+                Four integrated steps from site boundary to foundation handoff
+              </h2>
+              <p className="font-sans text-[#EFE7DE]/70 text-xs sm:text-sm leading-relaxed">
+                Keep scrolling to advance automatically through each native iPadOS field stage.
+              </p>
             </div>
-            <div className="w-full h-1.5 bg-[#150E09] overflow-hidden relative">
-              <motion.div
-                style={{ scaleX: pipelineFill, transformOrigin: "0% 50%", ...willChangeTransform }}
-                className="h-full w-full bg-[#FAD9BA]"
-              />
-            </div>
-            <div className="flex justify-between text-[9px] text-[#EFE7DE]/45 mt-2">
-              {workflow.map((s, idx) => (
-                <button
-                  key={s.stepNumber}
-                  type="button"
-                  onClick={() => {
-                    setUserLockedStep(true)
-                    setActiveStep(idx)
-                  }}
-                  className={`cursor-pointer transition-colors ${
-                    activeStep === idx ? "text-[#FAD9BA] font-bold" : "hover:text-[#EFE7DE]"
-                  }`}
-                >
-                  0{idx + 1}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Main Split Layout: Left 7 Cols Asymmetrical Parallax Cards | Right 5 Cols Live iPadOS Blueprint Viewport */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left 7 Columns: 2x2 Asymmetrical Parallax Step Cards */}
-          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {workflow.map((step, idx) => {
-              const isSelected = activeStep === idx
-              const isEven = idx % 2 === 1
-
-              return (
-                <motion.div
-                  key={step.stepNumber}
-                  style={{
-                    y: isEven ? yEvenColumn : yOddColumn,
-                    ...willChangeTransform,
-                  }}
-                  onMouseEnter={() => {
-                    setUserLockedStep(true)
-                    setActiveStep(idx)
-                  }}
-                  onClick={() => {
-                    setUserLockedStep(true)
-                    setActiveStep(idx)
-                  }}
-                  className={`relative p-6 flex flex-col justify-between transition-colors cursor-pointer select-none border ${
-                    isEven ? "md:mt-8" : ""
-                  } ${
-                    isSelected
-                      ? "bg-[#2E2016] border-[#FAD9BA]/60 shadow-2xl"
-                      : "bg-[#271C14]/90 border-[#EFE7DE]/15 hover:border-[#EFE7DE]/40"
-                  }`}
-                >
-                  {/* Shared LayoutId Active Architectural Highlight Frame */}
-                  {isSelected && (
-                    <motion.div
-                      layoutId="workflow-active-frame"
-                      transition={{ type: "spring", stiffness: 280, damping: 26 }}
-                      className="absolute inset-0 border-2 border-[#FAD9BA] pointer-events-none"
-                    />
-                  )}
-
-                  <div className="space-y-4 relative z-10">
-                    <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-3 font-mono text-xs">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`font-bold text-sm tabular-nums px-1.5 py-0.5 ${
-                            isSelected
-                              ? "bg-[#FAD9BA] text-[#1C130D]"
-                              : "bg-[#1C130D] text-[#FAD9BA]"
-                          }`}
-                        >
-                          {step.stepNumber}
-                        </span>
-                        <span className="text-[10px] text-[#EFE7DE]/50 uppercase tracking-wider">
-                          {isSelected ? "ACTIVE MODULE" : "FIELD STAGE"}
-                        </span>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={`text-[9px] ${
-                          isSelected
-                            ? "text-[#FAD9BA] border-[#FAD9BA]/40"
-                            : "text-[#EFE7DE]/60 border-[#EFE7DE]/20"
-                        }`}
-                      >
-                        {step.badgeText}
-                      </Badge>
-                    </div>
-
-                    <div>
-                      <h3 className="font-sans font-bold text-xl text-[#EFE7DE] tracking-tight flex items-center justify-between">
-                        <span>{step.title}</span>
-                        <ArrowUpRight
-                          className={`w-4 h-4 transition-transform ${
-                            isSelected
-                              ? "text-[#FAD9BA] translate-x-0.5 -translate-y-0.5"
-                              : "text-[#EFE7DE]/30"
-                          }`}
-                        />
-                      </h3>
-                      <div className="font-mono text-[10px] text-[#BD8564] uppercase tracking-wider mt-0.5">
-                        {step.subtitle}
-                      </div>
-                    </div>
-
-                    <p className="font-sans text-xs sm:text-sm text-[#EFE7DE]/75 leading-relaxed">
-                      {step.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-6 pt-3.5 border-t border-[#EFE7DE]/15 font-mono text-[11px] text-[#FAD9BA] flex items-center justify-between relative z-10">
-                    <span className="text-[10px] uppercase text-[#EFE7DE]/45">Deliverable</span>
-                    <span className="font-bold text-right">{step.deliverable}</span>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
-
-          {/* Right 5 Columns: Live Animated iPadOS Blueprint Viewport */}
-          <div className="lg:col-span-5 lg:sticky lg:top-24">
-            <div className="bg-[#271C14] border border-[#EFE7DE]/20 p-3 shadow-2xl">
-              {/* iPadOS Chassis Top Bezel */}
-              <div className="bg-[#150E09] border-b border-[#EFE7DE]/15 px-4 py-2.5 flex items-center justify-between font-mono text-[10px]">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-[#10B981] inline-block animate-pulse" />
-                  <span className="font-bold text-[#EFE7DE] uppercase tracking-wider">
-                    IPADOS VIEWPORT · {workflow[activeStep]?.badgeText}
-                  </span>
-                </div>
-                <span className="text-[#FAD9BA] tabular-nums">
+            {/* Automatic Scroll Telemetry Rail */}
+            <div className="w-full lg:w-80 bg-[#271C14] border border-[#EFE7DE]/15 p-3 font-mono text-xs shrink-0 select-none">
+              <div className="flex items-center justify-between text-[10px] mb-2">
+                <span className="text-[#FAD9BA] uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3" />
+                  Auto-scroll sequence
+                </span>
+                <span className="text-[#EFE7DE] font-bold tabular-nums">
                   STAGE 0{activeStep + 1} / 04
                 </span>
               </div>
-
-              {/* Animated Schematic Body */}
-              <div className="h-[360px] bg-[#170F0A] relative overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeStep}
-                    style={willChangeAll}
-                    initial={{ opacity: 0, y: 14, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -14, scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                    className="w-full h-full"
-                  >
-                    <WorkflowStageSchematic stepIndex={activeStep} />
-                  </motion.div>
-                </AnimatePresence>
+              <div className="w-full h-1.5 bg-[#150E09] overflow-hidden relative">
+                <motion.div
+                  style={{
+                    scaleX: smoothProgress,
+                    transformOrigin: "0% 50%",
+                    ...willChangeTransform,
+                  }}
+                  className="h-full w-full bg-[#FAD9BA]"
+                />
               </div>
-
-              {/* Bottom Stage Switcher Tabs inside iPad Frame */}
-              <div className="grid grid-cols-4 gap-1.5 pt-2.5 bg-[#271C14] font-mono text-[10px]">
-                {workflow.map((step, idx) => (
-                  <button
-                    key={step.stepNumber}
-                    type="button"
-                    onClick={() => {
-                      setUserLockedStep(true)
-                      setActiveStep(idx)
-                    }}
-                    className={`py-2 px-2 text-center border transition-colors cursor-pointer truncate ${
+              <div className="flex justify-between text-[9px] text-[#EFE7DE]/45 mt-1.5">
+                {workflow.map((s, idx) => (
+                  <span
+                    key={s.stepNumber}
+                    className={`transition-colors ${
                       activeStep === idx
-                        ? "bg-[#5A3008] text-[#FAD9BA] border-[#FAD9BA] font-bold"
-                        : "bg-[#1C130D] text-[#EFE7DE]/60 border-[#EFE7DE]/10 hover:text-[#EFE7DE]"
+                        ? "text-[#FAD9BA] font-bold"
+                        : idx < activeStep
+                          ? "text-[#EFE7DE]/70"
+                          : "text-[#EFE7DE]/30"
                     }`}
                   >
-                    {step.stepNumber}. {step.title.split(" ")[0]}
-                  </button>
+                    0{idx + 1}. {s.title.split(" ")[0]}
+                  </span>
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Split Scrollytelling Stage: Left 7 Cols Scroll-Activated Card Deck | Right 5 Cols Live iPadOS Viewport */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left 7 Columns: 2x2 Architectural Grid Driven Purely by Scroll */}
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {workflow.map((step, idx) => {
+                const isSelected = activeStep === idx
+                const isPast = idx < activeStep
+
+                return (
+                  <motion.div
+                    key={step.stepNumber}
+                    animate={{
+                      scale: isSelected ? 1.02 : 0.97,
+                      opacity: isSelected ? 1 : isPast ? 0.58 : 0.42,
+                      y: isSelected ? -4 : 0,
+                    }}
+                    transition={{ type: "spring", stiffness: 220, damping: 24 }}
+                    style={willChangeAll}
+                    className={`relative p-5 flex flex-col justify-between select-none border transition-colors ${
+                      isSelected
+                        ? "bg-[#2E2016] border-[#FAD9BA] shadow-2xl z-20"
+                        : "bg-[#271C14]/75 border-[#EFE7DE]/15 z-10"
+                    }`}
+                  >
+                    {/* Shared LayoutId Active Architectural Highlight Frame */}
+                    {isSelected && (
+                      <motion.div
+                        layoutId="workflow-active-frame"
+                        transition={{ type: "spring", stiffness: 280, damping: 26 }}
+                        className="absolute inset-0 border-2 border-[#FAD9BA] pointer-events-none"
+                      />
+                    )}
+
+                    <div className="space-y-3 relative z-10">
+                      <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 font-mono text-xs">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`font-bold text-xs tabular-nums px-1.5 py-0.5 ${
+                              isSelected
+                                ? "bg-[#FAD9BA] text-[#1C130D]"
+                                : "bg-[#1C130D] text-[#FAD9BA]"
+                            }`}
+                          >
+                            {step.stepNumber}
+                          </span>
+                          <span className="text-[9px] text-[#EFE7DE]/50 uppercase tracking-wider">
+                            {isSelected ? "SCROLL ACTIVE" : isPast ? "COMPLETED" : "QUEUED"}
+                          </span>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] ${
+                            isSelected
+                              ? "text-[#FAD9BA] border-[#FAD9BA]/40"
+                              : "text-[#EFE7DE]/50 border-[#EFE7DE]/15"
+                          }`}
+                        >
+                          {step.badgeText}
+                        </Badge>
+                      </div>
+
+                      <div>
+                        <h3 className="font-sans font-bold text-lg text-[#EFE7DE] tracking-tight">
+                          {step.title}
+                        </h3>
+                        <div className="font-mono text-[10px] text-[#BD8564] uppercase tracking-wider mt-0.5">
+                          {step.subtitle}
+                        </div>
+                      </div>
+
+                      <p className="font-sans text-xs text-[#EFE7DE]/75 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-[#EFE7DE]/15 space-y-2 relative z-10">
+                      <div className="font-mono text-[10px] text-[#FAD9BA] flex items-center justify-between">
+                        <span className="uppercase text-[#EFE7DE]/45">Deliverable</span>
+                        <span className="font-bold text-right">{step.deliverable}</span>
+                      </div>
+
+                      {/* Per-Card Scroll Sub-Progress Indicator */}
+                      <div className="w-full h-1 bg-[#150E09] overflow-hidden">
+                        <div
+                          className="h-full bg-[#FAD9BA] transition-all duration-75"
+                          style={{
+                            width: isSelected
+                              ? `${Math.round(stepSubProgress * 100)}%`
+                              : isPast
+                                ? "100%"
+                                : "0%",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+
+            {/* Right 5 Columns: Live Animated iPadOS Blueprint Viewport */}
+            <motion.div
+              style={{ y: yViewportFloat, ...willChangeTransform }}
+              className="lg:col-span-5"
+            >
+              <div className="bg-[#271C14] border border-[#EFE7DE]/20 p-3 shadow-2xl">
+                {/* iPadOS Chassis Top Bezel */}
+                <div className="bg-[#150E09] border-b border-[#EFE7DE]/15 px-4 py-2.5 flex items-center justify-between font-mono text-[10px]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#10B981] inline-block animate-pulse" />
+                    <span className="font-bold text-[#EFE7DE] uppercase tracking-wider">
+                      IPADOS VIEWPORT · {workflow[activeStep]?.badgeText}
+                    </span>
+                  </div>
+                  <span className="text-[#FAD9BA] tabular-nums">
+                    STAGE 0{activeStep + 1} / 04
+                  </span>
+                </div>
+
+                {/* Animated Schematic Body */}
+                <div className="h-[340px] sm:h-[360px] bg-[#170F0A] relative overflow-hidden">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeStep}
+                      style={willChangeAll}
+                      initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -16, scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                      className="w-full h-full"
+                    >
+                      <WorkflowStageSchematic stepIndex={activeStep} />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Bottom Stage Status Strip (Read-Only Scroll Synced) */}
+                <div className="grid grid-cols-4 gap-1.5 pt-2.5 bg-[#271C14] font-mono text-[10px] select-none">
+                  {workflow.map((step, idx) => (
+                    <div
+                      key={step.stepNumber}
+                      className={`py-1.5 px-2 text-center border transition-colors truncate ${
+                        activeStep === idx
+                          ? "bg-[#5A3008] text-[#FAD9BA] border-[#FAD9BA] font-bold"
+                          : idx < activeStep
+                            ? "bg-[#1C130D] text-[#EFE7DE]/80 border-[#EFE7DE]/20"
+                            : "bg-[#1C130D]/60 text-[#EFE7DE]/40 border-[#EFE7DE]/10"
+                      }`}
+                    >
+                      {step.stepNumber}. {step.title.split(" ")[0]}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

@@ -16,11 +16,11 @@ export const Slider = React.forwardRef<
   <div className="w-full space-y-2">
     {(label || valueDisplay) && (
       <div className="flex items-center justify-between text-xs font-mono">
-        {label && <span className="text-[#5c5f55] uppercase tracking-wider">{label}</span>}
+        {label && <span className="text-[#63554B] uppercase tracking-wider">{label}</span>}
         {valueDisplay && (
-          <span className="font-semibold text-[#171814] tabular-nums">
+          <span className="font-semibold text-[#1C130D] tabular-nums">
             {valueDisplay}
-            {unit && <span className="text-[#5c5f55] font-normal ml-0.5">{unit}</span>}
+            {unit && <span className="text-[#63554B] font-normal ml-0.5">{unit}</span>}
           </span>
         )}
       </div>
@@ -34,10 +34,10 @@ export const Slider = React.forwardRef<
       value={value}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-none bg-[#dedacd]">
-        <SliderPrimitive.Range className="absolute h-full bg-[#171814]" />
+      <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-none bg-[#E3D7C8]">
+        <SliderPrimitive.Range className="absolute h-full bg-[#1C130D]" />
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-none border border-[#171814] bg-[#f4f2ec] ring-offset-[#f4f2ec] transition-colors focus-visible:outline-2 focus-visible:outline-[#845942] disabled:pointer-events-none disabled:opacity-50 hover:bg-white" />
+      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-none border border-[#1C130D] bg-[#FBF7F2] ring-offset-[#FBF7F2] transition-colors focus-visible:outline-2 focus-visible:outline-[#7A421D] disabled:pointer-events-none disabled:opacity-50 hover:bg-white" />
     </SliderPrimitive.Root>
   </div>
 ))

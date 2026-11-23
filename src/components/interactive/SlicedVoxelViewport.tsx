@@ -17,27 +17,27 @@ export function SlicedVoxelViewport() {
   }
 
   return (
-    <div className="w-full bg-[#171814] border border-[#e8e5da]/15 p-4 sm:p-6 text-[#e8e5da] flex flex-col gap-6">
+    <div className="w-full bg-[#1C130D] border border-[#EFE7DE]/15 p-4 sm:p-6 text-[#EFE7DE] flex flex-col gap-6">
       {/* Viewport Top Header & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e8e5da]/15 pb-4 font-mono text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EFE7DE]/15 pb-4 font-mono text-xs">
         <div className="flex items-center gap-3">
           <Badge variant="emerald" className="text-[10px]">
-            <span className="w-1.5 h-1.5 rounded-none bg-[#7c8c6c] inline-block mr-1.5" />
+            <span className="w-1.5 h-1.5 rounded-none bg-[#FAD9BA] inline-block mr-1.5" />
             Voxel model active
           </Badge>
-          <span className="text-[#e8e5da]/60">
+          <span className="text-[#EFE7DE]/60">
             Site volume: 120m × 80m × 25m depth
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex bg-[#1f211b] border border-[#e8e5da]/20 p-0.5 text-[11px]">
+          <div className="flex bg-[#271C14] border border-[#EFE7DE]/20 p-0.5 text-[11px]">
             <button
               onClick={() => setPerspectiveView("iso")}
               className={`px-3 py-1 cursor-pointer transition-colors min-h-[32px] ${
                 perspectiveView === "iso"
-                  ? "bg-[#2a2d25] text-[#e8e5da] font-bold"
-                  : "text-[#e8e5da]/50 hover:text-[#e8e5da]"
+                  ? "bg-[#36271D] text-[#EFE7DE] font-bold"
+                  : "text-[#EFE7DE]/50 hover:text-[#EFE7DE]"
               }`}
             >
               Isometric cut
@@ -46,8 +46,8 @@ export function SlicedVoxelViewport() {
               onClick={() => setPerspectiveView("front")}
               className={`px-3 py-1 cursor-pointer transition-colors min-h-[32px] ${
                 perspectiveView === "front"
-                  ? "bg-[#2a2d25] text-[#e8e5da] font-bold"
-                  : "text-[#e8e5da]/50 hover:text-[#e8e5da]"
+                  ? "bg-[#36271D] text-[#EFE7DE] font-bold"
+                  : "text-[#EFE7DE]/50 hover:text-[#EFE7DE]"
               }`}
             >
               Profile cross-section
@@ -58,7 +58,7 @@ export function SlicedVoxelViewport() {
             onClick={handleReset}
             title="Reset cutters"
             aria-label="Reset slicing cutters"
-            className="p-2 bg-[#1f211b] border border-[#e8e5da]/20 text-[#e8e5da]/60 hover:text-[#e8e5da] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+            className="p-2 bg-[#271C14] border border-[#EFE7DE]/20 text-[#EFE7DE]/60 hover:text-[#EFE7DE] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
@@ -66,7 +66,7 @@ export function SlicedVoxelViewport() {
       </div>
 
       {/* Main 2.5D Sliced Voxel Cross-Section Canvas */}
-      <div className="relative w-full h-[380px] sm:h-[460px] bg-[#12130f] border border-[#e8e5da]/15 overflow-hidden flex items-center justify-center p-4">
+      <div className="relative w-full h-[380px] sm:h-[460px] bg-[#150E09] border border-[#EFE7DE]/15 overflow-hidden flex items-center justify-center p-4">
         {/* Engineering Survey Grid Background */}
         <div
           className="absolute inset-0 opacity-15 pointer-events-none"
@@ -78,17 +78,17 @@ export function SlicedVoxelViewport() {
         />
 
         {/* Depth Ruler on Left Margin */}
-        <div className="absolute left-3 top-6 bottom-6 flex flex-col justify-between font-mono text-[10px] text-[#e8e5da]/40 z-10 border-r border-[#e8e5da]/15 pr-2 select-none tabular-nums">
+        <div className="absolute left-3 top-6 bottom-6 flex flex-col justify-between font-mono text-[10px] text-[#EFE7DE]/40 z-10 border-r border-[#EFE7DE]/15 pr-2 select-none tabular-nums">
           <span>0.0 m</span>
           <span>-2.0 m</span>
           <span>-6.5 m</span>
           <span>-14.0 m</span>
-          <span className="text-[#b78c75] font-bold">-25.0 m</span>
+          <span className="text-[#FAD9BA] font-bold">-25.0 m</span>
         </div>
 
         {/* 2.5D Multi-Layer Soil Block with Geological Hatching */}
         <div
-          className={`relative transition-all duration-300 w-full max-w-[580px] h-[320px] flex flex-col justify-stretch border border-[#e8e5da]/25 shadow-2xl ${
+          className={`relative transition-all duration-300 w-full max-w-[580px] h-[320px] flex flex-col justify-stretch border border-[#EFE7DE]/25 shadow-2xl ${
             perspectiveView === "iso"
               ? "transform -rotate-x-6 rotate-y-12 skew-y-1"
               : ""
@@ -98,112 +98,86 @@ export function SlicedVoxelViewport() {
             perspective: 800,
           }}
         >
-          {/* Layer 1: Sand */}
+          {/* Top Horizon: Sand / Gravel Layer */}
           <div
             onMouseEnter={() => setHoveredLayer("layer-1")}
             onMouseLeave={() => setHoveredLayer(null)}
-            className="relative flex-1 bg-[#d4a373] bg-hatch-sand border-b border-[#171814]/60 cursor-pointer transition-all overflow-hidden"
+            className="relative flex-1 bg-[#D4A373] bg-hatch-sand border-b border-[#1C130D]/20 cursor-pointer transition-opacity group"
             style={{
               clipPath: `polygon(0 0, ${sliceX}% 0, ${sliceX}% 100%, 0 100%)`,
             }}
           >
-            <div className="absolute inset-0 bg-[#171814]/10 hover:bg-transparent transition-colors flex items-center justify-between px-4 text-[#171814] font-mono text-xs font-bold">
-              <span>0.0m to 2.0m Medium sand</span>
-              <span className="text-[10px] font-normal opacity-75">qc avg 6.8 MPa</span>
-            </div>
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
+            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-[#1C130D] bg-[#EFE7DE]/80 px-1">
+              0.0 - 2.0m Sand
+            </span>
           </div>
 
-          {/* Layer 2: Silty Sand / Silt */}
+          {/* Silt Layer */}
           <div
             onMouseEnter={() => setHoveredLayer("layer-2")}
             onMouseLeave={() => setHoveredLayer(null)}
-            className="relative flex-2 bg-[#588157] bg-hatch-silt border-b border-[#171814]/60 cursor-pointer transition-all overflow-hidden"
+            className="relative flex-2 bg-[#588157] bg-hatch-silt border-b border-[#1C130D]/20 cursor-pointer transition-opacity group"
             style={{
               clipPath: `polygon(0 0, ${sliceX}% 0, ${sliceX}% 100%, 0 100%)`,
             }}
           >
-            <div className="absolute inset-0 bg-[#171814]/15 hover:bg-transparent transition-colors flex items-center justify-between px-4 text-white font-mono text-xs font-bold">
-              <span>2.0m to 6.5m Silty sand</span>
-              <span className="text-[10px] font-normal opacity-75">qc avg 4.2 MPa</span>
-            </div>
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
+            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-black/40 px-1">
+              2.0 - 6.5m Silt
+            </span>
           </div>
 
-          {/* Layer 3: Soft Marine Clay (Hazard zone) */}
+          {/* Soft Clay Horizon */}
           <div
             onMouseEnter={() => setHoveredLayer("layer-3")}
             onMouseLeave={() => setHoveredLayer(null)}
-            className="relative flex-3 bg-[#a0522d] bg-hatch-clay border-b border-[#171814]/60 cursor-pointer transition-all overflow-hidden"
+            className="relative flex-3 bg-[#A0522D] bg-hatch-clay border-b border-[#1C130D]/20 cursor-pointer transition-opacity group"
             style={{
               clipPath: `polygon(0 0, ${sliceX}% 0, ${sliceX}% 100%, 0 100%)`,
             }}
           >
-            <div className="absolute inset-0 bg-[#171814]/20 hover:bg-transparent transition-colors flex items-center justify-between px-4 text-[#dedacd] font-mono text-xs font-bold">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-[#dedacd]" />
-                6.5m to 14.0m Soft sensitive clay
-              </span>
-              <span className="text-[10px] font-normal text-[#dedacd]">
-                WEAK STRATUM (qc &lt; 1.5 MPa)
-              </span>
-            </div>
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
+            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-black/40 px-1">
+              6.5 - 14.0m Soft clay (Uncertainty pocket)
+            </span>
           </div>
 
-          {/* Layer 4: Competent Hard Stratum (Target bearing) */}
+          {/* Target Bearing Dense Sand Layer */}
           <div
             onMouseEnter={() => setHoveredLayer("layer-4")}
             onMouseLeave={() => setHoveredLayer(null)}
-            className="relative flex-4 bg-[#e76F51] bg-hatch-bearing cursor-pointer transition-all overflow-hidden"
+            className="relative flex-4 bg-[#E76F51] bg-hatch-bearing cursor-pointer transition-opacity group"
             style={{
               clipPath: `polygon(0 0, ${sliceX}% 0, ${sliceX}% 100%, 0 100%)`,
             }}
           >
-            <div className="absolute inset-0 bg-[#171814]/20 hover:bg-transparent transition-colors flex items-center justify-between px-4 text-white font-mono text-xs font-bold">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-white" />
-                14.0m to 25.0m Dense bearing sand
-              </span>
-              <span className="text-[10px] font-semibold text-white">
-                TARGET BEARING (qc &gt;= 15 MPa)
-              </span>
-            </div>
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
+            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-[#1C130D]/80 px-1">
+              14.0 - 25.0m Dense sand (Bearing stratum qc ≥ 15 MPa)
+            </span>
           </div>
 
-          {/* Sondir Penetration Probes */}
+          {/* Simulated Vertical Penetration Sounding Rod */}
           <div
-            className="absolute top-0 bottom-0 w-px bg-[#7c8c6c] pointer-events-none"
-            style={{ left: "20%" }}
-          >
-            <span className="absolute -top-5 -translate-x-1/2 font-mono text-[9px] text-[#e8e5da] bg-[#171814] px-1 border border-[#e8e5da]/20">
-              B-01
-            </span>
-          </div>
-          <div
-            className="absolute top-0 bottom-0 w-px bg-[#7c8c6c] pointer-events-none"
-            style={{ left: "45%" }}
-          >
-            <span className="absolute -top-5 -translate-x-1/2 font-mono text-[9px] text-[#e8e5da] bg-[#171814] px-1 border border-[#e8e5da]/20">
-              B-02
-            </span>
-          </div>
-          <div
-            className="absolute top-0 bottom-0 w-px bg-[#b78c75] pointer-events-none"
+            className="absolute top-0 bottom-0 w-1.5 bg-[#FAD9BA] shadow-lg pointer-events-none transition-all duration-150"
             style={{ left: `${Math.min(sliceX - 2, 75)}%` }}
           >
-            <span className="absolute -top-6 -translate-x-1/2 font-mono text-[9px] font-bold text-[#e8e5da] bg-[#1f211b] px-1.5 py-0.5 border border-[#b78c75] whitespace-nowrap">
+            <span className="absolute -top-6 -translate-x-1/2 font-mono text-[9px] font-bold text-[#EFE7DE] bg-[#271C14] px-1.5 py-0.5 border border-[#BD8564] whitespace-nowrap">
               Spot 2 (DQN target)
             </span>
           </div>
 
           {/* Slicing Cut Plane Line */}
           <div
-            className="absolute top-0 bottom-0 w-px border-r border-dashed border-[#e8e5da] pointer-events-none"
+            className="absolute top-0 bottom-0 w-px border-r border-dashed border-[#EFE7DE] pointer-events-none"
             style={{ left: `${sliceX}%` }}
           />
         </div>
 
         {/* Hover Layer Data Readout */}
         {hoveredLayer && (
-          <div className="absolute bottom-4 right-4 bg-[#1f211b] border border-[#e8e5da]/20 p-3 max-w-xs font-mono text-xs z-20 shadow-xl pointer-events-none">
+          <div className="absolute bottom-4 right-4 bg-[#271C14] border border-[#EFE7DE]/20 p-3 max-w-xs font-mono text-xs z-20 shadow-xl pointer-events-none">
             {MOCK_SOIL_LAYERS.filter((l) => l.id === hoveredLayer).map((layer) => (
               <div key={layer.id} className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -211,10 +185,10 @@ export function SlicedVoxelViewport() {
                     className="w-2.5 h-2.5 inline-block"
                     style={{ backgroundColor: layer.colorHex }}
                   />
-                  <span className="font-bold text-[#e8e5da]">{layer.name}</span>
+                  <span className="font-bold text-[#EFE7DE]">{layer.name}</span>
                 </div>
-                <div className="text-[11px] text-[#e8e5da]/70">{layer.description}</div>
-                <div className="flex justify-between text-[10px] text-[#e8e5da]/50 pt-1 border-t border-[#e8e5da]/15">
+                <div className="text-[11px] text-[#EFE7DE]/70">{layer.description}</div>
+                <div className="flex justify-between text-[10px] text-[#EFE7DE]/50 pt-1 border-t border-[#EFE7DE]/15">
                   <span>Avg qc: {layer.qcMpaAvg} MPa</span>
                   <span>Avg Ic: {layer.icAvg}</span>
                 </div>
@@ -225,7 +199,7 @@ export function SlicedVoxelViewport() {
       </div>
 
       {/* Parametric Slicing Slider Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-[#e8e5da]/15">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-[#EFE7DE]/15">
         <div>
           <Slider
             label="Easting cut (X axis)"
@@ -237,7 +211,7 @@ export function SlicedVoxelViewport() {
             valueDisplay={`${Math.round((sliceX / 100) * 120)} m`}
             unit={`(${sliceX}%)`}
           />
-          <span className="text-[10px] font-mono text-[#e8e5da]/40 mt-1 block">
+          <span className="text-[10px] font-mono text-[#EFE7DE]/40 mt-1 block">
             Reveals dipping strata along West to East core line.
           </span>
         </div>
@@ -253,7 +227,7 @@ export function SlicedVoxelViewport() {
             valueDisplay={`${Math.round((sliceY / 100) * 80)} m`}
             unit={`(${sliceY}%)`}
           />
-          <span className="text-[10px] font-mono text-[#e8e5da]/40 mt-1 block">
+          <span className="text-[10px] font-mono text-[#EFE7DE]/40 mt-1 block">
             Inspects lateral shear planes across North to South boundary.
           </span>
         </div>

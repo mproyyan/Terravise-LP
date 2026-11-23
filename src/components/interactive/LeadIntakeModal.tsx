@@ -33,23 +33,23 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[#171814]/80 backdrop-blur-xs data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-[#f4f2ec] border border-[#171814]/20 p-6 sm:p-8 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[#1C130D]/80 backdrop-blur-xs data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-[#FBF7F2] border border-[#1C130D]/20 p-6 sm:p-8 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
           {/* Header */}
-          <div className="flex items-start justify-between border-b border-[#171814]/15 pb-4">
+          <div className="flex items-start justify-between border-b border-[#1C130D]/15 pb-4">
             <div>
               <div className="flex items-center gap-2 mb-1.5">
                 <Badge variant="emerald" className="text-[10px]">
                   Field deployment
                 </Badge>
-                <span className="font-mono text-[10px] text-[#5c5f55]">
+                <span className="font-mono text-[10px] text-[#63554B]">
                   Version 4.6.2
                 </span>
               </div>
-              <DialogPrimitive.Title className="text-xl font-bold font-sans tracking-tight text-[#171814] uppercase">
+              <DialogPrimitive.Title className="text-xl font-bold font-sans tracking-tight text-[#1C130D] uppercase">
                 Request Terravise field pilot
               </DialogPrimitive.Title>
-              <DialogPrimitive.Description className="text-xs text-[#5c5f55] mt-1 font-mono">
+              <DialogPrimitive.Description className="text-xs text-[#63554B] mt-1 font-mono">
                 Deploy on-device CPT exploration to active investigation rigs.
               </DialogPrimitive.Description>
             </div>
@@ -57,7 +57,7 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
             <DialogPrimitive.Close asChild>
               <button
                 onClick={handleClose}
-                className="text-[#5c5f55] hover:text-[#171814] transition-colors p-1 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-[#63554B] hover:text-[#1C130D] transition-colors p-1 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
@@ -68,18 +68,18 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
           {/* Form Body */}
           {submitted ? (
             <div className="py-8 text-center space-y-4">
-              <div className="w-12 h-12 bg-[#627056]/20 border border-[#627056] text-[#627056] flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-[#FAD9BA]/30 border border-[#5A3008] text-[#5A3008] flex items-center justify-center mx-auto">
                 <CheckCircle className="w-6 h-6" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-sans font-bold text-lg text-[#171814]">
+                <h4 className="font-sans font-bold text-lg text-[#1C130D]">
                   Pilot request confirmed
                 </h4>
-                <p className="text-xs font-mono text-[#5c5f55] max-w-sm mx-auto">
+                <p className="text-xs font-mono text-[#63554B] max-w-sm mx-auto">
                   Our engineering team has scheduled onboarding for <strong>{formData.company || "your consultancy"}</strong>.
                 </p>
               </div>
-              <div className="p-3 bg-[#dedacd]/30 border border-[#171814]/10 text-left font-mono text-[11px] text-[#5c5f55] max-w-sm mx-auto space-y-1">
+              <div className="p-3 bg-[#E3D7C8]/30 border border-[#1C130D]/10 text-left font-mono text-[11px] text-[#63554B] max-w-sm mx-auto space-y-1">
                 <div>• Recipient: {formData.email || "engineer@domain.com"}</div>
                 <div>• Reviewer: Geotechnical staff</div>
                 <div>• Hardware: iPadOS M-series offline package</div>
@@ -95,11 +95,11 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
           ) : (
             <form onSubmit={handleSubmit} className="mt-5 space-y-4">
               <div className="space-y-1">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#171814]">
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#1C130D]">
                   Full name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-2.5 w-4 h-4 text-[#5c5f55]" />
+                  <User className="absolute left-3 top-2.5 w-4 h-4 text-[#63554B]" />
                   <input
                     required
                     type="text"
@@ -108,17 +108,17 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
                       setFormData({ ...formData, fullName: e.target.value })
                     }
                     placeholder="Ir. Budi Santoso, ST, MT"
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#171814]/20 text-[#171814] text-xs font-mono placeholder:text-[#5c5f55]/60 focus:outline-[#845942]"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#1C130D]/20 text-[#1C130D] text-xs font-mono placeholder:text-[#63554B]/60 focus:outline-[#7A421D]"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#171814]">
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#1C130D]">
                   Work email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 w-4 h-4 text-[#5c5f55]" />
+                  <Mail className="absolute left-3 top-2.5 w-4 h-4 text-[#63554B]" />
                   <input
                     required
                     type="email"
@@ -127,18 +127,18 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     placeholder="budi@geoteknik-nusantara.com"
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#171814]/20 text-[#171814] text-xs font-mono placeholder:text-[#5c5f55]/60 focus:outline-[#845942]"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#1C130D]/20 text-[#1C130D] text-xs font-mono placeholder:text-[#63554B]/60 focus:outline-[#7A421D]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#171814]">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#1C130D]">
                     Company
                   </label>
                   <div className="relative">
-                    <Building className="absolute left-3 top-2.5 w-4 h-4 text-[#5c5f55]" />
+                    <Building className="absolute left-3 top-2.5 w-4 h-4 text-[#63554B]" />
                     <input
                       required
                       type="text"
@@ -147,13 +147,13 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
                         setFormData({ ...formData, company: e.target.value })
                       }
                       placeholder="PT Geotek Nusantara"
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-[#171814]/20 text-[#171814] text-xs font-mono placeholder:text-[#5c5f55]/60 focus:outline-[#845942]"
+                      className="w-full pl-9 pr-3 py-2 bg-white border border-[#1C130D]/20 text-[#1C130D] text-xs font-mono placeholder:text-[#63554B]/60 focus:outline-[#7A421D]"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#171814]">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#1C130D]">
                     Role
                   </label>
                   <select
@@ -161,7 +161,7 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
                     onChange={(e) =>
                       setFormData({ ...formData, role: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-white border border-[#171814]/20 text-[#171814] text-xs font-mono focus:outline-[#845942] cursor-pointer"
+                    className="w-full px-3 py-2 bg-white border border-[#1C130D]/20 text-[#1C130D] text-xs font-mono focus:outline-[#7A421D] cursor-pointer"
                   >
                     <option>Lead Geotechnical Engineer</option>
                     <option>CPT Contractor / Rig Operator</option>
@@ -173,7 +173,7 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#171814]">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#1C130D]">
                     Investigation size
                   </label>
                   <select
@@ -181,7 +181,7 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
                     onChange={(e) =>
                       setFormData({ ...formData, projectArea: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-white border border-[#171814]/20 text-[#171814] text-xs font-mono focus:outline-[#845942] cursor-pointer"
+                    className="w-full px-3 py-2 bg-white border border-[#1C130D]/20 text-[#1C130D] text-xs font-mono focus:outline-[#7A421D] cursor-pointer"
                   >
                     <option>Under 5 Hectares (1 to 10 CPTs)</option>
                     <option>5 to 20 Hectares (10 to 30 CPTs)</option>
@@ -191,7 +191,7 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#171814]">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#1C130D]">
                     Active rig fleet
                   </label>
                   <select
@@ -199,7 +199,7 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
                     onChange={(e) =>
                       setFormData({ ...formData, rigCount: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-white border border-[#171814]/20 text-[#171814] text-xs font-mono focus:outline-[#845942] cursor-pointer"
+                    className="w-full px-3 py-2 bg-white border border-[#1C130D]/20 text-[#1C130D] text-xs font-mono focus:outline-[#7A421D] cursor-pointer"
                   >
                     <option>1 Rig (Trial pilot)</option>
                     <option>2 to 4 Rigs (Field crew)</option>
@@ -208,8 +208,8 @@ export function LeadIntakeModal({ open, onOpenChange }: LeadIntakeModalProps) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-2 text-[11px] font-mono text-[#5c5f55]">
-                <Shield className="w-3.5 h-3.5 text-[#627056] shrink-0" />
+              <div className="flex items-center gap-2 pt-2 text-[11px] font-mono text-[#63554B]">
+                <Shield className="w-3.5 h-3.5 text-[#5A3008] shrink-0" />
                 <span>NDA guaranteed. Zero telemetry off device.</span>
               </div>
 

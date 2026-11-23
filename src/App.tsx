@@ -46,7 +46,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f2ec] text-[#171814] font-sans antialiased selection:bg-[#627056] selection:text-white relative">
+    <div className="min-h-screen bg-[#FBF7F2] text-[#1C130D] font-sans antialiased selection:bg-[#FAD9BA] selection:text-[#381800] relative">
       {/* Dynamic Subsurface Depth Meter (Fixed Sidebar) */}
       <DepthSidebarTracker />
 
@@ -76,13 +76,13 @@ export function App() {
 
       {/* Floating Download Notification Toast */}
       {downloadNotification && (
-        <div className="fixed bottom-6 left-6 z-50 bg-[#171814] text-[#e8e5da] border border-[#7c8c6c] px-4 py-3 shadow-2xl flex items-center gap-3 font-mono text-xs animate-in slide-in-from-bottom-4 duration-200">
-          <div className="w-5 h-5 bg-[#627056] text-[#e8e5da] flex items-center justify-center shrink-0">
+        <div className="fixed bottom-6 left-6 z-50 bg-[#1C130D] text-[#EFE7DE] border border-[#7A421D] px-4 py-3 shadow-2xl flex items-center gap-3 font-mono text-xs animate-in slide-in-from-bottom-4 duration-200">
+          <div className="w-5 h-5 bg-[#5A3008] text-[#FAD9BA] flex items-center justify-center shrink-0">
             <Check className="w-3.5 h-3.5" />
           </div>
           <div>
-            <div className="font-bold text-[#e8e5da]">Sample CPT file downloaded</div>
-            <div className="text-[10px] text-[#e8e5da]/60">terravise_cpt_sample_template.csv</div>
+            <div className="font-bold text-[#EFE7DE]">Sample CPT file downloaded</div>
+            <div className="text-[10px] text-[#EFE7DE]/60">terravise_cpt_sample_template.csv</div>
           </div>
         </div>
       )}

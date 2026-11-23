@@ -3,20 +3,27 @@
 
 @theme {
   /* Rapidkert & Terravise Earthy Architectural Design System */
-  --color-soil: #171814;
-  --color-soil-2: #1f211b;
-  --color-soil-3: #2a2d25;
-  --color-paper: #f4f2ec;
-  --color-limestone: #e8e5da;
-  --color-limestone-2: #dedacd;
+  /* Logo Matched Palette: Deep Espresso Earth Umber & Warm Terracotta Sandstone */
+  --color-soil: #1c130d;
+  --color-soil-2: #271c14;
+  --color-soil-3: #36271d;
+  --color-paper: #fbf7f2;
+  --color-limestone: #efe7de;
+  --color-limestone-2: #e3d7c8;
+
+  /* Brand Colors from Terravise Logo */
+  --color-brand-primary: #5a3008;
+  --color-brand-dark: #381800;
+  --color-brand-light: #fad9ba;
+  --color-brand-hover: #452304;
 
   /* Earth Science Accent Tokens */
-  --color-moss: #627056;
-  --color-moss-lift: #7c8c6c;
-  --color-clay: #a56f52;
-  --color-clay-txt: #845942;
-  --color-clay-lift: #b78c75;
-  --color-water: #6e8794;
+  --color-clay: #9e623f;
+  --color-clay-txt: #7a421d;
+  --color-clay-lift: #bd8564;
+  --color-moss: #4e6b56;
+  --color-moss-lift: #63856d;
+  --color-water: #5c7989;
 
   /* Stratigraphy Horizon Colors */
   --color-strata-sand: #d4a373;
@@ -35,8 +42,8 @@
 /* Base Setup */
 html {
   scroll-behavior: smooth;
-  background-color: #f4f2ec;
-  color: #171814;
+  background-color: #fbf7f2;
+  color: #1c130d;
   font-feature-settings: "kern" 1, "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -71,7 +78,7 @@ body {
 
 /* Focus Ring for Keyboard Accessibility (UI/UX Pro Max Priority 1) */
 :focus-visible {
-  outline: 2px solid #a56f52;
+  outline: 2px solid #7a421d;
   outline-offset: 3px;
 }
 
@@ -98,11 +105,11 @@ body {
   width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #f4f2ec;
+  background: #fbf7f2;
 }
 ::-webkit-scrollbar-thumb {
-  background: #dedacd;
+  background: #e3d7c8;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #845942;
+  background: #7a421d;
 }

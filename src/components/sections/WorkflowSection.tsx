@@ -8,7 +8,7 @@ export function WorkflowSection() {
   return (
     <section
       id="workflow"
-      className="py-24 bg-[#171814] text-[#e8e5da] border-b border-[#e8e5da]/15 scroll-mt-12"
+      className="py-24 bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12"
     >
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Plate Header */}
@@ -21,10 +21,10 @@ export function WorkflowSection() {
 
         {/* Section Heading */}
         <div className="max-w-3xl mb-16 space-y-4">
-          <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#e8e5da] uppercase tracking-[-0.035em] leading-[0.92]">
+          <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92]">
             Four integrated steps from site boundary to foundation handoff
           </h2>
-          <p className="font-sans text-[#e8e5da]/70 text-base sm:text-lg leading-relaxed">
+          <p className="font-sans text-[#EFE7DE]/70 text-base sm:text-lg leading-relaxed">
             How geotechnical engineers and CPT rig operators use Terravise directly on Apple silicon iPadOS in the field.
           </p>
         </div>
@@ -34,39 +34,37 @@ export function WorkflowSection() {
           {workflow.map((step) => (
             <div
               key={step.stepNumber}
-              className="bg-[#1f211b] border border-[#e8e5da]/15 p-6 flex flex-col justify-between hover:border-[#e8e5da]/40 transition-colors group"
+              className="bg-[#271C14] border border-[#EFE7DE]/15 p-6 flex flex-col justify-between hover:border-[#EFE7DE]/40 transition-colors group"
             >
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-[#e8e5da]/15 pb-3 font-mono text-xs">
-                  <span className="font-bold text-[#b78c75] text-sm tabular-nums">
+                <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-3 font-mono text-xs">
+                  <span className="font-bold text-[#FAD9BA] text-sm tabular-nums">
                     {step.stepNumber}
                   </span>
-                  <Badge variant="outline" className="text-[9px] text-[#e8e5da]/60 border-[#e8e5da]/20">
+                  <Badge variant="outline" className="text-[9px] text-[#EFE7DE]/60 border-[#EFE7DE]/20">
                     {step.badgeText}
                   </Badge>
                 </div>
 
                 <div>
-                  <h3 className="font-sans font-bold text-xl text-[#e8e5da] tracking-tight">
+                  <h3 className="font-sans font-bold text-xl text-[#EFE7DE] tracking-tight">
                     {step.title}
                   </h3>
-                  <div className="font-mono text-[10px] text-[#e8e5da]/50 uppercase tracking-wider mt-0.5">
+                  <div className="font-mono text-[10px] text-[#EFE7DE]/50 uppercase tracking-wider mt-0.5">
                     {step.subtitle}
                   </div>
                 </div>
 
-                <p className="font-sans text-xs text-[#e8e5da]/70 leading-relaxed">
+                <p className="font-sans text-xs text-[#EFE7DE]/70 leading-relaxed">
                   {step.description}
                 </p>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-[#e8e5da]/15 font-mono text-[11px] text-[#7c8c6c] flex items-center justify-between">
-                <span className="text-[10px] uppercase text-[#e8e5da]/40">
-                  Deliverable
+              <div className="mt-8 pt-4 border-t border-[#EFE7DE]/15 font-mono text-[11px] text-[#FAD9BA] flex items-center justify-between">
+                <span className="text-[10px] uppercase text-[#EFE7DE]/40">
+                  Standard output
                 </span>
-                <span className="text-right font-medium">
-                  {step.deliverable}
-                </span>
+                <span className="font-bold">{step.deliverable}</span>
               </div>
             </div>
           ))}

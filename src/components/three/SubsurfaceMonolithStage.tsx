@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { useSubsurface3D, type MonolithStage } from "../../context/Subsurface3DContext"
 import { SubsurfaceMonolithCanvas } from "./SubsurfaceMonolithCanvas"
-import { Rotate3d } from "lucide-react"
+import { MOCK_CPT_TEST_PIPES } from "../../data/mockGeology"
+import { Rotate3d, X, MapPin, Layers, ArrowDownToLine } from "lucide-react"
 
 interface StageCaptionMeta {
   code: string
@@ -27,7 +29,7 @@ const STAGE_CAPTION_MAP: Record<MonolithStage, StageCaptionMeta> = {
   },
   voxel: {
     code: "FIG 03",
-    caption: "480-CUBE 3D ROBERTSON SBT VOXEL MATRIX",
+    caption: "SMOOTH 3D BOUNDARY VOLUME & 5 CPT TEST PIPES (CLICK PIPE TO INSPECT)",
     isDarkSection: true,
   },
   stratum: {
@@ -50,10 +52,19 @@ function smoothstep(t: number): number {
 }
 
 export function SubsurfaceMonolithStage() {
-  const { activeStage, dockElementsRef, sceneStateRef } = useSubsurface3D()
+  const {
+    activeStage,
+    dockElementsRef,
+    sceneStateRef,
+    selectedPipeId,
+    setSelectedPipeId,
+    pipeScreenCoords,
+  } = useSubsurface3D()
   const stageBoxRef = useRef<HTMLDivElement>(null)
 
   const meta = STAGE_CAPTION_MAP[activeStage] || STAGE_CAPTION_MAP.hero
+  const selectedPipe = MOCK_CPT_TEST_PIPES.find((p) => p.id === selectedPipeId) || null
+  const showPipePopover = activeStage === "voxel" && selectedPipe !== null
 
   useEffect(() => {
     let rafId = 0
@@ -89,7 +100,6 @@ export function SubsurfaceMonolithStage() {
       const lastCenterY = lastRect.top + lastRect.height / 2
 
       if (firstCenterY >= vpCenterY) {
-        // Locked cleanly to Hero open stage
         targetLeft = rects[0].rect.left
         targetTop = rects[0].rect.top
         targetWidth = rects[0].rect.width
@@ -98,7 +108,6 @@ export function SubsurfaceMonolithStage() {
         sceneStateRef.current.transitionTo = rects[0].stage
         sceneStateRef.current.transitionT = 0
       } else if (lastCenterY <= vpCenterY) {
-        // Smooth exit as user scrolls from Section 04 (Bearing Stratum) into Section 05 (Workflow)
         targetLeft = lastRect.left
         targetTop = lastRect.top
         targetWidth = lastRect.width
@@ -113,7 +122,6 @@ export function SubsurfaceMonolithStage() {
         targetOpacity = smoothstep(rawFade)
         targetScale = 0.88 + 0.12 * targetOpacity
       } else {
-        // Continuous interpolation between adjacent section stages
         for (let i = 0; i < rects.length - 1; i++) {
           const curr = rects[i]
           const next = rects[i + 1]
@@ -175,7 +183,98 @@ export function SubsurfaceMonolithStage() {
           <SubsurfaceMonolithCanvas />
         </div>
 
-        {/* Minimalist Floating Architectural Figure Tag (No heavy boxes) */}
+        {/* Interactive 3D Pipe Click Popover (Anchored to Clicked Test Pipe in Section 03) */}
+        <AnimatePresence mode="wait">
+          {showPipePopover && selectedPipe && (
+            <motion.div
+              key={selectedPipe.id}
+              initial={{ opacity: 0, scale: 0.92, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 10 }}
+              transition={{ type: "spring", stiffness: 280, damping: 24 }}
+              style={{
+                left: pipeScreenCoords ? `${Math.min(54, Math.max(4, pipeScreenCoords.xPct))}%` : "48%",
+                top: pipeScreenCoords ? `${Math.min(44, Math.max(4, pipeScreenCoords.yPct - 18))}%` : "12%",
+              }}
+              className="absolute z-30 w-72 bg-[#150E09]/95 backdrop-blur-md border border-[#FAD9BA]/50 shadow-2xl p-3.5 font-mono text-xs text-[#EFE7DE] pointer-events-auto select-none"
+            >
+              {/* Popover Header */}
+              <div className="flex items-start justify-between gap-2 border-b border-[#EFE7DE]/15 pb-2">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 bg-[#10B981] inline-block animate-pulse" />
+                    <span className="font-bold text-[#FAD9BA] text-xs tracking-wider">
+                      {selectedPipe.code} · {selectedPipe.sector}
+                    </span>
+                  </div>
+                  <div className="text-[9px] text-[#EFE7DE]/60 flex items-center gap-1 mt-0.5">
+                    <MapPin className="w-2.5 h-2.5 text-[#BD8564]" />
+                    <span>{selectedPipe.utm}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPipeId(null)}
+                  aria-label="Close pipe popover"
+                  className="text-[#EFE7DE]/50 hover:text-[#FAD9BA] p-0.5 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* 4 Soil Layers Recorded at This Pipe */}
+              <div className="py-2.5 space-y-1.5">
+                <div className="text-[9px] uppercase tracking-wider text-[#BD8564] flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <Layers className="w-2.5 h-2.5" />
+                    Stratigraphic log at pipe
+                  </span>
+                  <span>qc / Ic</span>
+                </div>
+
+                {selectedPipe.layers.map((layer) => (
+                  <div
+                    key={layer.layerName}
+                    className="bg-[#271C14]/90 border border-[#EFE7DE]/10 px-2 py-1.5 flex items-center justify-between gap-2 text-[10px]"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="w-2 h-5 shrink-0"
+                        style={{ backgroundColor: layer.colorHex }}
+                      />
+                      <div className="min-w-0">
+                        <div className="font-sans font-bold text-[11px] text-[#EFE7DE] truncate">
+                          {layer.layerName}
+                        </div>
+                        <div className="text-[9px] text-[#EFE7DE]/55 tabular-nums">
+                          {layer.depthRange} ({layer.thicknessM.toFixed(1)}m)
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 tabular-nums">
+                      <div className="font-bold text-[#FAD9BA]">{layer.qcMpa} MPa</div>
+                      <div className="text-[8px] text-[#EFE7DE]/50">Ic {layer.icValue}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Popover Footer: Bearing Depth & Termination */}
+              <div className="pt-2 border-t border-[#EFE7DE]/15 flex items-center justify-between text-[9px]">
+                <span className="text-[#EFE7DE]/60 flex items-center gap-1">
+                  <ArrowDownToLine className="w-3 h-3 text-[#10B981]" />
+                  Bearing top:{" "}
+                  <strong className="text-[#10B981]">{selectedPipe.bearingDepthM}m</strong>
+                </span>
+                <span className="text-[#FAD9BA]">
+                  Total: {selectedPipe.terminationDepthM}m
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Minimalist Floating Architectural Figure Tag */}
         <div className="relative z-10 pb-2 flex items-center justify-center pointer-events-none select-none">
           <div
             className={`px-3 py-1 backdrop-blur-xs border font-mono text-[9px] tracking-[0.14em] uppercase flex items-center gap-2.5 transition-colors duration-300 ${
@@ -185,7 +284,7 @@ export function SubsurfaceMonolithStage() {
             }`}
           >
             <span className="font-bold text-[#7A421D]">{meta.code}</span>
-            <span className="truncate max-w-[360px]">{meta.caption}</span>
+            <span className="truncate max-w-[380px]">{meta.caption}</span>
             <span className="inline-flex items-center gap-1 opacity-65 pl-1.5 border-l border-current/20">
               <Rotate3d className="w-3 h-3" />
               Drag 3D

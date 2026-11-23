@@ -1,1 +1,78 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* Architectural & Geological Palette */
+  --color-cream: #f8f7f4;
+  --color-stone-surface: #f4f2ec;
+  --color-slate-viewer: #121514;
+  --color-slate-darker: #0b0d0c;
+
+  /* Brand & Geotechnical Colors */
+  --color-geo-green: #1c3127;
+  --color-geo-emerald: #10b981;
+  --color-geo-amber: #f59e0b;
+  --color-geo-blue: #2563eb;
+
+  /* Soil Horizon Stratigraphy */
+  --color-soil-sand: #d4a373;
+  --color-soil-sand-light: #e9c46a;
+  --color-soil-silt: #588157;
+  --color-soil-silt-dark: #3a5a40;
+  --color-soil-clay: #a0522d;
+  --color-soil-clay-light: #bc6c25;
+  --color-soil-stratum: #e76f51;
+  --color-soil-bedrock: #403d39;
+
+  /* Fonts */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Keyframe Animations */
+  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-radar: radar 2.5s ease-out infinite;
+
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes radar {
+    0% {
+      transform: scale(0.6);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+}
+
+/* Custom Base Styling */
+html {
+  scroll-behavior: smooth;
+  background-color: #f8f7f4;
+  color: #1c1917;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Technical Monospace Number Alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Depth Rail Scroll Indicator */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f8f7f4;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a29e;
+}

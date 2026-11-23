@@ -1,4 +1,4 @@
-import { WorkflowStep } from "../types"
+import type { WorkflowStep } from "../types"
 
 export const SITE_CONTENT = {
   hero: {

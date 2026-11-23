@@ -1,4 +1,3 @@
-import React from "react"
 import { PlateHeader } from "../ui/PlateHeader"
 import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"

@@ -1,8 +1,8 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { Slider } from "../ui/Slider"
 import { Badge } from "../ui/Badge"
 import { MOCK_SOIL_LAYERS } from "../../data/mockGeology"
-import { Layers, Eye, RefreshCw, ZoomIn } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 
 // SWAP POINT: Replace with React Three Fiber canvas when WebGL model is ready
 export function SlicedVoxelViewport() {

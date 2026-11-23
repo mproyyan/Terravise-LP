@@ -1,8 +1,7 @@
-import React from "react"
 import { Button } from "../ui/Button"
 import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"
-import { ArrowRight, Download, Activity, Cpu, CheckCircle } from "lucide-react"
+import { ArrowRight, Download, Cpu, CheckCircle } from "lucide-react"
 
 interface HeroSectionProps {
   onRequestPilot: () => void

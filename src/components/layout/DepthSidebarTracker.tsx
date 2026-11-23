@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { DEPTH_STAGES } from "../../data/mockGeology"
 
 export function DepthSidebarTracker() {

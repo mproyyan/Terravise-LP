@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { PlateHeader } from "../ui/PlateHeader"
 import { Slider } from "../ui/Slider"
 import { BearingComparisonTable } from "../interactive/BearingComparisonTable"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { DEFAULT_BEARING_CRITERIA } from "../../data/mockGeology"
-import { SlidersHorizontal, ShieldCheck, Download } from "lucide-react"
+import { SlidersHorizontal, ShieldCheck } from "lucide-react"
 
 export function BearingStratumSection() {
   const { bearing } = SITE_CONTENT

@@ -1,7 +1,7 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { PlateHeader } from "../ui/PlateHeader"
 import { SITE_CONTENT } from "../../data/siteContent"
-import { ShieldCheck, ChevronDown, Cpu, FileCheck2, Globe2, Lock } from "lucide-react"
+import { ChevronDown, Cpu, FileCheck2, Globe2, Lock } from "lucide-react"
 
 export function TechnicalTrustSection() {
   const { trust, faq } = SITE_CONTENT

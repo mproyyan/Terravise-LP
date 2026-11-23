@@ -1,4 +1,3 @@
-import React from "react"
 import { Compass, HardHat, FileText, ExternalLink } from "lucide-react"
 
 export function Footer() {

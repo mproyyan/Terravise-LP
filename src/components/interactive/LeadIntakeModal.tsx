@@ -1,8 +1,8 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { Button } from "../ui/Button"
 import { Badge } from "../ui/Badge"
-import { X, CheckCircle, Shield, Building, HardHat, Mail, User } from "lucide-react"
+import { X, CheckCircle, Shield, Building, Mail, User } from "lucide-react"
 
 interface LeadIntakeModalProps {
   open: boolean

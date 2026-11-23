@@ -1,8 +1,6 @@
-import React from "react"
 import { PlateHeader } from "../ui/PlateHeader"
 import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"
-import { ArrowRight, CheckCircle } from "lucide-react"
 
 export function WorkflowSection() {
   const { workflow } = SITE_CONTENT
@@ -33,7 +31,7 @@ export function WorkflowSection() {
 
         {/* 4-Step Linear Sequence Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {workflow.map((step, idx) => (
+          {workflow.map((step) => (
             <div
               key={step.stepNumber}
               className="bg-[#171A19] border border-stone-800 p-6 flex flex-col justify-between hover:border-stone-700 transition-colors group"

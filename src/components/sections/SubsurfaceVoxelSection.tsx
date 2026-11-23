@@ -1,9 +1,7 @@
-import React from "react"
 import { PlateHeader } from "../ui/PlateHeader"
 import { SlicedVoxelViewport } from "../interactive/SlicedVoxelViewport"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { MOCK_SOIL_LAYERS } from "../../data/mockGeology"
-import { Layers } from "lucide-react"
 
 export function SubsurfaceVoxelSection() {
   const { voxel } = SITE_CONTENT

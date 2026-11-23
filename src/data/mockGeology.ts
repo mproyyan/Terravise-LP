@@ -1,4 +1,4 @@
-import { SoilLayer, RecommendedPoint, BearingPoint, BearingCriteria, CptSoundingData } from "../types"
+import type { SoilLayer, RecommendedPoint, BearingPoint, BearingCriteria, CptSoundingData } from "../types"
 
 export const DEFAULT_BEARING_CRITERIA: BearingCriteria = {
   minQc: 15.0,

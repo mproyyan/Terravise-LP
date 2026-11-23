@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { PlateHeader } from "../ui/PlateHeader"
 import { Badge } from "../ui/Badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/Tabs"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { MOCK_RECOMMENDED_POINT } from "../../data/mockGeology"
-import { Crosshair, MapPin, Layers, AlertCircle, Compass, Zap } from "lucide-react"
+import { Crosshair, Compass, Zap } from "lucide-react"
 
 export function DQNRecommendationSection() {
   const { dqn } = SITE_CONTENT

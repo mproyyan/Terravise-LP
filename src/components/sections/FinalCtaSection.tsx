@@ -1,7 +1,6 @@
-import React from "react"
 import { Button } from "../ui/Button"
 import { Badge } from "../ui/Badge"
-import { ArrowRight, Download, CheckCircle, ShieldCheck, FileSpreadsheet } from "lucide-react"
+import { ArrowRight, CheckCircle, ShieldCheck, FileSpreadsheet } from "lucide-react"
 
 interface FinalCtaSectionProps {
   onRequestPilot: () => void

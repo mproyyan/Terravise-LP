@@ -1,4 +1,3 @@
-import React from "react"
 import { MOCK_BEARING_POINTS } from "../../data/mockGeology"
 import { Badge } from "../ui/Badge"
 import { CheckCircle2, ArrowDown } from "lucide-react"

@@ -4,6 +4,11 @@ import type { BearingCriteria } from "../types"
 
 export type MonolithStage = "hero" | "problem" | "dqn" | "voxel" | "stratum" | "workflow"
 
+export interface PipeScreenCoords {
+  xPct: number
+  yPct: number
+}
+
 export interface MutableSceneState {
   scrollProgress: number
   stageProgress: number
@@ -17,6 +22,7 @@ export interface MutableSceneState {
   maxIc: number
   minThickness: number
   hoveredLayerId: string | null
+  selectedPipeId: string | null
   activeDqnTab: string
   cameraView: "iso" | "front"
   explodeFactor: number
@@ -33,6 +39,10 @@ interface Subsurface3DContextValue {
   setBearingCriteria: React.Dispatch<React.SetStateAction<BearingCriteria>>
   hoveredLayerId: string | null
   setHoveredLayerId: (id: string | null) => void
+  selectedPipeId: string | null
+  setSelectedPipeId: (id: string | null) => void
+  pipeScreenCoords: PipeScreenCoords | null
+  setPipeScreenCoords: (coords: PipeScreenCoords | null) => void
   activeDqnTab: string
   setActiveDqnTab: (tab: string) => void
   cameraView: "iso" | "front"
@@ -53,6 +63,11 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   const [sliceY, setSliceY] = useState<number>(60)
   const [bearingCriteria, setBearingCriteria] = useState<BearingCriteria>(DEFAULT_BEARING_CRITERIA)
   const [hoveredLayerId, setHoveredLayerId] = useState<string | null>(null)
+  const [selectedPipeId, setSelectedPipeId] = useState<string | null>("cpt-03")
+  const [pipeScreenCoords, setPipeScreenCoords] = useState<PipeScreenCoords | null>({
+    xPct: 52,
+    yPct: 36,
+  })
   const [activeDqnTab, setActiveDqnTab] = useState<string>("gap")
   const [cameraView, setCameraView] = useState<"iso" | "front">("iso")
   const [explodeOverride, setExplodeOverride] = useState<number | null>(null)
@@ -76,6 +91,7 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
     maxIc: DEFAULT_BEARING_CRITERIA.maxIc,
     minThickness: DEFAULT_BEARING_CRITERIA.minThickness,
     hoveredLayerId: null,
+    selectedPipeId: "cpt-03",
     activeDqnTab: "gap",
     cameraView: "iso",
     explodeFactor: 0,
@@ -102,6 +118,10 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     sceneStateRef.current.hoveredLayerId = hoveredLayerId
   }, [hoveredLayerId])
+
+  useEffect(() => {
+    sceneStateRef.current.selectedPipeId = selectedPipeId
+  }, [selectedPipeId])
 
   useEffect(() => {
     sceneStateRef.current.activeDqnTab = activeDqnTab
@@ -170,6 +190,10 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
         setBearingCriteria,
         hoveredLayerId,
         setHoveredLayerId,
+        selectedPipeId,
+        setSelectedPipeId,
+        pipeScreenCoords,
+        setPipeScreenCoords,
         activeDqnTab,
         setActiveDqnTab,
         cameraView,

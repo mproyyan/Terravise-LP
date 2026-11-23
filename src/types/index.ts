@@ -85,6 +85,29 @@ export interface CptSoundingData {
   timestamp: string
 }
 
+export interface CptTestPipeLayer {
+  layerName: string
+  soilType: SoilClassification
+  depthRange: string
+  thicknessM: number
+  qcMpa: number
+  icValue: number
+  colorHex: string
+}
+
+export interface CptTestPipePoint {
+  id: string
+  code: string
+  sector: string
+  utm: string
+  pos3D: [number, number] // [x, z] in 3D boundary space
+  terminationDepthM: number
+  bearingDepthM: number
+  waterTableM: number
+  status: string
+  layers: CptTestPipeLayer[]
+}
+
 export interface WorkflowStep {
   stepNumber: string
   title: string

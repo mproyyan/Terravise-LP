@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react"
 import { useSubsurface3D, type MonolithStage } from "../../context/Subsurface3DContext"
 import { SubsurfaceMonolithCanvas } from "./SubsurfaceMonolithCanvas"
 import { MOCK_SOIL_LAYERS } from "../../data/mockGeology"
@@ -18,19 +19,26 @@ export function Section3DAnchorDock({
   subtitle,
   renderMobileCanvas = false,
 }: Section3DAnchorDockProps) {
-  const { activeStage, hoveredLayerId, setHoveredLayerId } = useSubsurface3D()
+  const { activeStage, hoveredLayerId, setHoveredLayerId, registerDock } = useSubsurface3D()
+  const dockRef = useRef<HTMLDivElement>(null)
   const isDark = tone === "dark"
   const isCurrentStage = activeStage === stage
 
+  useEffect(() => {
+    registerDock(stage, dockRef.current)
+    return () => registerDock(stage, null)
+  }, [stage, registerDock])
+
   return (
     <div className="relative w-full">
-      {/* Desktop Blueprint Docking Frame (behind the persistent 3D Monolith Stage) */}
+      {/* Desktop Blueprint Docking Frame (Target slot for persistent 3D Monolith Stage) */}
       <div
-        className={`hidden lg:flex flex-col justify-between w-full h-[560px] xl:h-[620px] p-5 border relative transition-all duration-300 select-none ${
+        ref={dockRef}
+        className={`hidden lg:flex flex-col justify-between w-full h-[540px] xl:h-[580px] p-4 border relative transition-all duration-300 select-none ${
           isDark
-            ? "bg-[#150E09]/70 border-[#EFE7DE]/15 text-[#EFE7DE]"
+            ? "bg-[#150E09]/65 border-[#EFE7DE]/15 text-[#EFE7DE]"
             : "bg-[#EFE7DE]/45 border-[#1C130D]/15 text-[#1C130D]"
-        } ${isCurrentStage ? "ring-1 ring-[#BD8564]/40" : "opacity-60"}`}
+        } ${isCurrentStage ? "ring-1 ring-[#BD8564]/45" : "opacity-55"}`}
       >
         {/* Architectural Blueprint Grid Backdrop */}
         <div
@@ -43,14 +51,14 @@ export function Section3DAnchorDock({
           }}
         />
 
-        {/* Corner Survey Crosshairs */}
-        <div className="flex items-center justify-between text-[10px] font-mono opacity-60 z-10">
+        {/* Top Blueprint Corner Crosshairs (Positioned below top HUD bar) */}
+        <div className="pt-11 px-1 flex items-center justify-between text-[9px] font-mono opacity-45 z-10 pointer-events-none">
           <span>+ N 9,309,850 m</span>
           <span>E 704,120 m +</span>
         </div>
 
-        {/* Side Stratum Quick-Inspector Buttons (Clickable/Hoverable in each section) */}
-        <div className="my-auto ml-auto flex flex-col gap-1.5 z-30 pointer-events-auto">
+        {/* Left-Aligned Stratum Quick-Inspector Pills (Avoids right edge DepthSidebarTracker) */}
+        <div className="my-auto mr-auto flex flex-col gap-1.5 z-30 pointer-events-auto">
           {MOCK_SOIL_LAYERS.map((layer, index) => {
             const isHovered = hoveredLayerId === layer.id
             const isHighlighted =
@@ -66,9 +74,9 @@ export function Section3DAnchorDock({
                 onClick={() =>
                   setHoveredLayerId(hoveredLayerId === layer.id ? null : layer.id)
                 }
-                className={`px-2.5 py-1.5 text-left font-mono text-[9px] border transition-all cursor-pointer flex items-center gap-2 backdrop-blur-xs ${
+                className={`px-2 py-1 text-left font-mono text-[9px] border transition-all cursor-pointer flex items-center gap-2 backdrop-blur-xs ${
                   isHovered || isHighlighted
-                    ? "bg-[#1C130D] text-[#FAD9BA] border-[#FAD9BA] translate-x-[-4px] shadow-md"
+                    ? "bg-[#1C130D] text-[#FAD9BA] border-[#FAD9BA] translate-x-1 shadow-md"
                     : isDark
                       ? "bg-[#271C14]/85 text-[#EFE7DE]/75 border-[#EFE7DE]/15 hover:border-[#EFE7DE]/40"
                       : "bg-[#FBF7F2]/90 text-[#1C130D]/80 border-[#1C130D]/15 hover:border-[#1C130D]/40"
@@ -79,18 +87,18 @@ export function Section3DAnchorDock({
                   style={{ backgroundColor: layer.colorHex }}
                 />
                 <div>
-                  <div className="font-bold uppercase tracking-wider">
+                  <div className="font-bold uppercase tracking-wider leading-tight">
                     L0{index + 1} · -{layer.depthEndM.toFixed(1)}m
                   </div>
-                  <div className="text-[8px] opacity-75">{layer.soilType}</div>
+                  <div className="text-[8px] opacity-75 leading-tight">{layer.soilType}</div>
                 </div>
               </button>
             )
           })}
         </div>
 
-        {/* Bottom Blueprint Frame Annotation */}
-        <div className="flex items-center justify-between text-[10px] font-mono opacity-60 z-10">
+        {/* Bottom Spacer for Docked Telemetry Bar */}
+        <div className="pb-12 px-1 flex items-center justify-between text-[9px] font-mono opacity-40 z-10 pointer-events-none">
           <span>{title}</span>
           <span>{subtitle}</span>
         </div>

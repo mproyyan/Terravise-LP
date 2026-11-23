@@ -58,8 +58,8 @@ export function Navbar({ onOpenAppStore }: NavbarProps) {
             </div>
           </a>
 
-          <div className="hidden xl:flex items-center ml-4 pl-4 border-l border-[#1C130D]/15 gap-2 text-xs font-mono text-[#63554B]">
-            <Compass className="w-3.5 h-3.5 text-[#7A421D]" />
+          <div className="hidden 2xl:flex items-center ml-4 pl-4 border-l border-[#1C130D]/15 gap-2 text-xs font-mono text-[#63554B] whitespace-nowrap">
+            <Compass className="w-3.5 h-3.5 text-[#7A421D] shrink-0" />
             <span className="text-[10px] tracking-wider uppercase">
               UTM 48S. 704120m E, 9309850m N
             </span>
@@ -69,7 +69,7 @@ export function Navbar({ onOpenAppStore }: NavbarProps) {
         {/* Navigation Anchors */}
         <nav
           aria-label="Primary navigation"
-          className="hidden md:flex items-center gap-8 font-mono text-[11px] tracking-[0.14em] uppercase text-[#63554B]"
+          className="hidden md:flex items-center gap-6 lg:gap-8 font-mono text-[11px] tracking-[0.14em] uppercase text-[#63554B] whitespace-nowrap"
         >
           <a
             href="#problem"

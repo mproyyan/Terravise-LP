@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from "react"
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react"
 import { DEFAULT_BEARING_CRITERIA } from "../data/mockGeology"
 import type { BearingCriteria } from "../types"
 
@@ -8,6 +8,9 @@ export interface MutableSceneState {
   scrollProgress: number
   stageProgress: number
   activeStage: MonolithStage
+  transitionFrom: MonolithStage
+  transitionTo: MonolithStage
+  transitionT: number
   sliceX: number
   sliceY: number
   minQc: number
@@ -16,7 +19,7 @@ export interface MutableSceneState {
   hoveredLayerId: string | null
   activeDqnTab: string
   cameraView: "iso" | "front"
-   explodeFactor: number
+  explodeFactor: number
 }
 
 interface Subsurface3DContextValue {
@@ -37,6 +40,8 @@ interface Subsurface3DContextValue {
   explodeOverride: number | null
   setExplodeOverride: (val: number | null) => void
   sceneStateRef: React.MutableRefObject<MutableSceneState>
+  registerDock: (stage: MonolithStage, el: HTMLDivElement | null) => void
+  dockElementsRef: React.MutableRefObject<Partial<Record<MonolithStage, HTMLDivElement | null>>>
   resetSlicing: () => void
 }
 
@@ -52,10 +57,19 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   const [cameraView, setCameraView] = useState<"iso" | "front">("iso")
   const [explodeOverride, setExplodeOverride] = useState<number | null>(null)
 
+  const dockElementsRef = useRef<Partial<Record<MonolithStage, HTMLDivElement | null>>>({})
+
+  const registerDock = useCallback((stage: MonolithStage, el: HTMLDivElement | null) => {
+    dockElementsRef.current[stage] = el
+  }, [])
+
   const sceneStateRef = useRef<MutableSceneState>({
     scrollProgress: 0,
     stageProgress: 0,
     activeStage: "hero",
+    transitionFrom: "hero",
+    transitionTo: "hero",
+    transitionT: 0,
     sliceX: 65,
     sliceY: 60,
     minQc: DEFAULT_BEARING_CRITERIA.minQc,
@@ -107,7 +121,7 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
       sceneStateRef.current.scrollProgress = progress
 
       let detectedStage: MonolithStage = "hero"
-      const viewportTrigger = window.innerHeight * 0.48
+      const viewportTrigger = window.innerHeight * 0.5
 
       for (let i = stageIds.length - 1; i >= 0; i--) {
         const id = stageIds[i]
@@ -163,6 +177,8 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
         explodeOverride,
         setExplodeOverride,
         sceneStateRef,
+        registerDock,
+        dockElementsRef,
         resetSlicing,
       }}
     >

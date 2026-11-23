@@ -516,18 +516,18 @@ export function SubsurfaceMonolithCanvas() {
     spot2Group.add(pulseRing)
 
     // CPT Penetrometer Rod & Cone Tip
-    const rodLen = 4.6
-    const rodGeo = new THREE.CylinderGeometry(0.04, 0.04, rodLen, 16)
+    const rodLen = 3.2
+    const rodGeo = new THREE.CylinderGeometry(0.038, 0.038, rodLen, 16)
     const rodMat = new THREE.MeshStandardMaterial({
       color: 0x10b981,
       emissive: 0x10b981,
-      emissiveIntensity: 0.6,
+      emissiveIntensity: 0.55,
       roughness: 0.2,
       metalness: 0.8,
       toneMapped: false,
     })
     const cptRod = new THREE.Mesh(rodGeo, rodMat)
-    cptRod.position.y = 0.4
+    cptRod.position.y = -0.35
     spot2Group.add(cptRod)
 
     const coneTipGeo = new THREE.ConeGeometry(0.09, 0.24, 16)
@@ -638,70 +638,70 @@ export function SubsurfaceMonolithCanvas() {
         clayShiftX: 0,
         clayShiftZ: 0,
         buildingLift: 0,
-        rodDepth: 0.9,
+        rodDepth: -0.35,
         upperOpacity: 1.0,
         bearingGlow: 0.0,
-        camPos: [7.8, 5.6, 8.8],
-        lookY: -0.75,
-        rotY: -0.25,
+        camPos: [8.8, 5.4, 9.8],
+        lookY: -0.85,
+        rotY: -0.32,
       },
       problem: {
-        explode: 0.52,
-        clayShiftX: 0.45,
-        clayShiftZ: 0.35,
-        buildingLift: 0.45,
-        rodDepth: 0.2,
+        explode: 0.45,
+        clayShiftX: 0.42,
+        clayShiftZ: 0.32,
+        buildingLift: 0.35,
+        rodDepth: -0.75,
         upperOpacity: 0.95,
         bearingGlow: 0.0,
-        camPos: [8.4, 5.2, 8.6],
+        camPos: [9.4, 5.2, 9.8],
         lookY: -1.35,
-        rotY: 0.25,
+        rotY: 0.28,
       },
       dqn: {
-        explode: 0.42,
-        clayShiftX: 0.18,
-        clayShiftZ: 0.15,
-        buildingLift: 0.35,
-        rodDepth: -1.45,
+        explode: 0.36,
+        clayShiftX: 0.16,
+        clayShiftZ: 0.14,
+        buildingLift: 0.28,
+        rodDepth: -1.35,
         upperOpacity: 0.78,
         bearingGlow: 0.15,
-        camPos: [7.2, 6.8, 7.8],
-        lookY: -1.2,
-        rotY: -0.55,
+        camPos: [8.4, 6.6, 9.0],
+        lookY: -1.25,
+        rotY: -0.52,
       },
       voxel: {
-        explode: 0.14,
+        explode: 0.12,
         clayShiftX: 0,
         clayShiftZ: 0,
-        buildingLift: 0.15,
-        rodDepth: -1.85,
+        buildingLift: 0.12,
+        rodDepth: -1.65,
         upperOpacity: 1.0,
         bearingGlow: 0.2,
-        camPos: [7.4, 4.9, 8.0],
+        camPos: [8.4, 5.0, 9.2],
         lookY: -1.25,
-        rotY: -0.18,
+        rotY: -0.22,
       },
       stratum: {
-        explode: 0.36,
+        explode: 0.32,
         clayShiftX: 0,
         clayShiftZ: 0,
-        buildingLift: 0.28,
-        rodDepth: -2.25,
+        buildingLift: 0.24,
+        rodDepth: -1.95,
         upperOpacity: 0.26,
         bearingGlow: 0.95,
-        camPos: [8.0, 4.1, 8.6],
-        lookY: -1.75,
+        camPos: [9.0, 4.3, 9.6],
+        lookY: -1.65,
         rotY: 0.32,
       },
       workflow: {
-        explode: 0.22,
+        explode: 0.2,
         clayShiftX: 0,
         clayShiftZ: 0,
-        buildingLift: 0.18,
-        rodDepth: -2.1,
+        buildingLift: 0.16,
+        rodDepth: -1.85,
         upperOpacity: 0.88,
         bearingGlow: 0.45,
-        camPos: [8.5, 5.8, 9.2],
+        camPos: [9.2, 5.8, 10.0],
         lookY: -1.1,
         rotY: -0.35,
       },
@@ -712,29 +712,46 @@ export function SubsurfaceMonolithCanvas() {
       const dt = Math.min(timer.getDelta(), 0.1)
       const elapsed = timer.getElapsed()
       const state = sceneStateRef.current
-      const target = stageTargets[state.activeStage] || stageTargets.hero
+      const fromTarget = stageTargets[state.transitionFrom] || stageTargets[state.activeStage] || stageTargets.hero
+      const toTarget = stageTargets[state.transitionTo] || stageTargets[state.activeStage] || stageTargets.hero
+      const t = state.transitionT
+
+      const targetExplode = THREE.MathUtils.lerp(fromTarget.explode, toTarget.explode, t)
+      const targetClayX = THREE.MathUtils.lerp(fromTarget.clayShiftX, toTarget.clayShiftX, t)
+      const targetClayZ = THREE.MathUtils.lerp(fromTarget.clayShiftZ, toTarget.clayShiftZ, t)
+      const targetLift = THREE.MathUtils.lerp(fromTarget.buildingLift, toTarget.buildingLift, t)
+      const targetRod = THREE.MathUtils.lerp(fromTarget.rodDepth, toTarget.rodDepth, t)
+      const targetOpacity = THREE.MathUtils.lerp(fromTarget.upperOpacity, toTarget.upperOpacity, t)
+      const targetGlow = THREE.MathUtils.lerp(fromTarget.bearingGlow, toTarget.bearingGlow, t)
+      const blendedCamPos: [number, number, number] = [
+        THREE.MathUtils.lerp(fromTarget.camPos[0], toTarget.camPos[0], t),
+        THREE.MathUtils.lerp(fromTarget.camPos[1], toTarget.camPos[1], t),
+        THREE.MathUtils.lerp(fromTarget.camPos[2], toTarget.camPos[2], t),
+      ]
+      const blendedLookY = THREE.MathUtils.lerp(fromTarget.lookY, toTarget.lookY, t)
+      const blendedRotY = THREE.MathUtils.lerp(fromTarget.rotY, toTarget.rotY, t)
 
       // 1. Damp Scrollytelling Parameters
-      const dampLambda = 4.5
-      currentExplode = THREE.MathUtils.damp(currentExplode, target.explode, dampLambda, dt)
-      currentClayShiftX = THREE.MathUtils.damp(currentClayShiftX, target.clayShiftX, dampLambda, dt)
-      currentClayShiftZ = THREE.MathUtils.damp(currentClayShiftZ, target.clayShiftZ, dampLambda, dt)
+      const dampLambda = 6.0
+      currentExplode = THREE.MathUtils.damp(currentExplode, targetExplode, dampLambda, dt)
+      currentClayShiftX = THREE.MathUtils.damp(currentClayShiftX, targetClayX, dampLambda, dt)
+      currentClayShiftZ = THREE.MathUtils.damp(currentClayShiftZ, targetClayZ, dampLambda, dt)
       currentBuildingLift = THREE.MathUtils.damp(
         currentBuildingLift,
-        target.buildingLift,
+        targetLift,
         dampLambda,
         dt
       )
-      currentRodDepth = THREE.MathUtils.damp(currentRodDepth, target.rodDepth, dampLambda, dt)
+      currentRodDepth = THREE.MathUtils.damp(currentRodDepth, targetRod, dampLambda, dt)
       currentUpperOpacity = THREE.MathUtils.damp(
         currentUpperOpacity,
-        target.upperOpacity,
+        targetOpacity,
         dampLambda,
         dt
       )
       currentBearingGlow = THREE.MathUtils.damp(
         currentBearingGlow,
-        target.bearingGlow,
+        targetGlow,
         dampLambda,
         dt
       )
@@ -818,14 +835,14 @@ export function SubsurfaceMonolithCanvas() {
 
       // 6. Camera Position & Orientation (Isometric vs Front Profile + Gentle Parallax)
       const isFrontProfile = state.activeStage === "voxel" && state.cameraView === "front"
-      const targetCamX = isFrontProfile ? 0.0 : target.camPos[0]
-      const targetCamY = isFrontProfile ? -1.1 : target.camPos[1]
-      const targetCamZ = isFrontProfile ? 10.2 : target.camPos[2]
+      const targetCamX = isFrontProfile ? 0.0 : blendedCamPos[0]
+      const targetCamY = isFrontProfile ? -1.1 : blendedCamPos[1]
+      const targetCamZ = isFrontProfile ? 10.6 : blendedCamPos[2]
 
-      currentCamX = THREE.MathUtils.damp(currentCamX, targetCamX, 3.8, dt)
-      currentCamY = THREE.MathUtils.damp(currentCamY, targetCamY, 3.8, dt)
-      currentCamZ = THREE.MathUtils.damp(currentCamZ, targetCamZ, 3.8, dt)
-      currentLookY = THREE.MathUtils.damp(currentLookY, target.lookY, 4.2, dt)
+      currentCamX = THREE.MathUtils.damp(currentCamX, targetCamX, 4.5, dt)
+      currentCamY = THREE.MathUtils.damp(currentCamY, targetCamY, 4.5, dt)
+      currentCamZ = THREE.MathUtils.damp(currentCamZ, targetCamZ, 4.5, dt)
+      currentLookY = THREE.MathUtils.damp(currentLookY, blendedLookY, 5.0, dt)
 
       camera.position.set(
         currentCamX + pointerX * 0.35,
@@ -836,8 +853,8 @@ export function SubsurfaceMonolithCanvas() {
 
       const targetRotY = isFrontProfile
         ? 0
-        : target.rotY + userRotationY + Math.sin(elapsed * 0.35) * 0.04
-      currentRootRotY = THREE.MathUtils.damp(currentRootRotY, targetRotY, 4.5, dt)
+        : blendedRotY + userRotationY + Math.sin(elapsed * 0.35) * 0.04
+      currentRootRotY = THREE.MathUtils.damp(currentRootRotY, targetRotY, 5.0, dt)
       monolithRoot.rotation.y = currentRootRotY
 
       renderer.render(scene, camera)

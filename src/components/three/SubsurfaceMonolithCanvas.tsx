@@ -11,7 +11,17 @@ interface LayerMeshEntry {
   edgeMaterial: THREE.LineBasicMaterial
   baseY: number
   height: number
-  baseColor: THREE.Color
+}
+
+interface VoxelEntry {
+  ix: number
+  iy: number
+  iz: number
+  normX: number // 0..100
+  normZ: number // 0..100
+  basePos: THREE.Vector3
+  layerId: string
+  isAnomaly: boolean
 }
 
 function createProceduralStrataTexture(
@@ -29,17 +39,10 @@ function createProceduralStrataTexture(
 
     if (pattern === "sand") {
       ctx.fillStyle = "rgba(28, 19, 13, 0.14)"
-      for (let i = 0; i < 600; i++) {
+      for (let i = 0; i < 500; i++) {
         const x = (i * 73) % 256
         const y = (i * 137) % 256
-        const size = (i % 3) + 1.5
-        ctx.fillRect(x, y, size, size)
-      }
-      ctx.fillStyle = "rgba(250, 217, 186, 0.2)"
-      for (let i = 0; i < 300; i++) {
-        const x = (i * 97 + 19) % 256
-        const y = (i * 53 + 41) % 256
-        ctx.fillRect(x, y, 2, 2)
+        ctx.fillRect(x, y, (i % 3) + 1.5, (i % 3) + 1.5)
       }
     } else if (pattern === "silt") {
       ctx.strokeStyle = "rgba(28, 19, 13, 0.16)"
@@ -51,17 +54,13 @@ function createProceduralStrataTexture(
         ctx.stroke()
       }
     } else if (pattern === "clay") {
-      ctx.strokeStyle = "rgba(250, 217, 186, 0.14)"
+      ctx.strokeStyle = "rgba(250, 217, 186, 0.16)"
       ctx.lineWidth = 1.5
       for (let i = -256; i < 256; i += 16) {
         ctx.beginPath()
         ctx.moveTo(i, 0)
         ctx.lineTo(i + 256, 256)
         ctx.stroke()
-      }
-      ctx.fillStyle = "rgba(28, 19, 13, 0.15)"
-      for (let y = 16; y < 256; y += 32) {
-        ctx.fillRect(0, y, 256, 3)
       }
     } else if (pattern === "bearing") {
       ctx.strokeStyle = "rgba(28, 19, 13, 0.22)"
@@ -72,12 +71,6 @@ function createProceduralStrataTexture(
         ctx.lineTo(256, y)
         ctx.stroke()
       }
-      ctx.fillStyle = "rgba(250, 217, 186, 0.22)"
-      for (let i = 0; i < 350; i++) {
-        const x = (i * 61) % 256
-        const y = (i * 113) % 256
-        ctx.fillRect(x, y, 3, 2)
-      }
     }
   }
 
@@ -87,6 +80,28 @@ function createProceduralStrataTexture(
   texture.wrapT = THREE.RepeatWrapping
   texture.repeat.set(2, 1)
   return texture
+}
+
+function getStageWeights(
+  fromStage: MonolithStage,
+  toStage: MonolithStage,
+  t: number
+): Record<MonolithStage, number> {
+  const weights: Record<MonolithStage, number> = {
+    hero: 0,
+    problem: 0,
+    dqn: 0,
+    voxel: 0,
+    stratum: 0,
+    workflow: 0,
+  }
+  if (fromStage === toStage) {
+    weights[fromStage] = 1
+  } else {
+    weights[fromStage] = 1 - t
+    weights[toStage] = t
+  }
+  return weights
 }
 
 export function SubsurfaceMonolithCanvas() {
@@ -100,7 +115,7 @@ export function SubsurfaceMonolithCanvas() {
     const width = container.clientWidth || window.innerWidth
     const height = container.clientHeight || window.innerHeight
 
-    // 1. WebGLRenderer Setup (r186 compliant)
+    // 1. WebGLRenderer Setup (r186 compliant, transparent borderless canvas)
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -112,25 +127,24 @@ export function SubsurfaceMonolithCanvas() {
     renderer.toneMappingExposure = 1.08
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFShadowMap
-    renderer.localClippingEnabled = true
     renderer.setClearColor(0x000000, 0)
     container.appendChild(renderer.domElement)
 
     // 2. Scene & Camera
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100)
-    camera.position.set(8.2, 6.4, 9.5)
+    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 120)
+    camera.position.set(8.6, 5.4, 9.6)
     camera.lookAt(0, -0.8, 0)
 
     // 3. Architectural Studio Lighting
-    const ambientLight = new THREE.AmbientLight(0xfbf7f2, 0.85)
+    const ambientLight = new THREE.AmbientLight(0xfbf7f2, 0.9)
     scene.add(ambientLight)
 
     const hemiLight = new THREE.HemisphereLight(0xfad9ba, 0x381800, 0.65)
     scene.add(hemiLight)
 
-    const keyLight = new THREE.DirectionalLight(0xfff5eb, 2.4)
-    keyLight.position.set(7, 12, 8)
+    const keyLight = new THREE.DirectionalLight(0xfff5eb, 2.5)
+    keyLight.position.set(8, 13, 9)
     keyLight.castShadow = true
     keyLight.shadow.mapSize.set(1024, 1024)
     keyLight.shadow.camera.left = -6
@@ -138,27 +152,22 @@ export function SubsurfaceMonolithCanvas() {
     keyLight.shadow.camera.top = 6
     keyLight.shadow.camera.bottom = -6
     keyLight.shadow.camera.near = 1
-    keyLight.shadow.camera.far = 30
+    keyLight.shadow.camera.far = 35
     keyLight.shadow.normalBias = 0.02
     keyLight.shadow.bias = -0.0002
     scene.add(keyLight)
 
-    const rimLight = new THREE.DirectionalLight(0xfad9ba, 1.1)
-    rimLight.position.set(-7, 5, -6)
+    const rimLight = new THREE.DirectionalLight(0xfad9ba, 1.2)
+    rimLight.position.set(-8, 6, -6)
     scene.add(rimLight)
 
-    const bottomFill = new THREE.DirectionalLight(0xe76f51, 0.55)
-    bottomFill.position.set(0, -8, 4)
+    const bottomFill = new THREE.DirectionalLight(0xe76f51, 0.65)
+    bottomFill.position.set(0, -9, 5)
     scene.add(bottomFill)
 
-    // 4. Clipping Planes for Interactive Easting (X) & Northing (Z) Slicing
     const BLOCK_W = 4.0
     const BLOCK_D = 3.2
-    const clipPlaneX = new THREE.Plane(new THREE.Vector3(-1, 0, 0), BLOCK_W / 2 + 0.5)
-    const clipPlaneZ = new THREE.Plane(new THREE.Vector3(0, 0, -1), BLOCK_D / 2 + 0.5)
-    const soilClippingPlanes = [clipPlaneX, clipPlaneZ]
 
-    // Root Monolith Group
     const monolithRoot = new THREE.Group()
     scene.add(monolithRoot)
 
@@ -167,18 +176,27 @@ export function SubsurfaceMonolithCanvas() {
     const disposableTextures: THREE.Texture[] = []
 
     // =========================================================================
-    // A. ARCHITECTURAL BUILDING & SURFACE DATUM (+0.0m)
+    // VISUALIZER 00: ARCHITECTURAL BUILDING & MONOLITH STRATA (Hero & Problem)
     // =========================================================================
     const buildingGroup = new THREE.Group()
     monolithRoot.add(buildingGroup)
 
-    // Surface Ground Podium / Datum Slab (0.0m)
+    const buildingMaterials: Array<{ mat: THREE.Material; baseOpacity: number }> = []
+
+    const registerBuildingMat = <T extends THREE.Material>(mat: T, baseOpacity = 1): T => {
+      mat.transparent = true
+      mat.opacity = baseOpacity
+      buildingMaterials.push({ mat, baseOpacity })
+      disposableMaterials.push(mat)
+      return mat
+    }
+
+    // Surface Ground Podium Slab (0.0m)
     const podiumGeo = new THREE.BoxGeometry(BLOCK_W + 0.16, 0.14, BLOCK_D + 0.16)
-    const podiumMat = new THREE.MeshStandardMaterial({
-      color: 0xefe7de,
-      roughness: 0.7,
-      metalness: 0.05,
-    })
+    const podiumMat = registerBuildingMat(
+      new THREE.MeshStandardMaterial({ color: 0xefe7de, roughness: 0.7, metalness: 0.05 }),
+      1
+    )
     const podiumMesh = new THREE.Mesh(podiumGeo, podiumMat)
     podiumMesh.position.y = 0.07
     podiumMesh.receiveShadow = true
@@ -186,24 +204,12 @@ export function SubsurfaceMonolithCanvas() {
     buildingGroup.add(podiumMesh)
 
     const podiumEdges = new THREE.EdgesGeometry(podiumGeo, 15)
-    const podiumLines = new THREE.LineSegments(
-      podiumEdges,
-      new THREE.LineBasicMaterial({ color: 0x5a3008, transparent: true, opacity: 0.55 })
+    const podiumLineMat = registerBuildingMat(
+      new THREE.LineBasicMaterial({ color: 0x5a3008 }),
+      0.55
     )
-    podiumMesh.add(podiumLines)
+    podiumMesh.add(new THREE.LineSegments(podiumEdges, podiumLineMat))
     disposableGeometries.push(podiumGeo, podiumEdges)
-    disposableMaterials.push(podiumMat, podiumLines.material as THREE.Material)
-
-    // Survey Footprint Perimeter Grid on Surface
-    const gridHelper = new THREE.GridHelper(BLOCK_W - 0.2, 8, 0x7a421d, 0xbd8564)
-    gridHelper.position.y = 0.145
-    gridHelper.scale.z = (BLOCK_D - 0.2) / (BLOCK_W - 0.2)
-    const gridMat = gridHelper.material as THREE.Material
-    if ("opacity" in gridMat) {
-      gridMat.transparent = true
-      gridMat.opacity = 0.35
-    }
-    buildingGroup.add(gridHelper)
 
     // Main High-Rise Architectural Tower (6 Stories)
     const towerW = 1.75
@@ -212,33 +218,25 @@ export function SubsurfaceMonolithCanvas() {
     const towerX = -0.45
     const towerZ = -0.15
 
-    // Core glass/facade volume
     const towerCoreGeo = new THREE.BoxGeometry(towerW, towerH, towerD)
-    const towerCoreMat = new THREE.MeshStandardMaterial({
-      color: 0x2b211a,
-      roughness: 0.25,
-      metalness: 0.45,
-    })
+    const towerCoreMat = registerBuildingMat(
+      new THREE.MeshStandardMaterial({ color: 0x2b211a, roughness: 0.25, metalness: 0.45 }),
+      1
+    )
     const towerCore = new THREE.Mesh(towerCoreGeo, towerCoreMat)
     towerCore.position.set(towerX, 0.14 + towerH / 2, towerZ)
     towerCore.castShadow = true
-    towerCore.receiveShadow = true
     buildingGroup.add(towerCore)
     disposableGeometries.push(towerCoreGeo)
-    disposableMaterials.push(towerCoreMat)
 
-    // Architectural concrete floor slabs (6 levels) + vertical columns
-    const slabMat = new THREE.MeshStandardMaterial({
-      color: 0xfbf7f2,
-      roughness: 0.55,
-      metalness: 0.1,
-    })
-    const slabEdgeMat = new THREE.LineBasicMaterial({
-      color: 0x5a3008,
-      transparent: true,
-      opacity: 0.7,
-    })
-    disposableMaterials.push(slabMat, slabEdgeMat)
+    const slabMat = registerBuildingMat(
+      new THREE.MeshStandardMaterial({ color: 0xfbf7f2, roughness: 0.55, metalness: 0.1 }),
+      1
+    )
+    const slabEdgeMat = registerBuildingMat(
+      new THREE.LineBasicMaterial({ color: 0x5a3008 }),
+      0.7
+    )
 
     const slabGeo = new THREE.BoxGeometry(towerW + 0.12, 0.055, towerD + 0.12)
     const slabEdgeGeo = new THREE.EdgesGeometry(slabGeo, 15)
@@ -248,13 +246,11 @@ export function SubsurfaceMonolithCanvas() {
       const slab = new THREE.Mesh(slabGeo, slabMat)
       slab.position.set(towerX, 0.16 + floor * (towerH / 6), towerZ)
       slab.castShadow = true
-      slab.receiveShadow = true
-      const edges = new THREE.LineSegments(slabEdgeGeo, slabEdgeMat)
-      slab.add(edges)
+      slab.add(new THREE.LineSegments(slabEdgeGeo, slabEdgeMat))
       buildingGroup.add(slab)
     }
 
-    // Exterior Structural Columns on Tower
+    // Exterior Columns
     const colGeo = new THREE.BoxGeometry(0.07, towerH, 0.07)
     disposableGeometries.push(colGeo)
     const colOffsets = [
@@ -268,19 +264,8 @@ export function SubsurfaceMonolithCanvas() {
     for (const [cx, cz] of colOffsets) {
       const col = new THREE.Mesh(colGeo, slabMat)
       col.position.set(towerX + cx, 0.14 + towerH / 2, towerZ + cz)
-      col.castShadow = true
       buildingGroup.add(col)
     }
-
-    // Rooftop Mechanical Penthouse & Telemetry Beacon
-    const penthouseGeo = new THREE.BoxGeometry(0.75, 0.32, 0.65)
-    const penthouseEdges = new THREE.EdgesGeometry(penthouseGeo, 15)
-    const penthouse = new THREE.Mesh(penthouseGeo, slabMat)
-    penthouse.position.set(towerX - 0.2, 0.14 + towerH + 0.16, towerZ)
-    penthouse.castShadow = true
-    penthouse.add(new THREE.LineSegments(penthouseEdges, slabEdgeMat))
-    buildingGroup.add(penthouse)
-    disposableGeometries.push(penthouseGeo, penthouseEdges)
 
     // Adjacent 3-Story Podium Wing
     const wingW = 1.25
@@ -293,8 +278,6 @@ export function SubsurfaceMonolithCanvas() {
     const wingEdges = new THREE.EdgesGeometry(wingGeo, 15)
     const wingMesh = new THREE.Mesh(wingGeo, towerCoreMat)
     wingMesh.position.set(wingX, 0.14 + wingH / 2, wingZ)
-    wingMesh.castShadow = true
-    wingMesh.receiveShadow = true
     wingMesh.add(new THREE.LineSegments(wingEdges, slabEdgeMat))
     buildingGroup.add(wingMesh)
     disposableGeometries.push(wingGeo, wingEdges)
@@ -305,14 +288,11 @@ export function SubsurfaceMonolithCanvas() {
     for (let f = 1; f <= 3; f++) {
       const wSlab = new THREE.Mesh(wingSlabGeo, slabMat)
       wSlab.position.set(wingX, 0.14 + f * (wingH / 3), wingZ)
-      wSlab.castShadow = true
       wSlab.add(new THREE.LineSegments(wingSlabEdges, slabEdgeMat))
       buildingGroup.add(wSlab)
     }
 
-    // =========================================================================
-    // B. 4 STRATIGRAPHIC SUBSURFACE LAYERS (0.0m down to -25.0m)
-    // =========================================================================
+    // 4 Stratigraphic Layers (Used in Hero, and Layer 3 isolated in Problem)
     const layerSpecs: Array<{
       id: string
       height: number
@@ -341,13 +321,11 @@ export function SubsurfaceMonolithCanvas() {
       const mat = new THREE.MeshStandardMaterial({
         color: new THREE.Color(spec.colorHex),
         map: tex,
-        roughness: 0.78,
+        roughness: 0.75,
         metalness: 0.06,
-        clippingPlanes: soilClippingPlanes,
-        clipShadows: true,
-        side: THREE.DoubleSide,
         transparent: true,
         opacity: 1,
+        depthWrite: true,
       })
 
       const mesh = new THREE.Mesh(geo, mat)
@@ -360,43 +338,12 @@ export function SubsurfaceMonolithCanvas() {
         color: 0x1c130d,
         transparent: true,
         opacity: 0.65,
-        clippingPlanes: soilClippingPlanes,
       })
       const edgeLines = new THREE.LineSegments(edgeGeo, edgeMat)
       layerGroup.add(edgeLines)
 
       disposableGeometries.push(geo, edgeGeo)
       disposableMaterials.push(mat, edgeMat)
-
-      // Embedded Soft Clay Anomaly Lens inside Layer 3 (-6.5m to -14.0m)
-      if (spec.id === "layer-3") {
-        const lensGeo = new THREE.CylinderGeometry(0.95, 0.75, spec.height * 0.65, 24)
-        lensGeo.scale(1.2, 1, 0.85)
-        const lensMat = new THREE.MeshStandardMaterial({
-          color: 0xf59e0b,
-          emissive: 0xd97706,
-          emissiveIntensity: 0.35,
-          roughness: 0.4,
-          metalness: 0.1,
-          transparent: true,
-          opacity: 0.9,
-        })
-        const lensMesh = new THREE.Mesh(lensGeo, lensMat)
-        lensMesh.position.set(0.35, 0.04, 0.25)
-        lensMesh.name = "anomalyLens"
-        layerGroup.add(lensMesh)
-
-        const lensEdges = new THREE.EdgesGeometry(lensGeo, 20)
-        const lensLineMat = new THREE.LineBasicMaterial({
-          color: 0xfad9ba,
-          transparent: true,
-          opacity: 0.85,
-        })
-        lensMesh.add(new THREE.LineSegments(lensEdges, lensLineMat))
-
-        disposableGeometries.push(lensGeo, lensEdges)
-        disposableMaterials.push(lensMat, lensLineMat)
-      }
 
       monolithRoot.add(layerGroup)
       layerEntries.push({
@@ -408,162 +355,473 @@ export function SubsurfaceMonolithCanvas() {
         edgeMaterial: edgeMat,
         baseY,
         height: spec.height,
-        baseColor: new THREE.Color(spec.colorHex),
       })
     }
 
     // =========================================================================
-    // C. STRUCTURAL FOUNDATION PILES (Connecting Building down to Layer 4)
+    // VISUALIZER 01: PROBLEM SECTION — ORGANIC 3D SOFT CLAY ANOMALY LENS & 4 BLIND GRID RIGS
     // =========================================================================
-    const pilesGroup = new THREE.Group()
-    monolithRoot.add(pilesGroup)
+    const problemAnomalyGroup = new THREE.Group()
+    problemAnomalyGroup.position.set(0, -1.75, 0)
+    monolithRoot.add(problemAnomalyGroup)
 
-    const TOTAL_PILE_LEN = 3.15
-    const pileGeo = new THREE.CylinderGeometry(0.085, 0.085, TOTAL_PILE_LEN, 16)
-    const pileMat = new THREE.MeshStandardMaterial({
+    // Deformed Organic 3D Soft Clay Hazard Lens (Multi-lobe sculpted pocket)
+    const anomalyGeo = new THREE.IcosahedronGeometry(1.05, 3)
+    const posAttr = anomalyGeo.attributes.position
+    for (let i = 0; i < posAttr.count; i++) {
+      const vx = posAttr.getX(i)
+      const vy = posAttr.getY(i)
+      const vz = posAttr.getZ(i)
+      const wave =
+        1 +
+        0.22 * Math.sin(vx * 3.2 + 0.5) * Math.cos(vz * 2.8) +
+        0.15 * Math.cos(vy * 4.0)
+      posAttr.setXYZ(i, vx * 1.35 * wave, vy * 0.42 * wave, vz * 0.95 * wave)
+    }
+    anomalyGeo.computeVertexNormals()
+
+    const anomalyMat = new THREE.MeshStandardMaterial({
+      color: 0xe76f51,
+      emissive: 0xd97706,
+      emissiveIntensity: 0.45,
+      roughness: 0.35,
+      metalness: 0.1,
+      transparent: true,
+      opacity: 0,
+    })
+    const anomalyMesh = new THREE.Mesh(anomalyGeo, anomalyMat)
+    anomalyMesh.position.set(0.15, 0, 0.1)
+    problemAnomalyGroup.add(anomalyMesh)
+
+    const anomalyWireGeo = new THREE.WireframeGeometry(anomalyGeo)
+    const anomalyWireMat = new THREE.LineBasicMaterial({
       color: 0xfad9ba,
+      transparent: true,
+      opacity: 0,
+    })
+    const anomalyWire = new THREE.LineSegments(anomalyWireGeo, anomalyWireMat)
+    anomalyMesh.add(anomalyWire)
+
+    // 4 Rigid Fixed-Grid Borehole Columns at the 4 corners that MISS the central clay pocket
+    const blindBoreholeGeo = new THREE.CylinderGeometry(0.055, 0.055, 2.8, 16)
+    const blindBoreholeMat = new THREE.MeshStandardMaterial({
+      color: 0x1c130d,
+      roughness: 0.4,
+      transparent: true,
+      opacity: 0,
+    })
+    const blindRingGeo = new THREE.RingGeometry(0.16, 0.22, 24)
+    const blindRingMat = new THREE.MeshBasicMaterial({
+      color: 0x7a421d,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0,
+    })
+
+    const blindCorners: Array<[number, number]> = [
+      [-1.7, -1.3],
+      [1.7, -1.3],
+      [-1.7, 1.3],
+      [1.7, 1.3],
+    ]
+    for (const [bx, bz] of blindCorners) {
+      const post = new THREE.Mesh(blindBoreholeGeo, blindBoreholeMat)
+      post.position.set(bx, 0.1, bz)
+      problemAnomalyGroup.add(post)
+
+      const ring = new THREE.Mesh(blindRingGeo, blindRingMat)
+      ring.rotation.x = -Math.PI / 2
+      ring.position.set(bx, 0.62, bz)
+      problemAnomalyGroup.add(ring)
+    }
+
+    disposableGeometries.push(anomalyGeo, anomalyWireGeo, blindBoreholeGeo, blindRingGeo)
+    disposableMaterials.push(anomalyMat, anomalyWireMat, blindBoreholeMat, blindRingMat)
+
+    // =========================================================================
+    // VISUALIZER 02: DQN SECTION — 144-NODE TOPOGRAPHIC CANDIDATE RADAR & SPOT 2 LASER
+    // =========================================================================
+    const dqnRadarGroup = new THREE.Group()
+    dqnRadarGroup.position.set(0, -1.1, 0)
+    monolithRoot.add(dqnRadarGroup)
+
+    // 12x12 = 144 Candidate Sensor Nodes across the site boundary
+    const GRID_NX = 12
+    const GRID_NZ = 10
+    const NODE_COUNT = GRID_NX * GRID_NZ
+    const nodeGeo = new THREE.CylinderGeometry(0.055, 0.055, 1, 12)
+    const nodeMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.3,
+      metalness: 0.2,
+      transparent: true,
+      opacity: 0,
+    })
+    const candidateInstanced = new THREE.InstancedMesh(nodeGeo, nodeMat, NODE_COUNT)
+    dqnRadarGroup.add(candidateInstanced)
+
+    const SPOT2_X = 0.42
+    const SPOT2_Z = 0.28
+    const nodeDummy = new THREE.Object3D()
+    const nodeColor = new THREE.Color()
+    const candidateCoords: Array<{ x: number; z: number; distSpot2: number; qVal: number }> = []
+
+    let nIdx = 0
+    for (let ix = 0; ix < GRID_NX; ix++) {
+      for (let iz = 0; iz < GRID_NZ; iz++) {
+        const x = -BLOCK_W / 2 + 0.25 + (ix / (GRID_NX - 1)) * (BLOCK_W - 0.5)
+        const z = -BLOCK_D / 2 + 0.25 + (iz / (GRID_NZ - 1)) * (BLOCK_D - 0.5)
+        const dist = Math.hypot(x - SPOT2_X, z - SPOT2_Z)
+        const qVal = Math.max(0.12, Math.exp(-dist * dist * 0.85))
+        candidateCoords.push({ x, z, distSpot2: dist, qVal })
+
+        nodeDummy.position.set(x, qVal * 0.45, z)
+        nodeDummy.scale.set(1, Math.max(0.15, qVal * 0.9), 1)
+        nodeDummy.updateMatrix()
+        candidateInstanced.setMatrixAt(nIdx, nodeDummy.matrix)
+
+        if (dist < 0.45) {
+          nodeColor.setHex(0x10b981) // Vivid Emerald Peak at Spot 2
+        } else if (dist < 1.15) {
+          nodeColor.setHex(0xfad9ba) // High Information Gain Zone
+        } else {
+          nodeColor.setHex(0x7a421d) // Low Priority Perimeter
+        }
+        candidateInstanced.setColorAt(nIdx, nodeColor)
+        nIdx++
+      }
+    }
+    candidateInstanced.instanceMatrix.needsUpdate = true
+    if (candidateInstanced.instanceColor) candidateInstanced.instanceColor.needsUpdate = true
+
+    // Radar Base Platform Frame
+    const radarPlateGeo = new THREE.BoxGeometry(BLOCK_W + 0.2, 0.06, BLOCK_D + 0.2)
+    const radarPlateMat = new THREE.MeshStandardMaterial({
+      color: 0x1c130d,
+      roughness: 0.8,
+      transparent: true,
+      opacity: 0,
+    })
+    const radarPlate = new THREE.Mesh(radarPlateGeo, radarPlateMat)
+    radarPlate.position.y = -0.05
+    dqnRadarGroup.add(radarPlate)
+
+    const radarPlateEdges = new THREE.EdgesGeometry(radarPlateGeo)
+    const radarPlateLineMat = new THREE.LineBasicMaterial({
+      color: 0xfad9ba,
+      transparent: true,
+      opacity: 0,
+    })
+    radarPlate.add(new THREE.LineSegments(radarPlateEdges, radarPlateLineMat))
+
+    // Spot 2 Vertical Laser Column + Expanding 16.2m Data Gap Cylinder
+    const laserBeamGeo = new THREE.CylinderGeometry(0.045, 0.045, 3.4, 16)
+    const laserBeamMat = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
+      transparent: true,
+      opacity: 0,
+      toneMapped: false,
+    })
+    const laserBeam = new THREE.Mesh(laserBeamGeo, laserBeamMat)
+    laserBeam.position.set(SPOT2_X, 1.4, SPOT2_Z)
+    dqnRadarGroup.add(laserBeam)
+
+    const gapCylinderGeo = new THREE.CylinderGeometry(1.15, 1.15, 0.75, 36, 1, true)
+    const gapCylinderMat = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+    })
+    const gapCylinder = new THREE.Mesh(gapCylinderGeo, gapCylinderMat)
+    gapCylinder.position.set(SPOT2_X, 0.38, SPOT2_Z)
+    dqnRadarGroup.add(gapCylinder)
+
+    const targetRingGeo = new THREE.RingGeometry(0.32, 0.4, 32)
+    const targetRingMat = new THREE.MeshBasicMaterial({
+      color: 0xfad9ba,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0,
+      toneMapped: false,
+    })
+    const targetRing = new THREE.Mesh(targetRingGeo, targetRingMat)
+    targetRing.rotation.x = -Math.PI / 2
+    targetRing.position.set(SPOT2_X, 0.92, SPOT2_Z)
+    dqnRadarGroup.add(targetRing)
+
+    // Dipping Strata Transition Fault Plane (Highlighted when DQN Tab = "transition")
+    const faultPlaneGeo = new THREE.PlaneGeometry(BLOCK_W - 0.3, BLOCK_D - 0.3, 8, 8)
+    const faultPlaneMat = new THREE.MeshBasicMaterial({
+      color: 0xe76f51,
+      wireframe: true,
+      transparent: true,
+      opacity: 0,
+    })
+    const faultPlane = new THREE.Mesh(faultPlaneGeo, faultPlaneMat)
+    faultPlane.rotation.x = -Math.PI / 2 + 0.22
+    faultPlane.rotation.z = -0.15
+    faultPlane.position.y = 0.45
+    dqnRadarGroup.add(faultPlane)
+
+    disposableGeometries.push(
+      nodeGeo,
+      radarPlateGeo,
+      radarPlateEdges,
+      laserBeamGeo,
+      gapCylinderGeo,
+      targetRingGeo,
+      faultPlaneGeo
+    )
+    disposableMaterials.push(
+      nodeMat,
+      radarPlateMat,
+      radarPlateLineMat,
+      laserBeamMat,
+      gapCylinderMat,
+      targetRingMat,
+      faultPlaneMat
+    )
+
+    // =========================================================================
+    // VISUALIZER 03: VOXEL SECTION — TRUE 3D INSTANCED VOXEL MATRIX (10 x 6 x 8 = 480 CUBES)
+    // =========================================================================
+    const voxelMatrixGroup = new THREE.Group()
+    voxelMatrixGroup.position.set(0, -1.35, 0)
+    monolithRoot.add(voxelMatrixGroup)
+
+    const VX = 10
+    const VY = 6
+    const VZ = 8
+    const TOTAL_VOXELS = VX * VY * VZ
+
+    const cellW = (BLOCK_W / VX) * 0.86
+    const cellH = (3.4 / VY) * 0.84
+    const cellD = (BLOCK_D / VZ) * 0.86
+
+    const voxelCubeGeo = new THREE.BoxGeometry(cellW, cellH, cellD)
+    const voxelCubeMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.45,
+      metalness: 0.12,
+      transparent: true,
+      opacity: 0,
+    })
+    const voxelInstanced = new THREE.InstancedMesh(voxelCubeGeo, voxelCubeMat, TOTAL_VOXELS)
+    voxelInstanced.castShadow = true
+    voxelInstanced.receiveShadow = true
+    voxelMatrixGroup.add(voxelInstanced)
+
+    const voxelEntries: VoxelEntry[] = []
+    const vColor = new THREE.Color()
+    let vIdx = 0
+
+    for (let iy = 0; iy < VY; iy++) {
+      for (let ix = 0; ix < VX; ix++) {
+        for (let iz = 0; iz < VZ; iz++) {
+          const x = -BLOCK_W / 2 + (ix + 0.5) * (BLOCK_W / VX)
+          const y = 1.4 - (iy + 0.5) * (3.4 / VY)
+          const z = -BLOCK_D / 2 + (iz + 0.5) * (BLOCK_D / VZ)
+
+          const normX = ((ix + 0.5) / VX) * 100
+          const normZ = ((iz + 0.5) / VZ) * 100
+
+          // Assign Robertson SBT Horizon Color
+          let layerId = "layer-4"
+          let isAnomaly = false
+          if (iy === 0) {
+            layerId = "layer-1"
+            vColor.setHex(0xd4a373) // Clean Sand
+          } else if (iy === 1) {
+            layerId = "layer-2"
+            vColor.setHex(0x588157) // Sandy Silt
+          } else if (iy === 2 || iy === 3) {
+            layerId = "layer-3"
+            const distCenter = Math.hypot(x - 0.25, z - 0.15)
+            if (distCenter < 1.15) {
+              vColor.setHex(0xf59e0b) // Soft Sensitive Clay Anomaly Core
+              isAnomaly = true
+            } else {
+              vColor.setHex(0xa0522d) // Marine Clay
+            }
+          } else {
+            layerId = "layer-4"
+            vColor.setHex(0xe76f51) // Competent Dense Bearing Sand
+          }
+
+          voxelInstanced.setColorAt(vIdx, vColor)
+          voxelEntries.push({
+            ix,
+            iy,
+            iz,
+            normX,
+            normZ,
+            basePos: new THREE.Vector3(x, y, z),
+            layerId,
+            isAnomaly,
+          })
+          vIdx++
+        }
+      }
+    }
+    if (voxelInstanced.instanceColor) voxelInstanced.instanceColor.needsUpdate = true
+
+    disposableGeometries.push(voxelCubeGeo)
+    disposableMaterials.push(voxelCubeMat)
+
+    // =========================================================================
+    // VISUALIZER 04: BEARING STRATUM SECTION — STRUCTURAL PILE CAGE & UNDULATING BEDROCK
+    // =========================================================================
+    const stratumCageGroup = new THREE.Group()
+    stratumCageGroup.position.set(0, -1.2, 0)
+    monolithRoot.add(stratumCageGroup)
+
+    // Top Structural Pile Cap Foundation Slab
+    const pileCapGeo = new THREE.BoxGeometry(3.4, 0.24, 2.6)
+    const pileCapMat = new THREE.MeshStandardMaterial({
+      color: 0xefe7de,
+      roughness: 0.5,
+      metalness: 0.15,
+      transparent: true,
+      opacity: 0,
+    })
+    const pileCap = new THREE.Mesh(pileCapGeo, pileCapMat)
+    pileCap.position.y = 1.25
+    stratumCageGroup.add(pileCap)
+
+    const pileCapEdges = new THREE.EdgesGeometry(pileCapGeo)
+    const pileCapLineMat = new THREE.LineBasicMaterial({
+      color: 0x5a3008,
+      transparent: true,
+      opacity: 0,
+    })
+    pileCap.add(new THREE.LineSegments(pileCapEdges, pileCapLineMat))
+
+    // 8 Reinforced Concrete Driven Piles with Glowing Toe Rings
+    const PILE_LEN = 2.95
+    const pileCylGeo = new THREE.CylinderGeometry(0.13, 0.13, PILE_LEN, 20)
+    const pileCylMat = new THREE.MeshStandardMaterial({
+      color: 0xfbf7f2,
       emissive: 0x7a421d,
       emissiveIntensity: 0.25,
       roughness: 0.35,
       metalness: 0.3,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0,
     })
-    const pileEdgeGeo = new THREE.EdgesGeometry(pileGeo, 30)
-    const pileEdgeMat = new THREE.LineBasicMaterial({
-      color: 0x5a3008,
-      transparent: true,
-      opacity: 0.6,
-    })
-    disposableGeometries.push(pileGeo, pileEdgeGeo)
-    disposableMaterials.push(pileMat, pileEdgeMat)
-
-    const pileCoords: Array<[number, number]> = [
-      [-1.1, -0.7],
-      [-0.45, -0.7],
-      [0.2, -0.7],
-      [-1.1, 0.45],
-      [-0.45, 0.45],
-      [0.2, 0.45],
-      [0.95, -0.35],
-      [0.95, 0.65],
-    ]
-
-    for (const [px, pz] of pileCoords) {
-      const pile = new THREE.Mesh(pileGeo, pileMat)
-      pile.position.set(px, -TOTAL_PILE_LEN / 2, pz)
-      pile.add(new THREE.LineSegments(pileEdgeGeo, pileEdgeMat))
-      pilesGroup.add(pile)
-    }
-
-    // Glowing Bearing Horizon Verification Plane inside Layer 4
-    const bearingPlaneGeo = new THREE.PlaneGeometry(BLOCK_W + 0.3, BLOCK_D + 0.3)
-    const bearingPlaneMat = new THREE.MeshBasicMaterial({
-      color: 0xe76f51,
+    const toeRingGeo = new THREE.TorusGeometry(0.18, 0.03, 12, 24)
+    toeRingGeo.rotateX(Math.PI / 2)
+    const toeRingMat = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
       transparent: true,
       opacity: 0,
+      toneMapped: false,
+    })
+
+    const pilePositions: Array<[number, number]> = [
+      [-1.25, -0.85],
+      [-0.42, -0.85],
+      [0.42, -0.85],
+      [1.25, -0.85],
+      [-1.25, 0.85],
+      [-0.42, 0.85],
+      [0.42, 0.85],
+      [1.25, 0.85],
+    ]
+
+    const pileMeshes: THREE.Mesh[] = []
+    for (const [px, pz] of pilePositions) {
+      const pMesh = new THREE.Mesh(pileCylGeo, pileCylMat)
+      pMesh.position.set(px, 1.25 - PILE_LEN / 2, pz)
+      const tRing = new THREE.Mesh(toeRingGeo, toeRingMat)
+      tRing.position.y = -PILE_LEN / 2 + 0.05
+      pMesh.add(tRing)
+      stratumCageGroup.add(pMesh)
+      pileMeshes.push(pMesh)
+    }
+
+    // Undulating 3D Dense Bearing Stratum Terrain (qc >= 15 MPa)
+    const terrainGeo = new THREE.BoxGeometry(BLOCK_W + 0.3, 1.15, BLOCK_D + 0.3, 20, 4, 16)
+    const tPos = terrainGeo.attributes.position
+    for (let i = 0; i < tPos.count; i++) {
+      const vx = tPos.getX(i)
+      const vy = tPos.getY(i)
+      const vz = tPos.getZ(i)
+      if (vy > 0) {
+        const undulation =
+          0.22 * Math.sin(vx * 1.4 + 0.4) * Math.cos(vz * 1.5) +
+          0.12 * Math.cos(vx * 2.5 - vz * 1.8)
+        tPos.setY(i, vy + undulation)
+      }
+    }
+    terrainGeo.computeVertexNormals()
+
+    const terrainMat = new THREE.MeshStandardMaterial({
+      color: 0xe76f51,
+      emissive: 0x9e3d22,
+      emissiveIntensity: 0.3,
+      roughness: 0.55,
+      metalness: 0.1,
+      transparent: true,
+      opacity: 0,
+    })
+    const terrainMesh = new THREE.Mesh(terrainGeo, terrainMat)
+    terrainMesh.position.y = -1.65
+    stratumCageGroup.add(terrainMesh)
+
+    const terrainWireGeo = new THREE.WireframeGeometry(terrainGeo)
+    const terrainWireMat = new THREE.LineBasicMaterial({
+      color: 0xfad9ba,
+      transparent: true,
+      opacity: 0,
+    })
+    terrainMesh.add(new THREE.LineSegments(terrainWireGeo, terrainWireMat))
+
+    // Laser Bearing Cutoff Datum Plane (Moves with user's minQc & maxIc sliders)
+    const datumLaserGeo = new THREE.PlaneGeometry(BLOCK_W + 0.5, BLOCK_D + 0.5)
+    const datumLaserMat = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
       side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0,
       depthWrite: false,
     })
-    const bearingPlane = new THREE.Mesh(bearingPlaneGeo, bearingPlaneMat)
-    bearingPlane.rotation.x = -Math.PI / 2
-    bearingPlane.position.y = -2.85
-    const bearingPlaneEdges = new THREE.EdgesGeometry(bearingPlaneGeo)
-    const bearingPlaneLineMat = new THREE.LineBasicMaterial({
-      color: 0xfad9ba,
+    const datumLaser = new THREE.Mesh(datumLaserGeo, datumLaserMat)
+    datumLaser.rotation.x = -Math.PI / 2
+    datumLaser.position.y = -1.1
+    const datumEdges = new THREE.EdgesGeometry(datumLaserGeo)
+    const datumLineMat = new THREE.LineBasicMaterial({
+      color: 0x10b981,
       transparent: true,
       opacity: 0,
     })
-    bearingPlane.add(new THREE.LineSegments(bearingPlaneEdges, bearingPlaneLineMat))
-    monolithRoot.add(bearingPlane)
-    disposableGeometries.push(bearingPlaneGeo, bearingPlaneEdges)
-    disposableMaterials.push(bearingPlaneMat, bearingPlaneLineMat)
+    datumLaser.add(new THREE.LineSegments(datumEdges, datumLineMat))
+    stratumCageGroup.add(datumLaser)
+
+    disposableGeometries.push(
+      pileCapGeo,
+      pileCapEdges,
+      pileCylGeo,
+      toeRingGeo,
+      terrainGeo,
+      terrainWireGeo,
+      datumLaserGeo,
+      datumEdges
+    )
+    disposableMaterials.push(
+      pileCapMat,
+      pileCapLineMat,
+      pileCylMat,
+      toeRingMat,
+      terrainMat,
+      terrainWireMat,
+      datumLaserMat,
+      datumLineMat
+    )
 
     // =========================================================================
-    // D. DQN RECOMMENDED TARGET "SPOT 2" & CPT PENETROMETER ROD
-    // =========================================================================
-    const spot2Group = new THREE.Group()
-    const SPOT2_X = 0.35
-    const SPOT2_Z = 0.25
-    spot2Group.position.set(SPOT2_X, 0, SPOT2_Z)
-    monolithRoot.add(spot2Group)
-
-    // Surface Crosshair Rings at Spot 2
-    const outerRingGeo = new THREE.RingGeometry(0.24, 0.3, 32)
-    const outerRingMat = new THREE.MeshBasicMaterial({
-      color: 0x10b981,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.9,
-      toneMapped: false,
-    })
-    const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat)
-    outerRing.rotation.x = -Math.PI / 2
-    outerRing.position.y = 0.16
-    spot2Group.add(outerRing)
-
-    const pulseRingGeo = new THREE.RingGeometry(0.32, 0.36, 32)
-    const pulseRingMat = new THREE.MeshBasicMaterial({
-      color: 0xfad9ba,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.6,
-      toneMapped: false,
-    })
-    const pulseRing = new THREE.Mesh(pulseRingGeo, pulseRingMat)
-    pulseRing.rotation.x = -Math.PI / 2
-    pulseRing.position.y = 0.16
-    spot2Group.add(pulseRing)
-
-    // CPT Penetrometer Rod & Cone Tip
-    const rodLen = 3.2
-    const rodGeo = new THREE.CylinderGeometry(0.038, 0.038, rodLen, 16)
-    const rodMat = new THREE.MeshStandardMaterial({
-      color: 0x10b981,
-      emissive: 0x10b981,
-      emissiveIntensity: 0.55,
-      roughness: 0.2,
-      metalness: 0.8,
-      toneMapped: false,
-    })
-    const cptRod = new THREE.Mesh(rodGeo, rodMat)
-    cptRod.position.y = -0.35
-    spot2Group.add(cptRod)
-
-    const coneTipGeo = new THREE.ConeGeometry(0.09, 0.24, 16)
-    coneTipGeo.rotateX(Math.PI)
-    const coneTip = new THREE.Mesh(coneTipGeo, rodMat)
-    coneTip.position.y = -rodLen / 2 - 0.1
-    cptRod.add(coneTip)
-
-    disposableGeometries.push(outerRingGeo, pulseRingGeo, rodGeo, coneTipGeo)
-    disposableMaterials.push(outerRingMat, pulseRingMat, rodMat)
-
-    // Existing Fixed-Grid Soundings (B-01, B-02, B-03) at Perimeter that miss the clay pocket
-    const fixedSoundingsGroup = new THREE.Group()
-    monolithRoot.add(fixedSoundingsGroup)
-    const fixedRodGeo = new THREE.CylinderGeometry(0.025, 0.025, 3.6, 12)
-    const fixedRodMat = new THREE.MeshBasicMaterial({
-      color: 0xbd8564,
-      transparent: true,
-      opacity: 0.55,
-    })
-    disposableGeometries.push(fixedRodGeo)
-    disposableMaterials.push(fixedRodMat)
-
-    const fixedPoints: Array<[number, number]> = [
-      [-1.55, -1.15], // B-01
-      [1.55, 1.15],   // B-02
-      [1.55, -1.15],  // B-03
-    ]
-    for (const [fx, fz] of fixedPoints) {
-      const fRod = new THREE.Mesh(fixedRodGeo, fixedRodMat)
-      fRod.position.set(fx, -1.6, fz)
-      fixedSoundingsGroup.add(fRod)
-    }
-
-    // =========================================================================
-    // E. INTERACTIVE POINTER PARALLAX & DRAG ROTATION
+    // POINTER PARALLAX & DRAG ROTATION
     // =========================================================================
     let pointerX = 0
     let pointerY = 0
@@ -597,252 +855,240 @@ export function SubsurfaceMonolithCanvas() {
     window.addEventListener("pointerup", handlePointerUp, { passive: true })
 
     // =========================================================================
-    // F. SCROLLYTELLING ANIMATION LOOP (r186 THREE.Timer + MathUtils.damp)
+    // SCROLLYTELLING MORPH ANIMATION LOOP (r186 THREE.Timer)
     // =========================================================================
     const timer = new THREE.Timer()
     timer.connect(document)
 
-    // Pre-allocated interpolation variables (zero per-frame GC allocations)
-    let currentExplode = 0
-    let currentClayShiftX = 0
-    let currentClayShiftZ = 0
-    let currentBuildingLift = 0
-    let currentRodDepth = 0.6
-    let currentUpperOpacity = 1
-    let currentBearingGlow = 0
-    let currentClipX = BLOCK_W / 2 + 0.5
-    let currentClipZ = BLOCK_D / 2 + 0.5
-    let currentCamX = 8.2
-    let currentCamY = 6.2
-    let currentCamZ = 9.2
-    let currentLookY = -0.9
-    let currentRootRotY = -0.35
+    // Smoothed Stage Weights (0..1 per visualizer mode)
+    let wHero = 1
+    let wProblem = 0
+    let wDqn = 0
+    let wVoxel = 0
+    let wStratum = 0
 
-    const stageTargets: Record<
+    let currentCamX = 8.6
+    let currentCamY = 5.4
+    let currentCamZ = 9.6
+    let currentLookY = -0.85
+    let currentRootRotY = -0.32
+    let currentSliceX = 65
+    let currentSliceY = 60
+
+    const cameraStageTargets: Record<
       MonolithStage,
-      {
-        explode: number
-        clayShiftX: number
-        clayShiftZ: number
-        buildingLift: number
-        rodDepth: number
-        upperOpacity: number
-        bearingGlow: number
-        camPos: [number, number, number]
-        lookY: number
-        rotY: number
-      }
+      { camPos: [number, number, number]; lookY: number; rotY: number }
     > = {
-      hero: {
-        explode: 0.0,
-        clayShiftX: 0,
-        clayShiftZ: 0,
-        buildingLift: 0,
-        rodDepth: -0.35,
-        upperOpacity: 1.0,
-        bearingGlow: 0.0,
-        camPos: [8.8, 5.4, 9.8],
-        lookY: -0.85,
-        rotY: -0.32,
-      },
-      problem: {
-        explode: 0.45,
-        clayShiftX: 0.42,
-        clayShiftZ: 0.32,
-        buildingLift: 0.35,
-        rodDepth: -0.75,
-        upperOpacity: 0.95,
-        bearingGlow: 0.0,
-        camPos: [9.4, 5.2, 9.8],
-        lookY: -1.35,
-        rotY: 0.28,
-      },
-      dqn: {
-        explode: 0.36,
-        clayShiftX: 0.16,
-        clayShiftZ: 0.14,
-        buildingLift: 0.28,
-        rodDepth: -1.35,
-        upperOpacity: 0.78,
-        bearingGlow: 0.15,
-        camPos: [8.4, 6.6, 9.0],
-        lookY: -1.25,
-        rotY: -0.52,
-      },
-      voxel: {
-        explode: 0.12,
-        clayShiftX: 0,
-        clayShiftZ: 0,
-        buildingLift: 0.12,
-        rodDepth: -1.65,
-        upperOpacity: 1.0,
-        bearingGlow: 0.2,
-        camPos: [8.4, 5.0, 9.2],
-        lookY: -1.25,
-        rotY: -0.22,
-      },
-      stratum: {
-        explode: 0.32,
-        clayShiftX: 0,
-        clayShiftZ: 0,
-        buildingLift: 0.24,
-        rodDepth: -1.95,
-        upperOpacity: 0.26,
-        bearingGlow: 0.95,
-        camPos: [9.0, 4.3, 9.6],
-        lookY: -1.65,
-        rotY: 0.32,
-      },
-      workflow: {
-        explode: 0.2,
-        clayShiftX: 0,
-        clayShiftZ: 0,
-        buildingLift: 0.16,
-        rodDepth: -1.85,
-        upperOpacity: 0.88,
-        bearingGlow: 0.45,
-        camPos: [9.2, 5.8, 10.0],
-        lookY: -1.1,
-        rotY: -0.35,
-      },
+      hero: { camPos: [8.6, 5.2, 9.5], lookY: -0.75, rotY: -0.32 },
+      problem: { camPos: [7.8, 3.8, 8.2], lookY: -1.65, rotY: 0.35 },
+      dqn: { camPos: [4.6, 8.8, 6.2], lookY: -1.05, rotY: -0.45 },
+      voxel: { camPos: [8.0, 4.8, 8.6], lookY: -1.3, rotY: -0.24 },
+      stratum: { camPos: [7.8, 2.6, 8.6], lookY: -1.35, rotY: 0.3 },
+      workflow: { camPos: [8.6, 5.2, 9.5], lookY: -1.0, rotY: -0.32 },
     }
+
+    const voxelDummy = new THREE.Object3D()
 
     function animate() {
       timer.update()
       const dt = Math.min(timer.getDelta(), 0.1)
       const elapsed = timer.getElapsed()
       const state = sceneStateRef.current
-      const fromTarget = stageTargets[state.transitionFrom] || stageTargets[state.activeStage] || stageTargets.hero
-      const toTarget = stageTargets[state.transitionTo] || stageTargets[state.activeStage] || stageTargets.hero
-      const t = state.transitionT
 
-      const targetExplode = THREE.MathUtils.lerp(fromTarget.explode, toTarget.explode, t)
-      const targetClayX = THREE.MathUtils.lerp(fromTarget.clayShiftX, toTarget.clayShiftX, t)
-      const targetClayZ = THREE.MathUtils.lerp(fromTarget.clayShiftZ, toTarget.clayShiftZ, t)
-      const targetLift = THREE.MathUtils.lerp(fromTarget.buildingLift, toTarget.buildingLift, t)
-      const targetRod = THREE.MathUtils.lerp(fromTarget.rodDepth, toTarget.rodDepth, t)
-      const targetOpacity = THREE.MathUtils.lerp(fromTarget.upperOpacity, toTarget.upperOpacity, t)
-      const targetGlow = THREE.MathUtils.lerp(fromTarget.bearingGlow, toTarget.bearingGlow, t)
-      const blendedCamPos: [number, number, number] = [
-        THREE.MathUtils.lerp(fromTarget.camPos[0], toTarget.camPos[0], t),
-        THREE.MathUtils.lerp(fromTarget.camPos[1], toTarget.camPos[1], t),
-        THREE.MathUtils.lerp(fromTarget.camPos[2], toTarget.camPos[2], t),
-      ]
-      const blendedLookY = THREE.MathUtils.lerp(fromTarget.lookY, toTarget.lookY, t)
-      const blendedRotY = THREE.MathUtils.lerp(fromTarget.rotY, toTarget.rotY, t)
-
-      // 1. Damp Scrollytelling Parameters
-      const dampLambda = 6.0
-      currentExplode = THREE.MathUtils.damp(currentExplode, targetExplode, dampLambda, dt)
-      currentClayShiftX = THREE.MathUtils.damp(currentClayShiftX, targetClayX, dampLambda, dt)
-      currentClayShiftZ = THREE.MathUtils.damp(currentClayShiftZ, targetClayZ, dampLambda, dt)
-      currentBuildingLift = THREE.MathUtils.damp(
-        currentBuildingLift,
-        targetLift,
-        dampLambda,
-        dt
+      // 1. Compute & Damp Continuous Stage Morph Weights
+      const rawWeights = getStageWeights(
+        state.transitionFrom,
+        state.transitionTo,
+        state.transitionT
       )
-      currentRodDepth = THREE.MathUtils.damp(currentRodDepth, targetRod, dampLambda, dt)
-      currentUpperOpacity = THREE.MathUtils.damp(
-        currentUpperOpacity,
-        targetOpacity,
-        dampLambda,
-        dt
-      )
-      currentBearingGlow = THREE.MathUtils.damp(
-        currentBearingGlow,
-        targetGlow,
-        dampLambda,
-        dt
-      )
+      const dampSpeed = 6.5
+      wHero = THREE.MathUtils.damp(wHero, rawWeights.hero, dampSpeed, dt)
+      wProblem = THREE.MathUtils.damp(wProblem, rawWeights.problem, dampSpeed, dt)
+      wDqn = THREE.MathUtils.damp(wDqn, rawWeights.dqn, dampSpeed, dt)
+      wVoxel = THREE.MathUtils.damp(wVoxel, rawWeights.voxel, dampSpeed, dt)
+      wStratum = THREE.MathUtils.damp(wStratum, rawWeights.stratum, dampSpeed, dt)
 
-      // 2. Apply Exploded View & Section Transformations to Building + 4 Strata
-      buildingGroup.position.y = currentBuildingLift
+      // -----------------------------------------------------------------------
+      // MODE 00 & 01: BUILDING + 4 STRATA + ISOLATED SOFT CLAY ANOMALY LENS
+      // -----------------------------------------------------------------------
+      // Building stays visible in Hero, lifts high up (+4.5 units) and dissolves in Problem/DQN/Voxel/Stratum
+      const buildingVis = Math.max(0, wHero)
+      buildingGroup.visible = buildingVis > 0.01
+      buildingGroup.position.y = (1 - wHero) * 3.8
+      buildingGroup.scale.setScalar(0.85 + 0.15 * wHero)
+      for (const item of buildingMaterials) {
+        item.mat.opacity = item.baseOpacity * buildingVis
+      }
 
+      // 4 Monolith Soil Layers:
+      // In Hero: all 4 intact.
+      // In Problem: Layers 1, 2, 4 peel away & fade out; ONLY Layer 3 (Soft Clay) stays, scales up 1.28x, and becomes a translucent X-ray shell!
       for (let i = 0; i < layerEntries.length; i++) {
         const entry = layerEntries[i]
-        const explodeOffset = -i * currentExplode
-        entry.group.position.y = entry.baseY + explodeOffset
+        const isLayer3 = entry.id === "layer-3"
 
-        // In Section 01 (Problem) & 02 (DQN), Layer 3 (Soft Clay) shifts out laterally to expose the hazard lens
-        if (entry.id === "layer-3") {
-          entry.group.position.x = currentClayShiftX
-          entry.group.position.z = currentClayShiftZ
+        if (isLayer3) {
+          const l3Vis = Math.min(1, wHero + wProblem)
+          entry.group.visible = l3Vis > 0.01
+          entry.group.position.y = entry.baseY + wProblem * 0.05
+          const l3Scale = 1 + wProblem * 0.24
+          entry.group.scale.set(l3Scale, l3Scale, l3Scale)
+          // In Hero: solid clay (opacity 1). In Problem: translucent X-ray casing (opacity 0.22) so the internal 3D clay lens shines!
+          entry.material.opacity = wHero * 1.0 + wProblem * 0.22
+          entry.material.depthWrite = wHero > 0.5
+          entry.edgeMaterial.opacity = wHero * 0.65 + wProblem * 0.9
         } else {
-          entry.group.position.x = 0
-          entry.group.position.z = 0
-        }
-
-        // Hover or Stage Highlighting
-        const isHovered = state.hoveredLayerId === entry.id
-        const isBearingLayer = entry.id === "layer-4"
-        const isClayProblem =
-          entry.id === "layer-3" &&
-          (state.activeStage === "problem" ||
-            (state.activeStage === "dqn" && state.activeDqnTab === "transition"))
-
-        if (isBearingLayer) {
-          entry.material.opacity = 1.0
-          entry.material.emissive.setHex(0xe76f51)
-          entry.material.emissiveIntensity =
-            currentBearingGlow * 0.45 + (isHovered ? 0.3 : 0)
-        } else {
-          entry.material.opacity = isHovered ? 1.0 : currentUpperOpacity
-          if (isClayProblem || isHovered) {
-            entry.material.emissive.setHex(0xd97706)
-            entry.material.emissiveIntensity = 0.25 + Math.sin(elapsed * 3) * 0.1
-          } else {
-            entry.material.emissive.setHex(0x000000)
-            entry.material.emissiveIntensity = 0
-          }
+          const otherVis = wHero
+          entry.group.visible = otherVis > 0.01
+          const peelDir = i < 2 ? 1 : -1
+          entry.group.position.y = entry.baseY + (1 - wHero) * peelDir * 3.2
+          entry.group.scale.setScalar(0.85 + 0.15 * wHero)
+          entry.material.opacity = otherVis
+          entry.material.depthWrite = otherVis > 0.5
+          entry.edgeMaterial.opacity = otherVis * 0.65
         }
       }
 
-      // 3. Clipping Planes (Active in Voxel stage or when user slices below 98%)
-      const isVoxelStage = state.activeStage === "voxel"
-      const targetClipX = isVoxelStage
-        ? -BLOCK_W / 2 + (state.sliceX / 100) * BLOCK_W
-        : BLOCK_W / 2 + 0.6
-      const targetClipZ = isVoxelStage
-        ? -BLOCK_D / 2 + (state.sliceY / 100) * BLOCK_D
-        : BLOCK_D / 2 + 0.6
+      // Problem Anomaly Lens & 4 Blind Boreholes (Visible in Section 01 Problem)
+      problemAnomalyGroup.visible = wProblem > 0.01
+      problemAnomalyGroup.scale.setScalar(0.75 + 0.45 * wProblem)
+      anomalyMesh.rotation.y = elapsed * 0.25
+      const pulseGlow = 0.4 + Math.sin(elapsed * 3.2) * 0.15
+      anomalyMat.opacity = wProblem * 0.92
+      anomalyMat.emissiveIntensity = pulseGlow
+      anomalyWireMat.opacity = wProblem * 0.75
+      blindBoreholeMat.opacity = wProblem * 0.85
+      blindRingMat.opacity = wProblem * 0.85
 
-      currentClipX = THREE.MathUtils.damp(currentClipX, targetClipX, 7, dt)
-      currentClipZ = THREE.MathUtils.damp(currentClipZ, targetClipZ, 7, dt)
-      clipPlaneX.constant = currentClipX
-      clipPlaneZ.constant = currentClipZ
+      // -----------------------------------------------------------------------
+      // MODE 02: DQN 144-NODE GEODETIC RADAR & SPOT 2 LASER RIG
+      // -----------------------------------------------------------------------
+      dqnRadarGroup.visible = wDqn > 0.01
+      dqnRadarGroup.scale.setScalar(0.8 + 0.28 * wDqn)
+      nodeMat.opacity = wDqn * 0.95
+      radarPlateMat.opacity = wDqn * 0.85
+      radarPlateLineMat.opacity = wDqn * 0.65
+      laserBeamMat.opacity = wDqn * 0.95
+      targetRingMat.opacity = wDqn * (0.65 + Math.sin(elapsed * 4) * 0.3)
 
-      // 4. CPT Penetrometer Rod & Spot 2 Pulse Animation
-      spot2Group.position.y = currentBuildingLift
-      cptRod.position.y = currentRodDepth
-      const pulseScale = 1 + Math.sin(elapsed * 3.5) * 0.18
-      pulseRing.scale.set(pulseScale, pulseScale, 1)
-      pulseRingMat.opacity = 0.75 - Math.sin(elapsed * 3.5) * 0.35
+      const ringPulse = 1 + Math.sin(elapsed * 3.5) * 0.22
+      targetRing.scale.set(ringPulse, ringPulse, 1)
 
-      // 5. Structural Foundation Piles & Bearing Verification Horizon (Section 04)
-      // Pile embedment depth reacts to user's minQc slider (10 to 25 MPa)
-      const qcOffset = ((state.minQc - 15.0) / 10.0) * 0.35
-      pilesGroup.position.y = currentBuildingLift * 0.3 - qcOffset
-      pileMat.opacity = THREE.MathUtils.lerp(0.35, 1.0, currentBearingGlow)
-      pileMat.emissiveIntensity = 0.15 + currentBearingGlow * 0.6
+      // React to DQN active rationale tab ("gap" | "transition" | "anomaly")
+      const isGapTab = state.activeDqnTab === "gap"
+      const isTransitionTab = state.activeDqnTab === "transition"
+      const isAnomalyTab = state.activeDqnTab === "anomaly"
 
-      const layer4Group = layerEntries[3]?.group
-      if (layer4Group) {
-        bearingPlane.position.y = layer4Group.position.y + 0.35 - qcOffset
+      gapCylinderMat.opacity = wDqn * (isGapTab ? 0.32 : 0.1)
+      gapCylinder.scale.set(
+        1 + Math.sin(elapsed * 2) * 0.04,
+        1,
+        1 + Math.sin(elapsed * 2) * 0.04
+      )
+      faultPlaneMat.opacity = wDqn * (isTransitionTab ? 0.75 : 0.0)
+
+      if (wDqn > 0.02) {
+        for (let i = 0; i < candidateCoords.length; i++) {
+          const c = candidateCoords[i]
+          const wave = Math.sin(c.distSpot2 * 3.5 - elapsed * 3.0) * 0.08
+          const anomalyBoost = isAnomalyTab && c.distSpot2 < 1.1 ? 0.45 : 0
+          const h = Math.max(0.12, (c.qVal + wave + anomalyBoost) * 0.95 * wDqn)
+          nodeDummy.position.set(c.x, h / 2, c.z)
+          nodeDummy.scale.set(1, h, 1)
+          nodeDummy.updateMatrix()
+          candidateInstanced.setMatrixAt(i, nodeDummy.matrix)
+        }
+        candidateInstanced.instanceMatrix.needsUpdate = true
       }
-      bearingPlaneMat.opacity = currentBearingGlow * 0.32
-      bearingPlaneLineMat.opacity = currentBearingGlow * 0.9
 
-      // 6. Camera Position & Orientation (Isometric vs Front Profile + Gentle Parallax)
+      // -----------------------------------------------------------------------
+      // MODE 03: TRUE 3D INSTANCED VOXEL CUBE MATRIX (480 Discrete Cubes)
+      // -----------------------------------------------------------------------
+      voxelMatrixGroup.visible = wVoxel > 0.01
+      voxelCubeMat.opacity = wVoxel * 0.98
+      currentSliceX = THREE.MathUtils.damp(currentSliceX, state.sliceX, 8, dt)
+      currentSliceY = THREE.MathUtils.damp(currentSliceY, state.sliceY, 8, dt)
+
+      if (wVoxel > 0.01) {
+        for (let i = 0; i < voxelEntries.length; i++) {
+          const v = voxelEntries[i]
+          // Smooth per-cube slicing falloff along Easting (X) and Northing (Z)
+          const cutX = THREE.MathUtils.clamp((currentSliceX - v.normX + 8) / 8, 0, 1)
+          const cutZ = THREE.MathUtils.clamp((currentSliceY - v.normZ + 8) / 8, 0, 1)
+          const hoverBoost = state.hoveredLayerId === v.layerId ? 1.14 : 1.0
+          const cubeScale = cutX * cutZ * wVoxel * hoverBoost
+
+          const floatOffset =
+            v.isAnomaly ? Math.sin(elapsed * 3 + v.ix * 0.5) * 0.04 : 0
+          voxelDummy.position.set(
+            v.basePos.x,
+            v.basePos.y + floatOffset,
+            v.basePos.z
+          )
+          voxelDummy.scale.setScalar(Math.max(0.0001, cubeScale))
+          voxelDummy.updateMatrix()
+          voxelInstanced.setMatrixAt(i, voxelDummy.matrix)
+        }
+        voxelInstanced.instanceMatrix.needsUpdate = true
+      }
+
+      // -----------------------------------------------------------------------
+      // MODE 04: DEEP STRUCTURAL FOUNDATION PILE CAGE & UNDULATING BEDROCK
+      // -----------------------------------------------------------------------
+      stratumCageGroup.visible = wStratum > 0.01
+      stratumCageGroup.scale.setScalar(0.82 + 0.24 * wStratum)
+      pileCapMat.opacity = wStratum * 0.95
+      pileCapLineMat.opacity = wStratum * 0.7
+      pileCylMat.opacity = wStratum * 0.98
+      toeRingMat.opacity = wStratum * 0.95
+      terrainMat.opacity = wStratum * 0.95
+      terrainWireMat.opacity = wStratum * 0.45
+      datumLaserMat.opacity = wStratum * 0.28
+      datumLineMat.opacity = wStratum * 0.9
+
+      // Pile toe depth & laser datum react live to minQc (10..25 MPa) & minThickness sliders
+      const qcShift = ((state.minQc - 15.0) / 10.0) * 0.45
+      const thicknessShift = ((state.minThickness - 2.0) / 3.0) * 0.2
+      datumLaser.position.y = -1.05 - qcShift - thicknessShift
+      for (const pMesh of pileMeshes) {
+        pMesh.position.y = 1.25 - PILE_LEN / 2 - qcShift * 0.5
+      }
+
+      // -----------------------------------------------------------------------
+      // CAMERA CHOREOGRAPHY ACROSS SECTIONS
+      // -----------------------------------------------------------------------
+      const fromCam =
+        cameraStageTargets[state.transitionFrom] ||
+        cameraStageTargets[state.activeStage] ||
+        cameraStageTargets.hero
+      const toCam =
+        cameraStageTargets[state.transitionTo] ||
+        cameraStageTargets[state.activeStage] ||
+        cameraStageTargets.hero
+      const t = state.transitionT
+
       const isFrontProfile = state.activeStage === "voxel" && state.cameraView === "front"
-      const targetCamX = isFrontProfile ? 0.0 : blendedCamPos[0]
-      const targetCamY = isFrontProfile ? -1.1 : blendedCamPos[1]
-      const targetCamZ = isFrontProfile ? 10.6 : blendedCamPos[2]
+      const targetCamX = isFrontProfile
+        ? 0.0
+        : THREE.MathUtils.lerp(fromCam.camPos[0], toCam.camPos[0], t)
+      const targetCamY = isFrontProfile
+        ? -1.2
+        : THREE.MathUtils.lerp(fromCam.camPos[1], toCam.camPos[1], t)
+      const targetCamZ = isFrontProfile
+        ? 10.4
+        : THREE.MathUtils.lerp(fromCam.camPos[2], toCam.camPos[2], t)
+      const targetLookY = THREE.MathUtils.lerp(fromCam.lookY, toCam.lookY, t)
+      const targetRotY = isFrontProfile
+        ? 0
+        : THREE.MathUtils.lerp(fromCam.rotY, toCam.rotY, t) +
+          userRotationY +
+          Math.sin(elapsed * 0.35) * 0.04
 
       currentCamX = THREE.MathUtils.damp(currentCamX, targetCamX, 4.5, dt)
       currentCamY = THREE.MathUtils.damp(currentCamY, targetCamY, 4.5, dt)
       currentCamZ = THREE.MathUtils.damp(currentCamZ, targetCamZ, 4.5, dt)
-      currentLookY = THREE.MathUtils.damp(currentLookY, blendedLookY, 5.0, dt)
+      currentLookY = THREE.MathUtils.damp(currentLookY, targetLookY, 5.0, dt)
+      currentRootRotY = THREE.MathUtils.damp(currentRootRotY, targetRotY, 5.0, dt)
 
       camera.position.set(
         currentCamX + pointerX * 0.35,
@@ -850,11 +1096,6 @@ export function SubsurfaceMonolithCanvas() {
         currentCamZ
       )
       camera.lookAt(0, currentLookY, 0)
-
-      const targetRotY = isFrontProfile
-        ? 0
-        : blendedRotY + userRotationY + Math.sin(elapsed * 0.35) * 0.04
-      currentRootRotY = THREE.MathUtils.damp(currentRootRotY, targetRotY, 5.0, dt)
       monolithRoot.rotation.y = currentRootRotY
 
       renderer.render(scene, camera)
@@ -862,7 +1103,6 @@ export function SubsurfaceMonolithCanvas() {
 
     renderer.setAnimationLoop(animate)
 
-    // Resize Observer
     const handleResize = () => {
       if (!container) return
       const newW = container.clientWidth || window.innerWidth
@@ -905,7 +1145,7 @@ export function SubsurfaceMonolithCanvas() {
     <div
       ref={containerRef}
       className="w-full h-full relative cursor-grab active:cursor-grabbing select-none"
-      aria-label="Interactive 3D architectural building and subsurface soil monolith"
+      aria-label="Interactive 3D geotechnical scrollytelling visualizer"
     />
   )
 }

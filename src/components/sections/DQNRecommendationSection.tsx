@@ -9,18 +9,7 @@ import { Crosshair, Compass, Navigation } from "lucide-react"
 
 export function DQNRecommendationSection() {
   const { dqn } = SITE_CONTENT
-  const { activeDqnTab, setActiveDqnTab, setHoveredLayerId } = useSubsurface3D()
-
-  const handleTabChange = (val: string) => {
-    setActiveDqnTab(val)
-    if (val === "transition") {
-      setHoveredLayerId("layer-3")
-    } else if (val === "gap") {
-      setHoveredLayerId("layer-1")
-    } else {
-      setHoveredLayerId("layer-2")
-    }
-  }
+  const { activeDqnTab, setActiveDqnTab } = useSubsurface3D()
 
   return (
     <section
@@ -32,33 +21,56 @@ export function DQNRecommendationSection() {
         <PlateHeader
           number="02"
           title="Next sounding selection"
-          metaRight="SchemaGAN V4.2 and DQN agent"
+          metaRight="3D 144-node geodetic radar & Spot 2 vector"
           tone="dark"
         />
 
-        {/* Interactive DQN Split Stage: Left 6 Cols = 3D Monolith Dock, Right 6 Cols = Rationale & Telemetry */}
+        {/* 12-Column Editorial Split Header */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-12">
+          <div className="lg:col-span-7">
+            <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92]">
+              {dqn.heading}
+            </h2>
+          </div>
+          <div className="lg:col-span-5">
+            <p className="font-sans text-[#EFE7DE]/70 text-sm sm:text-base leading-relaxed">
+              {dqn.subheading}
+            </p>
+          </div>
+        </div>
+
+        {/* Interactive DQN 6:6 Split: Left 3D Topographic Radar Grid | Right Rationale Sheet */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          {/* Left Column (6 cols): 3D Monolith Stage Dock with Spot 2 CPT Vector Beam */}
-          <div className="lg:col-span-6 order-2 lg:order-1">
+          {/* Left 6 Columns: Open Borderless 3D 144-Node Geodetic Candidate Radar */}
+          <div className="lg:col-span-6 order-2 lg:order-1 space-y-3">
             <Section3DAnchorDock
               stage="dqn"
               tone="dark"
-              title="Spot 2 CPT Vector Intersection"
-              subtitle="UTM 48S 704120m E, 9309850m N"
+              title="02 / 144-Node Geodetic Candidate Matrix"
+              subtitle="Spot 2 Emerald Laser Vector Lock"
+              renderMobileCanvas={false}
+              heightClass="h-[460px] xl:h-[520px]"
             />
+
+            {/* Minimalist Radar Legend Strip */}
+            <div className="grid grid-cols-3 gap-2 font-mono text-[10px] pt-2 border-t border-[#EFE7DE]/15">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#10B981] shrink-0" />
+                <span className="text-[#EFE7DE] truncate">Spot 2 Laser Peak</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#FAD9BA] shrink-0" />
+                <span className="text-[#EFE7DE]/70 truncate">High Info-Gain Zone</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#7A421D] shrink-0" />
+                <span className="text-[#EFE7DE]/50 truncate">144 Evaluated Nodes</span>
+              </div>
+            </div>
           </div>
 
-          {/* Right Column (6 cols): Section Heading + "Why this point?" Sheet Card */}
-          <div className="lg:col-span-6 order-1 lg:order-2 space-y-8">
-            <div className="space-y-4">
-              <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92]">
-                {dqn.heading}
-              </h2>
-              <p className="font-sans text-[#EFE7DE]/70 text-base sm:text-lg leading-relaxed">
-                {dqn.subheading}
-              </p>
-            </div>
-
+          {/* Right 6 Columns: Target Coordinate Readout + Interactive 3-Tab Rationale Card */}
+          <div className="lg:col-span-6 order-1 lg:order-2 space-y-6">
             {/* Target Coordinate Summary Banner */}
             <div className="bg-[#271C14] border border-[#EFE7DE]/15 p-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
               <div className="flex items-center gap-3">
@@ -68,7 +80,7 @@ export function DQNRecommendationSection() {
                 <div>
                   <div className="text-[10px] text-[#FAD9BA] uppercase tracking-wider flex items-center gap-1">
                     <Navigation className="w-3 h-3" />
-                    Active 3D cone penetrometer target
+                    Active 3D radar target lock
                   </div>
                   <div className="font-bold text-[#EFE7DE]">
                     {MOCK_RECOMMENDED_POINT.name} · {MOCK_RECOMMENDED_POINT.utm}
@@ -81,13 +93,13 @@ export function DQNRecommendationSection() {
               </div>
             </div>
 
-            {/* "Why this point?" Sheet Card */}
+            {/* "Why this point?" Sheet Card (Switching tabs transforms the 3D Radar Overlay) */}
             <div className="bg-[#271C14] border border-[#EFE7DE]/15 p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-3 mb-4">
                   <div>
                     <span className="font-mono text-[10px] uppercase text-[#BD8564] tracking-wider block">
-                      Reinforcement learning rationale
+                      Reinforcement learning rationale (Updates 3D radar)
                     </span>
                     <h3 className="font-sans font-bold text-lg text-[#EFE7DE] tracking-tight">
                       Why this point? (Spot 2)
@@ -98,8 +110,7 @@ export function DQNRecommendationSection() {
                   </Badge>
                 </div>
 
-                {/* Tabs Component */}
-                <Tabs value={activeDqnTab} onValueChange={handleTabChange} className="w-full">
+                <Tabs value={activeDqnTab} onValueChange={setActiveDqnTab} className="w-full">
                   <TabsList className="grid grid-cols-3 border-b border-[#EFE7DE]/15">
                     <TabsTrigger
                       value="gap"
@@ -128,11 +139,13 @@ export function DQNRecommendationSection() {
                         <span className="font-bold text-[#FAD9BA]">16.2 meters</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#EFE7DE]/60">Soundings within 4.0m:</span>
-                        <span className="font-bold text-[#E3D7C8]">0 (Uncertainty zone)</span>
+                        <span className="text-[#EFE7DE]/60">3D radar overlay:</span>
+                        <span className="font-bold text-[#10B981]">
+                          16.2m emerald radius cylinder
+                        </span>
                       </div>
                     </div>
-                    <p className="font-sans text-xs text-[#EFE7DE]/80 leading-relaxed">
+                    <p className="font-sans text-xs sm:text-sm text-[#EFE7DE]/80 leading-relaxed">
                       {MOCK_RECOMMENDED_POINT.reasoning.gap.description}
                     </p>
                   </TabsContent>
@@ -144,11 +157,13 @@ export function DQNRecommendationSection() {
                         <span className="font-bold text-[#D4A373]">Clean sand</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#EFE7DE]/60">Predicted underlayer:</span>
-                        <span className="font-bold text-[#BD8564]">Soft clay (-8.5m)</span>
+                        <span className="text-[#EFE7DE]/60">3D radar overlay:</span>
+                        <span className="font-bold text-[#E76F51]">
+                          Dipping -8.5m wireframe fault plane
+                        </span>
                       </div>
                     </div>
-                    <p className="font-sans text-xs text-[#EFE7DE]/80 leading-relaxed">
+                    <p className="font-sans text-xs sm:text-sm text-[#EFE7DE]/80 leading-relaxed">
                       {MOCK_RECOMMENDED_POINT.reasoning.transition.description}
                     </p>
                   </TabsContent>
@@ -160,11 +175,13 @@ export function DQNRecommendationSection() {
                         <span className="font-bold text-[#FAD9BA]">delta Ic = 0.18</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#EFE7DE]/60">Cluster behavior:</span>
-                        <span className="font-bold text-[#EFE7DE]">Localized shear shift</span>
+                        <span className="text-[#EFE7DE]/60">3D radar overlay:</span>
+                        <span className="font-bold text-[#EFE7DE]">
+                          Amplified Q-value spike cluster
+                        </span>
                       </div>
                     </div>
-                    <p className="font-sans text-xs text-[#EFE7DE]/80 leading-relaxed">
+                    <p className="font-sans text-xs sm:text-sm text-[#EFE7DE]/80 leading-relaxed">
                       {MOCK_RECOMMENDED_POINT.reasoning.anomaly.description}
                     </p>
                   </TabsContent>

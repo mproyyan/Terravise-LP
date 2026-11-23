@@ -21,37 +21,42 @@ export function BearingStratumSection() {
         <PlateHeader
           number="04"
           title="Bearing layer verification"
-          metaRight="3D pile foundation load transfer"
+          metaRight="3D structural pile cage & undulating bedrock terrain"
           tone="light"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          {/* Left 7 Columns: Heading, Parametric Sliders, and Foundation Schedule Table */}
-          <div className="lg:col-span-7 space-y-8">
-            <div className="space-y-4">
-              <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92]">
-                {bearing.heading}
-              </h2>
-              <p className="font-sans text-[#63554B] text-base sm:text-lg leading-relaxed">
-                {bearing.subheading}
-              </p>
-            </div>
+        {/* 12-Column Editorial Split Header */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-12">
+          <div className="lg:col-span-7">
+            <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92]">
+              {bearing.heading}
+            </h2>
+          </div>
+          <div className="lg:col-span-5">
+            <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed">
+              {bearing.subheading}
+            </p>
+          </div>
+        </div>
 
-            {/* Parametric Criteria Bar (Directly drives 3D pile depth & Layer 04 glow) */}
-            <div className="bg-[#FAF5EE] border border-[#1C130D]/15 p-6 shadow-xs">
-              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs uppercase tracking-wider text-[#1C130D] font-bold border-b border-[#1C130D]/10 pb-3 mb-6">
+        {/* Main 6:6 Split: Left Criteria Sliders & Pile Schedule Table | Right 3D Structural Pile Cage */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          {/* Left 6 Columns: Parametric Sliders + Foundation Comparison Table */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="bg-[#FAF5EE] border border-[#1C130D]/15 p-5 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs uppercase tracking-wider text-[#1C130D] font-bold border-b border-[#1C130D]/10 pb-3 mb-5">
                 <div className="flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4 text-[#7A421D]" />
-                  <span>Interactive 3D bearing criteria</span>
+                  <span>Interactive 3D pile cutoff criteria</span>
                 </div>
                 <span className="text-[10px] text-[#7A421D] font-normal">
-                  Adjusts 3D pile toe embedment live
+                  Moves 3D laser datum &amp; pile toes live
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <Slider
-                  label="Min cone resistance (qc)"
+                  label="Min tip qc"
                   value={[minQc]}
                   onValueChange={(val) =>
                     setBearingCriteria((prev) => ({ ...prev, minQc: val[0] }))
@@ -64,7 +69,7 @@ export function BearingStratumSection() {
                 />
 
                 <Slider
-                  label="Max SBT index (Ic)"
+                  label="Max SBT Ic"
                   value={[maxIc]}
                   onValueChange={(val) =>
                     setBearingCriteria((prev) => ({ ...prev, maxIc: val[0] }))
@@ -73,11 +78,11 @@ export function BearingStratumSection() {
                   max={2.6}
                   step={0.05}
                   valueDisplay={`${maxIc.toFixed(2)}`}
-                  unit="Zone 6-8"
+                  unit="Z6-8"
                 />
 
                 <Slider
-                  label="Min layer thickness"
+                  label="Min thickness"
                   value={[minThickness]}
                   onValueChange={(val) =>
                     setBearingCriteria((prev) => ({ ...prev, minThickness: val[0] }))
@@ -86,7 +91,7 @@ export function BearingStratumSection() {
                   max={5.0}
                   step={0.5}
                   valueDisplay={`${minThickness.toFixed(1)}`}
-                  unit="meters"
+                  unit="m"
                 />
               </div>
             </div>
@@ -95,14 +100,32 @@ export function BearingStratumSection() {
             <BearingComparisonTable />
           </div>
 
-          {/* Right 5 Columns: 3D Foundation Pile Load Transfer Stage Dock */}
-          <div className="lg:col-span-5">
+          {/* Right 6 Columns: Open Borderless 3D Structural Pile Cage & Undulating Bearing Terrain */}
+          <div className="lg:col-span-6 space-y-3">
             <Section3DAnchorDock
               stage="stratum"
               tone="light"
-              title="3D Foundation Pile Socket"
-              subtitle="8 Driven Piles into Layer 04"
+              title="04 / 3D Structural Pile Cage & Bearing Horizon"
+              subtitle="8 Reinforced Concrete Piles Socketed into Layer 04"
+              renderMobileCanvas={false}
+              heightClass="h-[480px] xl:h-[540px]"
             />
+
+            {/* Minimalist Foundation Legend Strip */}
+            <div className="grid grid-cols-3 gap-2 font-mono text-[10px] pt-2 border-t border-[#1C130D]/15">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#EFE7DE] border border-[#5A3008] shrink-0" />
+                <span className="text-[#1C130D] truncate">8 Driven Concrete Piles</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#10B981] shrink-0" />
+                <span className="text-[#63554B] truncate">Laser Cutoff Datum Plane</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#E76F51] shrink-0" />
+                <span className="text-[#63554B] truncate">3D Bearing Stratum Terrain</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

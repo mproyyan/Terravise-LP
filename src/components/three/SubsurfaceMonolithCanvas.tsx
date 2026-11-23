@@ -628,7 +628,7 @@ export function SubsurfaceMonolithCanvas() {
           const normZ = ((iz + 0.5) / VZ) * 100
 
           // Assign Robertson SBT Horizon Color
-          let layerId = "layer-4"
+          let layerId: string
           let isAnomaly = false
           if (iy === 0) {
             layerId = "layer-1"

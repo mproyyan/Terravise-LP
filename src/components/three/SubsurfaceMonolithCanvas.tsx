@@ -802,13 +802,14 @@ export function SubsurfaceMonolithCanvas() {
     }
 
     // =========================================================================
-    // VISUALIZER 04: BEARING STRATUM SECTION — STRUCTURAL PILE CAGE & UNDULATING BEDROCK
+    // VISUALIZER 04: BEARING STRATUM SECTION — 3D TOP-OF-BEARING DEPTH HEATMAP & PILE PROBES
     // =========================================================================
     const stratumCageGroup = new THREE.Group()
-    stratumCageGroup.position.set(0, -1.2, 0)
+    stratumCageGroup.position.set(0, -1.15, 0)
     monolithRoot.add(stratumCageGroup)
 
-    const pileCapGeo = new THREE.BoxGeometry(3.4, 0.24, 2.6)
+    // Top Structural Pile Cap Reference Frame (+0.0m Ground Footprint)
+    const pileCapGeo = new THREE.BoxGeometry(3.5, 0.16, 2.7)
     const pileCapMat = new THREE.MeshStandardMaterial({
       color: 0xefe7de,
       roughness: 0.5,
@@ -828,85 +829,182 @@ export function SubsurfaceMonolithCanvas() {
     })
     pileCap.add(new THREE.LineSegments(pileCapEdges, pileCapLineMat))
 
-    const PILE_LEN = 2.95
-    const pileCylGeo = new THREE.CylinderGeometry(0.13, 0.13, PILE_LEN, 20)
-    const pileCylMat = new THREE.MeshStandardMaterial({
-      color: 0xfbf7f2,
-      emissive: 0x7a421d,
-      emissiveIntensity: 0.25,
-      roughness: 0.35,
-      metalness: 0.3,
-      transparent: true,
-      opacity: 0,
-    })
-    const toeRingGeo = new THREE.TorusGeometry(0.18, 0.03, 12, 24)
-    toeRingGeo.rotateX(Math.PI / 2)
-    const toeRingMat = new THREE.MeshBasicMaterial({
-      color: 0x10b981,
-      transparent: true,
-      opacity: 0,
-      toneMapped: false,
-    })
+    // 8 Reinforced Concrete Driven Piles (First 4 map 1:1 to MOCK_BEARING_POINTS: b-01, b-02, b-03, spot-2-rec)
+    const PILE_LEN = 2.85
+    const pileCylGeo = new THREE.CylinderGeometry(0.11, 0.11, PILE_LEN, 20)
+    const toeRingGeo = new THREE.RingGeometry(0.16, 0.25, 28)
+    toeRingGeo.rotateX(-Math.PI / 2)
 
-    const pilePositions: Array<[number, number]> = [
-      [-1.25, -0.85],
-      [-0.42, -0.85],
-      [0.42, -0.85],
-      [1.25, -0.85],
-      [-1.25, 0.85],
-      [-0.42, 0.85],
-      [0.42, 0.85],
-      [1.25, 0.85],
+    const bearingPointSpecs: Array<{ id: string; pos: [number, number] }> = [
+      { id: "b-01", pos: [-1.15, -0.8] },
+      { id: "b-02", pos: [1.15, 0.78] },
+      { id: "b-03", pos: [1.15, -0.8] },
+      { id: "spot-2-rec", pos: [0.05, 0.08] },
+      { id: "aux-1", pos: [-1.15, 0.78] },
+      { id: "aux-2", pos: [-0.4, -0.8] },
+      { id: "aux-3", pos: [0.4, -0.8] },
+      { id: "aux-4", pos: [-0.4, 0.78] },
     ]
 
-    const pileMeshes: THREE.Mesh[] = []
-    for (const [px, pz] of pilePositions) {
-      const pMesh = new THREE.Mesh(pileCylGeo, pileCylMat)
-      pMesh.position.set(px, 1.25 - PILE_LEN / 2, pz)
-      const tRing = new THREE.Mesh(toeRingGeo, toeRingMat)
-      tRing.position.y = -PILE_LEN / 2 + 0.05
-      pMesh.add(tRing)
-      stratumCageGroup.add(pMesh)
-      pileMeshes.push(pMesh)
+    interface BearingPileVisual {
+      id: string
+      mesh: THREE.Mesh
+      mat: THREE.MeshStandardMaterial
+      ring: THREE.Mesh
+      ringMat: THREE.MeshBasicMaterial
+      x: number
+      z: number
     }
 
-    const terrainGeo = new THREE.BoxGeometry(BLOCK_W + 0.3, 1.15, BLOCK_D + 0.3, 20, 4, 16)
-    const tPos = terrainGeo.attributes.position
-    for (let i = 0; i < tPos.count; i++) {
-      const vx = tPos.getX(i)
-      const vy = tPos.getY(i)
-      const vz = tPos.getZ(i)
-      if (vy > 0) {
-        const undulation =
-          0.22 * Math.sin(vx * 1.4 + 0.4) * Math.cos(vz * 1.5) +
-          0.12 * Math.cos(vx * 2.5 - vz * 1.8)
-        tPos.setY(i, vy + undulation)
-      }
+    const bearingPileVisuals: BearingPileVisual[] = []
+
+    for (const spec of bearingPointSpecs) {
+      const pMat = new THREE.MeshStandardMaterial({
+        color: 0xfbf7f2,
+        emissive: 0x7a421d,
+        emissiveIntensity: 0.2,
+        roughness: 0.35,
+        metalness: 0.3,
+        transparent: true,
+        opacity: 0,
+      })
+      const pMesh = new THREE.Mesh(pileCylGeo, pMat)
+      pMesh.position.set(spec.pos[0], 1.25 - PILE_LEN / 2, spec.pos[1])
+
+      const rMat = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0,
+        toneMapped: false,
+      })
+      const tRing = new THREE.Mesh(toeRingGeo, rMat)
+      tRing.position.y = -PILE_LEN / 2 + 0.12
+      pMesh.add(tRing)
+
+      stratumCageGroup.add(pMesh)
+      disposableMaterials.push(pMat, rMat)
+      bearingPileVisuals.push({
+        id: spec.id,
+        mesh: pMesh,
+        mat: pMat,
+        ring: tRing,
+        ringMat: rMat,
+        x: spec.pos[0],
+        z: spec.pos[1],
+      })
     }
-    terrainGeo.computeVertexNormals()
+
+    // High-Resolution 3D Topographic Bearing Depth Heatmap Surface (36 x 28 grid with VertexColors)
+    const terrainGeo = new THREE.BoxGeometry(BLOCK_W + 0.25, 1.05, BLOCK_D + 0.25, 36, 4, 28)
+    const tPos = terrainGeo.attributes.position
+    const baseTerrainY = new Float32Array(tPos.count)
+    for (let i = 0; i < tPos.count; i++) {
+      baseTerrainY[i] = tPos.getY(i)
+    }
+
+    const terrainColors = new Float32Array(tPos.count * 3)
+    terrainGeo.setAttribute("color", new THREE.BufferAttribute(terrainColors, 3))
+
+    const hmColorShallow = new THREE.Color(0x10b981) // -13.6m to -14.8m (Emerald)
+    const hmColorMid = new THREE.Color(0xeab308)     // -14.8m to -16.0m (Warm Amber)
+    const hmColorDeep = new THREE.Color(0xe76f51)    // -16.0m to -17.2m (Coral Orange)
+    const hmColorAbyss = new THREE.Color(0x9a3412)   // -17.2m to -19.0m (Deep Rust Crimson)
+    const hmColorUnmet = new THREE.Color(0x231710)   // Criteria Not Met (Dark Void)
+    const hmTempColor = new THREE.Color()
+
+    const updateBearingHeatmap = (minQc: number, maxIc: number, minThickness: number) => {
+      const posArr = terrainGeo.attributes.position
+      const colArr = terrainGeo.attributes.color
+      const qcPenalty = Math.max(0, (minQc - 15.0) * 0.28)
+      const icPenalty = Math.max(0, (1.80 - maxIc) * 2.4)
+      const thickPenalty = Math.max(0, (minThickness - 2.0) * 0.45)
+      const totalDepthPenaltyM = qcPenalty + icPenalty + thickPenalty
+
+      for (let i = 0; i < posArr.count; i++) {
+        const vx = posArr.getX(i)
+        const vy0 = baseTerrainY[i]
+        const vz = posArr.getZ(i)
+
+        // Spatial geological model across the footprint:
+        // NW (near B-01) is shallowest (-14.1m); SE & East-Center dip deeper (-16.5m) under the clay pocket
+        const dipTrendM = (vx * 0.35 + vz * 0.42) * 0.55
+        const clayBasinM =
+          1.35 * Math.exp(-((vx - 0.45) * (vx - 0.45) * 0.9 + (vz - 0.3) * (vz - 0.3) * 1.1))
+        const ridgeWaveM =
+          0.38 * Math.sin(vx * 1.55 + 0.4) * Math.cos(vz * 1.65) +
+          0.16 * Math.cos(vx * 2.7 - vz * 2.1)
+
+        const localDepthM = 14.3 + dipTrendM + clayBasinM - ridgeWaveM + totalDepthPenaltyM
+        const localPeakQc = 22.4 - clayBasinM * 2.9 - Math.max(0, dipTrendM) * 1.4 + ridgeWaveM * 1.8
+        const localMinIc = 1.38 + clayBasinM * 0.22 + Math.max(0, dipTrendM) * 0.1
+        const localMaxThickness = 4.6 - clayBasinM * 1.15
+
+        const isVerified =
+          localPeakQc >= minQc && localMinIc <= maxIc && localMaxThickness >= minThickness
+
+        if (vy0 > -0.45) {
+          // Displace top surface vertices according to the bearing depth
+          const dispY = THREE.MathUtils.clamp((15.2 - localDepthM) * 0.22, -0.52, 0.42)
+          const ny = (vy0 + 0.525) / 1.05
+          posArr.setY(i, vy0 + dispY * ny)
+        }
+
+        if (!isVerified) {
+          colArr.setXYZ(i, hmColorUnmet.r, hmColorUnmet.g, hmColorUnmet.b)
+        } else {
+          // Map depth (13.6m .. 18.4m) to 4-stop heatmap palette
+          const tDepth = THREE.MathUtils.clamp((localDepthM - 13.6) / 4.6, 0, 1)
+          if (tDepth < 0.33) {
+            hmTempColor.lerpColors(hmColorShallow, hmColorMid, tDepth / 0.33)
+          } else if (tDepth < 0.66) {
+            hmTempColor.lerpColors(hmColorMid, hmColorDeep, (tDepth - 0.33) / 0.33)
+          } else {
+            hmTempColor.lerpColors(hmColorDeep, hmColorAbyss, (tDepth - 0.66) / 0.34)
+          }
+
+          // Subtle iso-depth contour lines every 0.75m of depth
+          const contourPhase = Math.abs((localDepthM * 1.33) % 1 - 0.5)
+          if (contourPhase < 0.06 && vy0 > 0.2) {
+            hmTempColor.multiplyScalar(1.25)
+          }
+          // Darken side walls slightly for 3D architectural contrast
+          if (vy0 < 0.15) {
+            hmTempColor.multiplyScalar(0.68)
+          }
+
+          colArr.setXYZ(i, hmTempColor.r, hmTempColor.g, hmTempColor.b)
+        }
+      }
+
+      posArr.needsUpdate = true
+      colArr.needsUpdate = true
+      terrainGeo.computeVertexNormals()
+    }
+
+    // Initial heatmap calculation
+    updateBearingHeatmap(15.0, 1.8, 2.0)
 
     const terrainMat = new THREE.MeshStandardMaterial({
-      color: 0xe76f51,
-      emissive: 0x9e3d22,
-      emissiveIntensity: 0.3,
-      roughness: 0.55,
-      metalness: 0.1,
+      vertexColors: true,
+      roughness: 0.48,
+      metalness: 0.08,
       transparent: true,
       opacity: 0,
     })
     const terrainMesh = new THREE.Mesh(terrainGeo, terrainMat)
-    terrainMesh.position.y = -1.65
+    terrainMesh.position.y = -1.55
     stratumCageGroup.add(terrainMesh)
 
     const terrainWireGeo = new THREE.WireframeGeometry(terrainGeo)
     const terrainWireMat = new THREE.LineBasicMaterial({
-      color: 0xfad9ba,
+      color: 0x1c130d,
       transparent: true,
       opacity: 0,
     })
     terrainMesh.add(new THREE.LineSegments(terrainWireGeo, terrainWireMat))
 
-    const datumLaserGeo = new THREE.PlaneGeometry(BLOCK_W + 0.5, BLOCK_D + 0.5)
+    const datumLaserGeo = new THREE.PlaneGeometry(BLOCK_W + 0.45, BLOCK_D + 0.45)
     const datumLaserMat = new THREE.MeshBasicMaterial({
       color: 0x10b981,
       side: THREE.DoubleSide,
@@ -916,7 +1014,7 @@ export function SubsurfaceMonolithCanvas() {
     })
     const datumLaser = new THREE.Mesh(datumLaserGeo, datumLaserMat)
     datumLaser.rotation.x = -Math.PI / 2
-    datumLaser.position.y = -1.1
+    datumLaser.position.y = -1.05
     const datumEdges = new THREE.EdgesGeometry(datumLaserGeo)
     const datumLineMat = new THREE.LineBasicMaterial({
       color: 0x10b981,
@@ -925,6 +1023,10 @@ export function SubsurfaceMonolithCanvas() {
     })
     datumLaser.add(new THREE.LineSegments(datumEdges, datumLineMat))
     stratumCageGroup.add(datumLaser)
+
+    let lastHmQc = 15.0
+    let lastHmIc = 1.8
+    let lastHmThick = 2.0
 
     disposableGeometries.push(
       pileCapGeo,
@@ -939,8 +1041,6 @@ export function SubsurfaceMonolithCanvas() {
     disposableMaterials.push(
       pileCapMat,
       pileCapLineMat,
-      pileCylMat,
-      toeRingMat,
       terrainMat,
       terrainWireMat,
       datumLaserMat,
@@ -1220,24 +1320,44 @@ export function SubsurfaceMonolithCanvas() {
       }
 
       // -----------------------------------------------------------------------
-      // MODE 04: DEEP STRUCTURAL FOUNDATION PILE CAGE & UNDULATING BEDROCK
+      // MODE 04: 3D TOP-OF-BEARING DEPTH HEATMAP & STRUCTURAL PILE PROBES
       // -----------------------------------------------------------------------
       stratumCageGroup.visible = wStratum > 0.01
-      stratumCageGroup.scale.setScalar(0.82 + 0.24 * wStratum)
-      pileCapMat.opacity = wStratum * 0.95
-      pileCapLineMat.opacity = wStratum * 0.7
-      pileCylMat.opacity = wStratum * 0.98
-      toeRingMat.opacity = wStratum * 0.95
-      terrainMat.opacity = wStratum * 0.95
-      terrainWireMat.opacity = wStratum * 0.45
-      datumLaserMat.opacity = wStratum * 0.28
-      datumLineMat.opacity = wStratum * 0.9
+      stratumCageGroup.scale.setScalar(0.84 + 0.22 * wStratum)
+      pileCapMat.opacity = wStratum * 0.85
+      pileCapLineMat.opacity = wStratum * 0.65
+      terrainMat.opacity = wStratum * 0.98
+      terrainWireMat.opacity = wStratum * 0.22
+      datumLaserMat.opacity = wStratum * 0.18
+      datumLineMat.opacity = wStratum * 0.75
 
-      const qcShift = ((state.minQc - 15.0) / 10.0) * 0.45
-      const thicknessShift = ((state.minThickness - 2.0) / 3.0) * 0.2
+      // Live vertex heatmap recalculation whenever user adjusts minQc, maxIc, or minThickness sliders
+      if (
+        Math.abs(state.minQc - lastHmQc) > 0.05 ||
+        Math.abs(state.maxIc - lastHmIc) > 0.01 ||
+        Math.abs(state.minThickness - lastHmThick) > 0.05
+      ) {
+        lastHmQc = state.minQc
+        lastHmIc = state.maxIc
+        lastHmThick = state.minThickness
+        updateBearingHeatmap(state.minQc, state.maxIc, state.minThickness)
+      }
+
+      const qcShift = ((state.minQc - 15.0) / 10.0) * 0.42
+      const thicknessShift = ((state.minThickness - 2.0) / 3.0) * 0.18
       datumLaser.position.y = -1.05 - qcShift - thicknessShift
-      for (const pMesh of pileMeshes) {
-        pMesh.position.y = 1.25 - PILE_LEN / 2 - qcShift * 0.5
+
+      for (const bPile of bearingPileVisuals) {
+        const isHighlighted = state.hoveredBearingPointId === bPile.id
+        bPile.mesh.position.y = 1.25 - PILE_LEN / 2 - qcShift * 0.45
+        bPile.mat.opacity = wStratum * (isHighlighted ? 1.0 : 0.82)
+        bPile.mat.emissive.setHex(isHighlighted ? 0x10b981 : 0x7a421d)
+        bPile.mat.emissiveIntensity = isHighlighted ? 0.8 : 0.2
+
+        bPile.ringMat.color.setHex(isHighlighted ? 0xfad9ba : 0x10b981)
+        bPile.ringMat.opacity = wStratum * (isHighlighted ? 1.0 : 0.75)
+        const rScale = isHighlighted ? 1.45 + Math.sin(elapsed * 4.5) * 0.22 : 1.0
+        bPile.ring.scale.set(rScale, rScale, 1)
       }
 
       // -----------------------------------------------------------------------

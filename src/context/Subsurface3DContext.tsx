@@ -23,6 +23,7 @@ export interface MutableSceneState {
   minThickness: number
   hoveredLayerId: string | null
   selectedPipeId: string | null
+  hoveredBearingPointId: string | null
   activeDqnTab: string
   cameraView: "iso" | "front"
   explodeFactor: number
@@ -43,6 +44,8 @@ interface Subsurface3DContextValue {
   setSelectedPipeId: (id: string | null) => void
   pipeScreenCoords: PipeScreenCoords | null
   setPipeScreenCoords: (coords: PipeScreenCoords | null) => void
+  hoveredBearingPointId: string | null
+  setHoveredBearingPointId: (id: string | null) => void
   activeDqnTab: string
   setActiveDqnTab: (tab: string) => void
   cameraView: "iso" | "front"
@@ -68,6 +71,7 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
     xPct: 52,
     yPct: 36,
   })
+  const [hoveredBearingPointId, setHoveredBearingPointId] = useState<string | null>("spot-2-rec")
   const [activeDqnTab, setActiveDqnTab] = useState<string>("gap")
   const [cameraView, setCameraView] = useState<"iso" | "front">("iso")
   const [explodeOverride, setExplodeOverride] = useState<number | null>(null)
@@ -92,6 +96,7 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
     minThickness: DEFAULT_BEARING_CRITERIA.minThickness,
     hoveredLayerId: null,
     selectedPipeId: "cpt-03",
+    hoveredBearingPointId: "spot-2-rec",
     activeDqnTab: "gap",
     cameraView: "iso",
     explodeFactor: 0,
@@ -122,6 +127,10 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     sceneStateRef.current.selectedPipeId = selectedPipeId
   }, [selectedPipeId])
+
+  useEffect(() => {
+    sceneStateRef.current.hoveredBearingPointId = hoveredBearingPointId
+  }, [hoveredBearingPointId])
 
   useEffect(() => {
     sceneStateRef.current.activeDqnTab = activeDqnTab
@@ -194,6 +203,8 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
         setSelectedPipeId,
         pipeScreenCoords,
         setPipeScreenCoords,
+        hoveredBearingPointId,
+        setHoveredBearingPointId,
         activeDqnTab,
         setActiveDqnTab,
         cameraView,

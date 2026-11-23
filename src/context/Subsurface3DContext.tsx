@@ -171,6 +171,7 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSubsurface3D() {
   const ctx = useContext(Subsurface3DContext)
   if (!ctx) {

@@ -10,6 +10,8 @@ import { BearingStratumSection } from "./components/sections/BearingStratumSecti
 import { WorkflowSection } from "./components/sections/WorkflowSection"
 import { TechnicalTrustSection } from "./components/sections/TechnicalTrustSection"
 import { FinalCtaSection } from "./components/sections/FinalCtaSection"
+import { Subsurface3DProvider } from "./context/Subsurface3DContext"
+import { SubsurfaceMonolithStage } from "./components/three/SubsurfaceMonolithStage"
 import { SITE_CONTENT } from "./data/siteContent"
 import { Check } from "lucide-react"
 
@@ -46,47 +48,52 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF7F2] text-[#1C130D] font-sans antialiased selection:bg-[#FAD9BA] selection:text-[#381800] relative">
-      {/* Dynamic Subsurface Depth Meter (Fixed Sidebar) */}
-      <DepthSidebarTracker />
+    <Subsurface3DProvider>
+      <div className="min-h-screen bg-[#FBF7F2] text-[#1C130D] font-sans antialiased selection:bg-[#FAD9BA] selection:text-[#381800] relative">
+        {/* Persistent Scrollytelling 3D Building & Soil Monolith Stage (Rapidkert-style) */}
+        <SubsurfaceMonolithStage />
 
-      {/* Sticky Architectural Navbar */}
-      <Navbar onOpenAppStore={handleOpenAppStore} />
+        {/* Dynamic Subsurface Depth Meter (Fixed Sidebar) */}
+        <DepthSidebarTracker />
 
-      {/* Main Landing Sections Flow */}
-      <main>
-        <HeroSection
-          onOpenAppStore={handleOpenAppStore}
-          onDownloadTemplate={handleDownloadTemplate}
-        />
-        <ProblemSection />
-        <DQNRecommendationSection />
-        <SubsurfaceVoxelSection />
-        <BearingStratumSection />
-        <WorkflowSection />
-        <TechnicalTrustSection />
-        <FinalCtaSection
-          onOpenAppStore={handleOpenAppStore}
-          onDownloadTemplate={handleDownloadTemplate}
-        />
-      </main>
+        {/* Sticky Architectural Navbar */}
+        <Navbar onOpenAppStore={handleOpenAppStore} />
 
-      {/* Engineering Footer */}
-      <Footer />
+        {/* Main Landing Sections Flow */}
+        <main className="relative z-10">
+          <HeroSection
+            onOpenAppStore={handleOpenAppStore}
+            onDownloadTemplate={handleDownloadTemplate}
+          />
+          <ProblemSection />
+          <DQNRecommendationSection />
+          <SubsurfaceVoxelSection />
+          <BearingStratumSection />
+          <WorkflowSection />
+          <TechnicalTrustSection />
+          <FinalCtaSection
+            onOpenAppStore={handleOpenAppStore}
+            onDownloadTemplate={handleDownloadTemplate}
+          />
+        </main>
 
-      {/* Floating Download Notification Toast */}
-      {downloadNotification && (
-        <div className="fixed bottom-6 left-6 z-50 bg-[#1C130D] text-[#EFE7DE] border border-[#7A421D] px-4 py-3 shadow-2xl flex items-center gap-3 font-mono text-xs animate-in slide-in-from-bottom-4 duration-200">
-          <div className="w-5 h-5 bg-[#5A3008] text-[#FAD9BA] flex items-center justify-center shrink-0">
-            <Check className="w-3.5 h-3.5" />
+        {/* Engineering Footer */}
+        <Footer />
+
+        {/* Floating Download Notification Toast */}
+        {downloadNotification && (
+          <div className="fixed bottom-6 left-6 z-50 bg-[#1C130D] text-[#EFE7DE] border border-[#7A421D] px-4 py-3 shadow-2xl flex items-center gap-3 font-mono text-xs animate-in slide-in-from-bottom-4 duration-200">
+            <div className="w-5 h-5 bg-[#5A3008] text-[#FAD9BA] flex items-center justify-center shrink-0">
+              <Check className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <div className="font-bold text-[#EFE7DE]">Sample CPT file downloaded</div>
+              <div className="text-[10px] text-[#EFE7DE]/60">terravise_cpt_sample_template.csv</div>
+            </div>
           </div>
-          <div>
-            <div className="font-bold text-[#EFE7DE]">Sample CPT file downloaded</div>
-            <div className="text-[10px] text-[#EFE7DE]/60">terravise_cpt_sample_template.csv</div>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </Subsurface3DProvider>
   )
 }
 

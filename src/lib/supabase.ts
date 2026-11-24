@@ -220,7 +220,10 @@ export async function fetchFeedbacks(): Promise<FeedbackDisplayItem[]> {
       )
       .map((row) => ({
         id: String(row.id),
-        full_name: row.full_name ? String(row.full_name).trim() : undefined,
+        full_name:
+          row.full_name && String(row.full_name).trim()
+            ? String(row.full_name).trim()
+            : undefined,
         role: cleanRoleText(row.role, row.role_other),
         feedback_notes: String(row.feedback_notes).trim(),
         created_at: row.created_at,
@@ -266,7 +269,8 @@ export async function fetchAllFeedbacksForAdmin(): Promise<{
     const items: FeedbackAdminItem[] = data.map((row: Record<string, unknown>) => ({
       id: String(row.id),
       created_at: typeof row.created_at === "string" ? row.created_at : undefined,
-      full_name: typeof row.full_name === "string" ? row.full_name : "",
+      full_name:
+        typeof row.full_name === "string" ? row.full_name.trim() : "",
       role: cleanRoleText(
         typeof row.role === "string" ? row.role : undefined,
         typeof row.role_other === "string" ? row.role_other : undefined

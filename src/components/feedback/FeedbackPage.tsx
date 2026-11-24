@@ -68,16 +68,6 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
     return () => clearInterval(timer)
   }, [isSuccess, onBackToHome])
 
-  // Step 1 Validation: Full Name is Required
-  const validateStep1 = () => {
-    if (!fullName.trim()) {
-      setValidationError("Mohon masukkan nama lengkap Anda.")
-      return false
-    }
-    setValidationError("")
-    return true
-  }
-
   // Step 2 Validation: Role is Required
   const validateStep2 = () => {
     if (!role) {
@@ -104,7 +94,6 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
 
   const handleNext = () => {
     setValidationError("")
-    if (currentStep === 1 && !validateStep1()) return
     if (currentStep === 2 && !validateStep2()) return
 
     if (currentStep < TOTAL_STEPS) {
@@ -123,8 +112,8 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
 
   const handleSkip = () => {
     setValidationError("")
-    // Steps 1, 2, and 7 cannot be skipped
-    if (currentStep === 1 || currentStep === 2 || currentStep === 7) return
+    // Steps 2 and 7 cannot be skipped
+    if (currentStep === 2 || currentStep === 7) return
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep((prev) => prev + 1)
       window.scrollTo({ top: 0, behavior: "smooth" })
@@ -249,7 +238,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 PENGIRIMAN BERHASIL
               </span>
               <h1 className="font-sans font-black text-2xl sm:text-4xl text-[#1C130D] uppercase tracking-tight">
-                Terima Kasih, {fullName}!
+                {fullName.trim() ? `Terima Kasih, ${fullName.trim()}!` : "Terima Kasih!"}
               </h1>
               <p className="font-sans text-[#63554B] text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
                 Masukan dan informasi kolaborasi Anda telah berhasil kami terima. Terima kasih banyak atas waktu dan insight berharga yang Anda berikan untuk pengembangan Terravise.
@@ -322,7 +311,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
               </div>
 
               {/* Skip label for optional steps */}
-              {currentStep !== 1 && currentStep !== 2 && currentStep !== 7 && (
+              {currentStep !== 2 && currentStep !== 7 && (
                 <button
                   type="button"
                   onClick={handleSkip}
@@ -355,7 +344,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
 
             {/* Dynamic Step Content */}
             <AnimatePresence mode="wait">
-              {/* STEP 1: Full Name */}
+              {/* STEP 1: Name (Optional) */}
               {currentStep === 1 && (
                 <motion.div
                   key="step-1"
@@ -367,7 +356,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 >
                   <div className="space-y-2">
                     <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
-                      Siapa nama lengkap Anda?
+                      Siapa nama Anda?
                     </h2>
                     <p className="font-sans text-sm text-[#63554B]">
                       Nama Anda akan dicatat bersama masukan untuk keperluan tindak lanjut tim Terravise.
@@ -376,7 +365,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
 
                   <div className="space-y-2">
                     <label htmlFor="full-name-input" className="font-mono text-xs text-[#1C130D] font-bold uppercase block">
-                      Nama Lengkap
+                      Nama
                     </label>
                     <input
                       id="full-name-input"
@@ -389,7 +378,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleNext()
                       }}
-                      placeholder="Contoh: Ir. Budi Santoso, M.T."
+                      placeholder="Contoh: Budi Santoso"
                       autoFocus
                       className="w-full bg-[#FAF5EE] border border-[#1C130D]/25 p-3.5 text-base font-sans text-[#1C130D] placeholder-[#63554B]/50 focus:border-[#7A421D] focus:outline-hidden focus:ring-1 focus:ring-[#7A421D]"
                     />
@@ -907,7 +896,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
 
               <div className="flex items-center gap-3">
                 {/* Skip button for optional steps */}
-                {currentStep !== 1 && currentStep !== 2 && currentStep !== 7 && (
+                {currentStep !== 2 && currentStep !== 7 && (
                   <button
                     type="button"
                     onClick={handleSkip}

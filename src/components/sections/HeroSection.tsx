@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react"
 import { Button } from "../ui/Button"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
-import { HeroProblemGroundCanvas } from "../three/HeroProblemGroundStage"
 import { ArrowRight, CheckCircle } from "lucide-react"
 
 interface HeroSectionProps {
@@ -59,15 +58,8 @@ export function HeroSection({ onOpenAppStore }: HeroSectionProps) {
           <div className="lg:col-span-6 relative">
             <div
               ref={heroDockRef}
-              className="hidden lg:block w-full h-[500px] xl:h-[560px] relative select-none pointer-events-none"
+              className="w-full h-[320px] sm:h-[400px] lg:h-[500px] xl:h-[560px] relative select-none pointer-events-none"
             />
-
-            {/* Mobile & Tablet Inline View */}
-            <div className="lg:hidden w-full">
-              <div className="w-full h-[380px] relative overflow-hidden">
-                <HeroProblemGroundCanvas isMobileInline={true} />
-              </div>
-            </div>
           </div>
         </div>
 

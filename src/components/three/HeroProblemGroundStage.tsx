@@ -17,13 +17,7 @@ interface LayerVisualEntry {
   height: number
 }
 
-export function HeroProblemGroundCanvas({
-  isMobileInline = false,
-  inlineStage = "hero",
-}: {
-  isMobileInline?: boolean
-  inlineStage?: "hero" | "problem"
-}) {
+export function HeroProblemGroundCanvas() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { dockElementsRef, sceneStateRef } = useSubsurface3D()
 
@@ -33,6 +27,7 @@ export function HeroProblemGroundCanvas({
 
     const width = container.clientWidth || window.innerWidth
     const height = container.clientHeight || window.innerHeight
+    const initialFov = width < 640 ? 44 : width < 1024 ? 38 : 33
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -49,7 +44,7 @@ export function HeroProblemGroundCanvas({
     container.appendChild(renderer.domElement)
 
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(33, width / height, 0.1, 100)
+    const camera = new THREE.PerspectiveCamera(initialFov, width / height, 0.1, 100)
     camera.position.set(8.4, 5.2, 9.4)
     camera.lookAt(0, -0.75, 0)
 
@@ -426,20 +421,7 @@ export function HeroProblemGroundCanvas({
           e.clientY <= r.bottom
         )
       }
-      if (isMobileInline) {
-        if (!container) return
-        const cRect = container.getBoundingClientRect()
-        if (
-          e.clientX < cRect.left ||
-          e.clientX > cRect.right ||
-          e.clientY < cRect.top ||
-          e.clientY > cRect.bottom
-        ) {
-          return
-        }
-      } else if (!checkInRect(heroEl) && !checkInRect(probEl)) {
-        return
-      }
+      if (!checkInRect(heroEl) && !checkInRect(probEl)) return
       isDragging = true
       dragStartX = e.clientX
     }
@@ -502,12 +484,7 @@ export function HeroProblemGroundCanvas({
       const heroEl = dockElementsRef.current.hero
       const probEl = dockElementsRef.current.problem
 
-      if (isMobileInline) {
-        targetTProblem = inlineStage === "problem" ? 1 : 0
-        targetTExit = 0
-        targetCenterX = (container?.clientWidth || window.innerWidth) * 0.5
-        targetCenterY = (container?.clientHeight || window.innerHeight) * 0.5
-      } else if (heroEl && probEl) {
+      if (heroEl && probEl) {
         const heroRect = heroEl.getBoundingClientRect()
         const probRect = probEl.getBoundingClientRect()
         const vpCenterY = window.innerHeight * 0.5
@@ -622,15 +599,12 @@ export function HeroProblemGroundCanvas({
 
       const vpW = container?.clientWidth || window.innerWidth
       const vpH = container?.clientHeight || window.innerHeight
-      if (!isMobileInline && vpW >= 1024) {
-        currentOffsetCenterX = THREE.MathUtils.damp(currentOffsetCenterX, targetCenterX, 9.0, dt)
-        currentOffsetCenterY = THREE.MathUtils.damp(currentOffsetCenterY, targetCenterY, 9.0, dt)
-        const offsetX = vpW * 0.5 - currentOffsetCenterX
-        const offsetY = vpH * 0.5 - currentOffsetCenterY
-        camera.setViewOffset(vpW, vpH, offsetX, offsetY, vpW, vpH)
-      } else {
-        camera.clearViewOffset()
-      }
+
+      currentOffsetCenterX = THREE.MathUtils.damp(currentOffsetCenterX, targetCenterX, 9.0, dt)
+      currentOffsetCenterY = THREE.MathUtils.damp(currentOffsetCenterY, targetCenterY, 9.0, dt)
+      const offsetX = vpW * 0.5 - currentOffsetCenterX
+      const offsetY = vpH * 0.5 - currentOffsetCenterY
+      camera.setViewOffset(vpW, vpH, offsetX, offsetY, vpW, vpH)
 
       camera.position.set(currentCamX, currentCamY, currentCamZ)
       camera.lookAt(currentLookX, currentLookY, 0)
@@ -645,6 +619,7 @@ export function HeroProblemGroundCanvas({
       if (!container) return
       const newW = container.clientWidth || window.innerWidth
       const newH = container.clientHeight || window.innerHeight
+      camera.fov = newW < 640 ? 44 : newW < 1024 ? 38 : 33
       camera.aspect = newW / newH
       camera.updateProjectionMatrix()
       renderer.setSize(newW, newH)
@@ -669,7 +644,7 @@ export function HeroProblemGroundCanvas({
         container.removeChild(renderer.domElement)
       }
     }
-  }, [dockElementsRef, inlineStage, isMobileInline, sceneStateRef])
+  }, [dockElementsRef, sceneStateRef])
 
   return (
     <div
@@ -688,9 +663,9 @@ export function HeroProblemGroundCanvas({
 export function HeroProblemGroundWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div id="ground-story" className="relative bg-[#FBF7F2]">
-      {/* Scoped Sticky 3D Canvas Layer (z-0: strictly behind foreground text/cards, only within Hero + Problem) */}
-      <div className="hidden lg:block absolute inset-0 z-0 pointer-events-none">
-        <div className="sticky top-0 h-screen w-full overflow-hidden">
+      {/* Scoped Sticky 3D Canvas Layer (z-0: strictly behind foreground text/cards, only within Hero + Problem on ALL devices) */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="sticky top-0 h-screen min-h-[100dvh] w-full overflow-hidden">
           <HeroProblemGroundCanvas />
         </div>
       </div>

@@ -1,13 +1,26 @@
+import { useEffect, useRef } from "react"
 import { PlateHeader } from "../ui/PlateHeader"
 import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"
-import { Section3DAnchorDock } from "../three/Section3DAnchorDock"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
-import { AlertCircle, Clock, Database, MoveHorizontal } from "lucide-react"
+import { STRATA_LAYER_SPECS } from "../three/geology3DUtils"
+import { AlertCircle, Clock, Database, Layers } from "lucide-react"
 
 export function ProblemSection() {
   const { problem } = SITE_CONTENT
-  const { hoveredProblemZone, setHoveredProblemZone } = useSubsurface3D()
+  const {
+    hoveredProblemZone,
+    setHoveredProblemZone,
+    hoveredLayerId,
+    setHoveredLayerId,
+    registerDock,
+  } = useSubsurface3D()
+  const problemDockRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    registerDock("problem", problemDockRef.current)
+    return () => registerDock("problem", null)
+  }, [registerDock])
 
   const getCardIcon = (index: number) => {
     switch (index) {
@@ -22,53 +35,120 @@ export function ProblemSection() {
   }
 
   const zoneTags = [
-    "WEST TRENCH ZONE · 5 REDUNDANT BOREHOLES",
-    "CENTER TRENCH ZONE · HIDDEN SOFT CLAY LENS",
-    "EAST TRENCH ZONE · PREMATURE BUDGET CUTOFF",
+    "WEST ZONE · 5 REDUNDANT BOREHOLES",
+    "CENTER CUTAWAY · UNDETECTED SOFT CLAY LENS",
+    "EAST ZONE · PREMATURE BUDGET CUTOFF",
   ]
 
   return (
     <section
       id="problem"
-      className="py-24 bg-[#FBF7F2] border-b border-[#1C130D]/15 scroll-mt-12"
+      className="py-24 border-b border-[#1C130D]/15 scroll-mt-12 relative"
     >
-      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
         {/* Architectural Plate Header */}
         <PlateHeader
           number="01"
-          title="Investigation limits"
-          metaRight="Panoramic 3-zone geological trench dissection"
+          title="Below the surface"
+          metaRight="Exploded L-cutaway strata & blind-grid failure dissection"
           tone="light"
         />
 
-        {/* Centered Editorial Headline + Zone Pan Indicator */}
-        <div className="max-w-4xl mx-auto text-center space-y-4 mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EFE7DE] border border-[#1C130D]/15 font-mono text-[10px] uppercase tracking-widest text-[#7A421D]">
-            <MoveHorizontal className="w-3.5 h-3.5" />
-            <span>Scroll or hover cards below to pan camera across the 3 failure zones</span>
+        {/* Top Editorial Row (Sits cleanly above the 3D cutaway stage, never blocked by 3D) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-6">
+          <div className="lg:col-span-7 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EFE7DE] border border-[#1C130D]/15 font-mono text-[10px] uppercase tracking-widest text-[#7A421D]">
+              <Layers className="w-3.5 h-3.5" />
+              <span>Building stripped · 4 L-cutaway horizons separated to expose clay trap</span>
+            </div>
+            <h2 className="font-sans font-black text-3xl sm:text-5xl xl:text-[54px] text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.9]">
+              {problem.heading}
+            </h2>
           </div>
-          <h2 className="font-sans font-black text-3xl sm:text-5xl xl:text-6xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.9]">
-            {problem.heading}
-          </h2>
-          <p className="font-sans text-[#63554B] text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            {problem.subheading}
-          </p>
+          <div className="lg:col-span-5">
+            <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed bg-[#FBF7F2]/85 backdrop-blur-xs p-4 border-l-2 border-[#7A421D]">
+              {problem.subheading}
+            </p>
+          </div>
         </div>
 
-        {/* Full-Width 12-Column Panoramic 3D Trench Stage */}
-        <div className="relative w-full mb-4">
-          <Section3DAnchorDock
-            stage="problem"
-            tone="light"
-            title="01 / Panoramic 3-Zone Subsurface Cross-Section Trench (-6.5m to -14.0m)"
-            subtitle="West: Over-drilling · Center: Soft Clay Pocket · East: Budget Cutoff"
-            renderMobileCanvas={false}
-            heightClass="h-[380px] xl:h-[430px]"
-          />
+        {/* Rapidkert "03 — Under the Lawn" Stage: Center Exploded 3D L-Cutaway Block + Horizontal Stratigraphic Callout Lines */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-4">
+          {/* Left 3 Columns: Rapidkert-Style Horizontal Stratigraphic Callout Pointers (01..04) */}
+          <div className="lg:col-span-4 space-y-2.5 font-mono relative z-20">
+            <div className="text-[10px] uppercase tracking-[0.16em] text-[#7A421D] font-bold pb-1 border-b border-[#1C130D]/15">
+              Exploded Stratigraphic Horizons (Hover to highlight 3D layer)
+            </div>
+            {STRATA_LAYER_SPECS.map((spec) => {
+              const isHovered = hoveredLayerId === spec.id
+              const isClayTrap = spec.id === "layer-3"
+              return (
+                <div
+                  key={spec.id}
+                  onMouseEnter={() => setHoveredLayerId(spec.id)}
+                  onMouseLeave={() => setHoveredLayerId(null)}
+                  className={`p-3 border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                    isHovered
+                      ? "bg-white border-[#5A3008] translate-x-1 shadow-md"
+                      : isClayTrap
+                        ? "bg-[#FAF5EE]/95 border-[#E76F51]/60"
+                        : "bg-[#FAF5EE]/90 border-[#1C130D]/15 hover:border-[#1C130D]/35"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span
+                      className="w-2.5 h-6 shrink-0"
+                      style={{ backgroundColor: spec.colorHex }}
+                    />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-[#1C130D] flex items-center gap-1.5">
+                        <span className="text-[#7A421D]">{spec.code}</span>
+                        <span className="truncate">{spec.name}</span>
+                      </div>
+                      <div className="text-[10px] text-[#63554B] tabular-nums">
+                        Depth: {spec.depthLabel}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Horizontal Leader Dash pointing right toward the 3D Exploded Layer */}
+                  <div className="hidden lg:flex items-center gap-1.5 shrink-0">
+                    <span className="text-[9px] uppercase tracking-wider text-[#7A421D]">
+                      {isClayTrap ? "HAZARD TRAP" : "HORIZON"}
+                    </span>
+                    <span className="w-6 h-px bg-[#7A421D]/60 inline-block" />
+                    <span className="w-1.5 h-1.5 bg-[#7A421D] inline-block" />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Right 8 Columns: Dedicated 3D Exploded L-Cutaway Dissection Stage (0% overlap with text!) */}
+          <div className="lg:col-span-8 relative">
+            <div
+              ref={problemDockRef}
+              className="hidden lg:flex flex-col justify-between w-full h-[430px] xl:h-[470px] relative select-none pointer-events-none"
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
+                <span>+</span>
+                <span className="text-[9px] tracking-[0.2em]">
+                  01 / EXPLODED L-CUTAWAY SUBSURFACE DISSECTION (-0.0M TO -25.0M)
+                </span>
+                <span>+</span>
+              </div>
+              <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
+                <span>+</span>
+                <span className="text-[9px] tracking-[0.16em] text-[#7A421D]">
+                  WEST: OVER-DRILLING · CENTER: HIDDEN CLAY LENS · EAST: BUDGET CUTOFF
+                </span>
+                <span>+</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* 3-Column Horizontal Architectural Error Deck with Vertical Zone Leader Lines */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-30">
+        {/* Bottom 3-Column Horizontal Failure Diagnostic Deck (Foreground z-20 with translucent backdrop) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-20 mt-4">
           {problem.cards.map((card, idx) => {
             const isFocused = hoveredProblemZone === idx
             const isCenterClay = idx === 1
@@ -83,30 +163,15 @@ export function ProblemSection() {
                 }
                 className="flex flex-col cursor-pointer group"
               >
-                {/* Vertical Architectural Leader Line pointing up into the 3D Trench Zone */}
-                <div className="hidden lg:flex flex-col items-center pb-2 select-none">
-                  <span
-                    className={`w-2.5 h-2.5 transition-transform duration-200 ${
-                      isFocused
-                        ? "bg-[#E76F51] scale-125"
-                        : isCenterClay
-                          ? "bg-[#E76F51]"
-                          : "bg-[#7A421D]"
-                    }`}
-                  />
-                  <div
-                    className={`w-px h-7 border-l border-dashed transition-colors ${
-                      isFocused ? "border-[#E76F51]" : "border-[#1C130D]/30"
-                    }`}
-                  />
-                  <span className="font-mono text-[9px] tracking-widest uppercase px-2 py-0.5 bg-[#EFE7DE] border border-[#1C130D]/15 text-[#7A421D]">
+                <div className="hidden lg:flex items-center justify-between pb-2 font-mono text-[9px] tracking-widest uppercase text-[#7A421D]">
+                  <span className="px-2 py-0.5 bg-[#EFE7DE] border border-[#1C130D]/15">
                     {zoneTags[idx]}
                   </span>
+                  <span className="text-[#63554B]">Hover to focus 3D zone ↑</span>
                 </div>
 
-                {/* Architectural Error Card */}
                 <div
-                  className={`flex-1 bg-[#FAF5EE] border p-6 flex flex-col justify-between transition-all shadow-xs ${
+                  className={`flex-1 bg-[#FAF5EE]/95 backdrop-blur-xs border p-6 flex flex-col justify-between transition-all shadow-xs ${
                     isFocused
                       ? "border-[#5A3008] bg-white -translate-y-1 shadow-xl"
                       : isCenterClay

@@ -1,8 +1,10 @@
+import { useEffect, useRef } from "react"
 import { Button } from "../ui/Button"
 import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"
-import { Section3DAnchorDock } from "../three/Section3DAnchorDock"
-import { ArrowRight, Download, CheckCircle, Layers } from "lucide-react"
+import { useSubsurface3D } from "../../context/Subsurface3DContext"
+import { HeroProblemGroundCanvas } from "../three/HeroProblemGroundStage"
+import { ArrowRight, Download, CheckCircle, Layers, Rotate3d } from "lucide-react"
 
 interface HeroSectionProps {
   onOpenAppStore: () => void
@@ -11,14 +13,21 @@ interface HeroSectionProps {
 
 export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionProps) {
   const { hero } = SITE_CONTENT
+  const { registerDock } = useSubsurface3D()
+  const heroDockRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    registerDock("hero", heroDockRef.current)
+    return () => registerDock("hero", null)
+  }, [registerDock])
 
   return (
     <section
       id="hero"
-      className="relative pt-28 pb-16 md:pt-36 md:pb-20 overflow-hidden bg-[#FBF7F2] border-b border-[#1C130D]/15"
+      className="relative pt-28 pb-16 md:pt-36 md:pb-20 border-b border-[#1C130D]/15"
     >
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-        {/* Main 6:6 Split: Left Monumental Copy | Right Open Borderless 3D Monolith Stage */}
+        {/* Main 6:6 Split: Left Monumental Copy | Right Open Borderless 3D Monolith Stage (Preserved 100%) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           {/* Left 6 Columns: Headline, Value Proposition & Dual CTAs */}
           <div className="lg:col-span-6 space-y-8">
@@ -29,7 +38,7 @@ export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionP
               </Badge>
               <span className="font-mono text-[10px] uppercase tracking-widest text-[#7A421D] bg-[#E3D7C8]/50 px-2.5 py-1 border border-[#1C130D]/10 flex items-center gap-1.5">
                 <Layers className="w-3 h-3" />
-                Scroll to transform 3D strata
+                Scroll to strip building &amp; dissect L-cutaway strata
               </span>
             </div>
 
@@ -67,21 +76,49 @@ export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionP
             </div>
           </div>
 
-          {/* Right 6 Columns: Open Borderless 3D Architectural Building & Subsurface Monolith */}
+          {/* Right 6 Columns: Open Borderless 3D Architectural Building & L-Cutaway Soil Monolith */}
           <div className="lg:col-span-6 relative">
-            <Section3DAnchorDock
-              stage="hero"
-              tone="light"
-              title="00 / Architectural Tower & 25m Soil Monolith"
-              subtitle="Intact 4-Horizon Profile"
-              renderMobileCanvas={true}
-              heightClass="h-[500px] xl:h-[560px]"
-            />
+            <div
+              ref={heroDockRef}
+              className="hidden lg:flex flex-col justify-between w-full h-[500px] xl:h-[560px] relative select-none pointer-events-none"
+            >
+              <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
+                <span>+</span>
+                <span className="text-[9px] tracking-[0.2em]">
+                  00 / ARCHITECTURAL TOWER &amp; L-CUTAWAY 25M SOIL MONOLITH
+                </span>
+                <span>+</span>
+              </div>
+              <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
+                <span>+</span>
+                <span className="text-[9px] tracking-[0.16em] flex items-center gap-1.5 text-[#7A421D]">
+                  <Rotate3d className="w-3 h-3" />
+                  DRAG TO ROTATE · SCROLL TO DISSECT SUBSURFACE
+                </span>
+                <span>+</span>
+              </div>
+            </div>
+
+            {/* Mobile & Tablet Inline View */}
+            <div className="lg:hidden w-full space-y-2">
+              <div className="w-full h-[380px] relative overflow-hidden">
+                <HeroProblemGroundCanvas isMobileInline={true} />
+              </div>
+              <div className="flex items-center justify-between font-mono text-[10px] px-2 py-1 border-t border-[#1C130D]/15 text-[#63554B]">
+                <span className="font-bold uppercase tracking-wider">
+                  00 / Tower &amp; L-Cutaway Soil Monolith
+                </span>
+                <span className="flex items-center gap-1">
+                  <Rotate3d className="w-3 h-3" />
+                  4-Horizon Profile
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Full-Width 12-Column Bottom Engineering Specifications Strip */}
-        <div className="mt-12 pt-8 border-t border-[#1C130D]/15 grid grid-cols-2 sm:grid-cols-5 gap-6 items-center font-mono">
+        <div className="mt-12 pt-8 border-t border-[#1C130D]/15 grid grid-cols-2 sm:grid-cols-5 gap-6 items-center font-mono bg-[#FBF7F2]/85 backdrop-blur-xs">
           {hero.specPoints.map((spec) => (
             <div key={spec.label} className="space-y-1">
               <span className="text-[10px] text-[#63554B] uppercase tracking-[0.14em] block">

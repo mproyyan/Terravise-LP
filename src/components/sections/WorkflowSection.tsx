@@ -290,30 +290,30 @@ function MilestoneCard({
 
       {/* 3 Rationale Cards (For Step 03) or Standard 3 Metric Pills (For Steps 01, 02, 04) */}
       {step.rationales ? (
-        <div className="space-y-2 pt-1 font-mono">
+        <div className="space-y-2.5 pt-1 font-mono">
           <div className="text-[10px] text-[#BD8564] uppercase tracking-wider font-bold">
-            Transparent "Why this point?" Rationale:
+            Target Selection Criteria
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[9px]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             {step.rationales.map((rat) => (
               <div
                 key={rat.title}
-                className={`p-2.5 border transition-colors flex flex-col justify-between ${
+                className={`p-3 border transition-colors flex flex-col justify-between ${
                   isActive
-                    ? "bg-[#1C130D] border-[#FAD9BA]/40 text-[#EFE7DE]"
-                    : "bg-[#170E08] border-[#EFE7DE]/15 text-[#EFE7DE]/70"
+                    ? "bg-[#FAD9BA]/[0.04] border-[#FAD9BA]/30 text-[#EFE7DE]"
+                    : "bg-transparent border-[#EFE7DE]/15 text-[#EFE7DE]/70"
                 }`}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-[#FAD9BA] text-[10px] uppercase">
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <span className="font-bold text-[#FAD9BA] text-[10px] uppercase font-mono tracking-wide">
                       {rat.title}
                     </span>
-                    <span className="text-[8px] px-1 py-0.5 bg-[#271C14] text-[#BD8564] border border-[#EFE7DE]/10 font-mono">
+                    <span className="text-[8px] px-1.5 py-0.5 bg-[#FAD9BA]/10 text-[#FAD9BA] border border-[#FAD9BA]/20 font-mono">
                       {rat.badge}
                     </span>
                   </div>
-                  <p className="text-[9px] text-[#EFE7DE]/75 leading-relaxed font-sans">
+                  <p className="text-[10px] text-[#EFE7DE]/80 leading-relaxed font-sans">
                     {rat.desc}
                   </p>
                 </div>
@@ -339,10 +339,12 @@ function MilestoneCard({
         </div>
       )}
 
-      {/* Clean Interactive Visual Snapshot */}
-      <div className="pt-2">
-        <WorkflowStepVisual stepIndex={stepIndex} isActive={isActive} />
-      </div>
+      {/* Clean Interactive Visual Snapshot (Steps 01, 02, 04) */}
+      {stepIndex !== 2 && (
+        <div className="pt-2">
+          <WorkflowStepVisual stepIndex={stepIndex} isActive={isActive} />
+        </div>
+      )}
 
       {/* Deliverable Footer */}
       <div className="pt-3 border-t border-[#EFE7DE]/15 flex items-center justify-between font-mono text-[10px]">

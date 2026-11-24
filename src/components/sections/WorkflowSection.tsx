@@ -157,7 +157,7 @@ export function WorkflowSection() {
                     <div className="w-full flex items-center justify-between px-2 font-mono text-[9px] text-[#BD8564]">
                       <span className={isEven ? "opacity-100" : "opacity-0"}>───►</span>
                       <span className="bg-[#1C130D] px-1.5 py-0.5 border border-[#EFE7DE]/20 text-[#FAD9BA] font-bold">
-                        {step.depthDisplay.split(" ")[0]}
+                        {step.depthDisplay}
                       </span>
                       <span className={!isEven ? "opacity-100" : "opacity-0"}>◄───</span>
                     </div>

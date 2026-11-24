@@ -92,7 +92,7 @@ export const SITE_CONTENT = {
     {
       stepNumber: "01",
       depthM: 0.0,
-      depthDisplay: "0.0 m (Ground Level)",
+      depthDisplay: "0.0 m",
       stratumName: "Ground Surface & Boundary",
       stratumColor: "#D4A373",
       title: "Map site boundary on satellite imagery",
@@ -110,7 +110,7 @@ export const SITE_CONTENT = {
     {
       stepNumber: "02",
       depthM: -6.5,
-      depthDisplay: "-6.5 m (Upper Strata)",
+      depthDisplay: "-6.5 m",
       stratumName: "Alluvial Sand & Silt Strata",
       stratumColor: "#588157",
       title: "Import CPT sounding files (.xlsx or .csv)",
@@ -128,7 +128,7 @@ export const SITE_CONTENT = {
     {
       stepNumber: "03",
       depthM: -14.0,
-      depthDisplay: "-14.0 m (Transition Zone)",
+      depthDisplay: "-14.0 m",
       stratumName: "Sensitive Clay & Void Zone",
       stratumColor: "#A0522D",
       title: "Recommend optimal sounding coordinates",
@@ -163,7 +163,7 @@ export const SITE_CONTENT = {
     {
       stepNumber: "04",
       depthM: -25.0,
-      depthDisplay: "-25.0 m (Bearing Horizon)",
+      depthDisplay: "-25.0 m",
       stratumName: "Dense Bearing Stratum",
       stratumColor: "#E76F51",
       title: "Inspect 3D stratigraphy and compare bearing layer depths",

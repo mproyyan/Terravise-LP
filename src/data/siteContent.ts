@@ -209,6 +209,9 @@ export const SITE_CONTENT = {
     subheading:
       "Before designing a foundation, engineers need to understand the ground it will stand on. Watch how Terravise transforms isolated CPT soundings into site-wide intelligence and recommends where to test next.",
     slogan: "See Beneath. Decide Better.",
+    videoUrl: "/videos/terravise-demo.mp4",
+    driveUrl: "https://drive.google.com/file/d/1IIuLzJ0np1tmyvEGZ0jSVmVfdQg_IGe7/view?usp=sharing",
+    driveEmbedUrl: "https://drive.google.com/file/d/1IIuLzJ0np1tmyvEGZ0jSVmVfdQg_IGe7/preview",
     scenes: [
       {
         time: "00:00",
@@ -220,8 +223,8 @@ export const SITE_CONTENT = {
         desc: "Setting the foundation challenge: understanding site geology before construction.",
       },
       {
-        time: "00:45",
-        seconds: 45,
+        time: "00:13",
+        seconds: 13,
         sceneNumber: "02",
         title: "Cone Penetration Testing",
         narration:
@@ -229,8 +232,8 @@ export const SITE_CONTENT = {
         desc: "Investigating soil resistance and stratigraphy at specific test coordinates.",
       },
       {
-        time: "01:30",
-        seconds: 90,
+        time: "00:27",
+        seconds: 27,
         sceneNumber: "03",
         title: "The Site-Wide Dilemma",
         narration:
@@ -238,8 +241,8 @@ export const SITE_CONTENT = {
         desc: "Overcoming blind spots between soundings without costly redundant drilling.",
       },
       {
-        time: "02:20",
-        seconds: 140,
+        time: "00:39",
+        seconds: 39,
         sceneNumber: "04",
         title: "Informed Recommendation",
         narration:
@@ -247,8 +250,8 @@ export const SITE_CONTENT = {
         desc: "Real-time coordinate guidance backed by transparent information-gain rationale.",
       },
       {
-        time: "03:15",
-        seconds: 195,
+        time: "00:51",
+        seconds: 51,
         sceneNumber: "05",
         title: "3D Strata & Hard Soil",
         narration:

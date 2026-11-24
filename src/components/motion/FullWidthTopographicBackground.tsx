@@ -165,7 +165,7 @@ export function FullWidthTopographicBackground({
       ctx.fillRect(0, 0, logicalW, logicalH)
 
       // 3. Evaluate the Continuous 2D Topographic Elevation Field Z(x, y, currentProg)
-      // Base organic landscape harmonic waves (produces winding, organic contours matching user image)
+      // Base organic terrain harmonic waves (produces winding, organic contours matching user image)
       const tProg = currentProg
 
       // Weights for the 3 geological stages:

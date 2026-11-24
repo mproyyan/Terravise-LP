@@ -41,7 +41,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
     return (
       <div className="h-28 bg-[#1C130D] border border-[#1C130D] p-3 flex flex-col justify-between font-mono text-[9px] text-[#EFE7DE] overflow-hidden">
         <div className="flex items-center justify-between text-[#FAD9BA]">
-          <span>SBTn ZONES 1–9</span>
+          <span>SBTn ZONES 1 TO 9</span>
           <span className="tabular-nums">Ic ≤ 1.80</span>
         </div>
         <div className="flex items-end justify-between gap-1.5 h-14 pt-2">

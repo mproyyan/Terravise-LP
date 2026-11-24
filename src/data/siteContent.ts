@@ -19,31 +19,31 @@ export const SITE_CONTENT = {
   },
   problem: {
     tag: "01 / Investigation limits",
-    heading: "Fixed grid spacing creates two costly errors",
+    heading: "Fixed grid spacing causes three fundamental engineering failures",
     subheading:
-      "Standard site investigations space soundings 25 to 50 meters apart in uniform squares. In homogeneous soil, the crew drills redundant soundings. In layered ground, fixed spacing skips soft clay pockets and dipping rock layers.",
+      "Conventional site investigations mandate drilling soundings in rigid geometric grids (such as a borehole every 25 to 50 meters). This practice causes three fundamental engineering failures: redundant drilling in uniform ground, blind spots in layered geology, and arbitrary stopping criteria.",
     cards: [
       {
         number: "01",
-        title: "Over-drilling in uniform ground",
+        title: "Redundant drilling in homogeneous ground",
         description:
-          "In uniform sand or silt, fixed spacing duplicates known strata. The rig spends days testing soil that earlier soundings already confirmed.",
+          "In uniform sand or silt, fixed grids repeat identical observations. Exploration crews spend days and thousands of dollars on redundant soundings that yield no new strata data.",
         impact: "30% to 50% extra rig hours",
         badge: "Redundant drilling",
       },
       {
         number: "02",
-        title: "Undetected soft clay lenses",
+        title: "Blind spots in layered geology",
         description:
-          "Soft sensitive marine clay pockets often measure less than 20 meters across. Fixed grids place boreholes on either side, missing the weak zone until foundation settlement occurs.",
+          "Faults, dipping bedrock interfaces, and soft sensitive marine clay pockets often measure under 20 meters across. Fixed grids place boreholes on either side, missing critical hazard pockets entirely until post-construction differential settlement occurs.",
         impact: "Differential settlement risk",
         badge: "Structural hazard",
       },
       {
         number: "03",
-        title: "Stopping by budget, not data",
+        title: "Arbitrary stopping criteria",
         description:
-          "Drilling campaigns stop when contract budgets expire. Terravise measures model entropy and strata stability, so engineers know when additional soundings stop adding data.",
+          "Drilling campaigns stop when contract budgets expire, not when the subsurface soil volume is mathematically understood with defensible certainty.",
         impact: "Defensible stopping data",
         badge: "Contract limit",
       },
@@ -53,26 +53,26 @@ export const SITE_CONTENT = {
     tag: "02 / Next sounding selection",
     heading: "Reinforcement learning selects each sounding coordinate",
     subheading:
-      "The on-device deep Q-network evaluates candidate coordinates across the site boundary using 29 engineered features. It routes the CPT rig to the coordinate that resolves the largest strata uncertainty.",
+      "The on-device Deep Q-Network evaluates candidate coordinates within the project boundary across 29 engineered features. It routes the CPT rig to the coordinate with maximum information gain.",
     recommendationTitle: "DQN target coordinate · Spot 2",
     tabs: [
       {
         id: "gap",
         label: "Data gap",
         description:
-          "The coordinate sits 16.2 meters from sounding B-01. No soundings exist within a 4.0 meter radius under the main structural core.",
+          "Fills the largest spatial void under heavy structural core loads (16.2 meter gap, zero soundings within a 4.0 meter radius).",
       },
       {
         id: "transition",
-        label: "Strata boundary",
+        label: "Stratigraphic shift",
         description:
-          "SchemaGAN predicts a boundary at 8.5 meters depth, where clean sand gives way to soft sensitive clay.",
+          "Flags predicted formation boundaries where clean sand terminates into soft sensitive clay at 8.5 meters depth.",
       },
       {
         id: "anomaly",
         label: "Soil behavior anomaly",
         description:
-          "The interpolated soil behavior type index shows an offset of ΔIc = 0.18 against soundings B-01 and B-03.",
+          "Highlights localized lateral variations (ΔIc = 0.18) compared to adjacent soundings B-01 and B-03.",
       },
     ],
   },
@@ -122,7 +122,7 @@ export const SITE_CONTENT = {
       subtitle: "Foundation handoff & export",
       description:
         "Inspect the 3D voxel volume with interactive Easting and Northing slicing cutters. Apply parametric criteria (qc ≥ 15 MPa, Ic ≤ 1.80) to export pile toe schedules.",
-      deliverable: "Pile toe schedule (CSV, LandXML, DXF)",
+      deliverable: "Pile toe schedule (CSV, LandXML, Bentley gINT)",
       badgeText: "3D VOXEL PILE TOE SCHEDULE",
     },
   ] as WorkflowStep[],

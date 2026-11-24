@@ -378,7 +378,7 @@ export function SubsurfaceMonolithCanvas() {
     }
 
     // =========================================================================
-    // VISUALIZER 01: PROBLEM SECTION — 3-ZONE PANORAMIC GEOLOGICAL TRENCH
+    // VISUALIZER 01: PROBLEM SECTION : 3-ZONE PANORAMIC GEOLOGICAL TRENCH
     // Zone 1 (Left): Over-drilling cluster | Zone 2 (Center): Soft Clay Lens | Zone 3 (Right): Budget Cutoff
     // =========================================================================
     const problemAnomalyGroup = new THREE.Group()
@@ -520,7 +520,7 @@ export function SubsurfaceMonolithCanvas() {
     )
 
     // =========================================================================
-    // VISUALIZER 02: DQN SECTION — 144-NODE TOPOGRAPHIC CANDIDATE RADAR & SPOT 2 LASER
+    // VISUALIZER 02: DQN SECTION : 144-NODE TOPOGRAPHIC CANDIDATE RADAR & SPOT 2 LASER
     // =========================================================================
     const dqnRadarGroup = new THREE.Group()
     dqnRadarGroup.position.set(0, -1.1, 0)
@@ -919,7 +919,7 @@ export function SubsurfaceMonolithCanvas() {
     }
 
     // =========================================================================
-    // VISUALIZER 04: BEARING STRATUM SECTION — 3D TOP-OF-BEARING DEPTH HEATMAP & PILE PROBES
+    // VISUALIZER 04: BEARING STRATUM SECTION : 3D TOP-OF-BEARING DEPTH HEATMAP & PILE PROBES
     // =========================================================================
     const stratumCageGroup = new THREE.Group()
     stratumCageGroup.position.set(0, -1.15, 0)

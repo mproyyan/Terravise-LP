@@ -113,7 +113,7 @@ export function SlicedVoxelViewport() {
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
             <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-[#1C130D] bg-[#EFE7DE]/80 px-1 tabular-nums">
-              0.0 – 2.0m Sand
+              0.0 to 2.0m Sand
             </span>
           </div>
 
@@ -128,7 +128,7 @@ export function SlicedVoxelViewport() {
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
             <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-black/40 px-1 tabular-nums">
-              2.0 – 6.5m Silt
+              2.0 to 6.5m Silt
             </span>
           </div>
 
@@ -143,7 +143,7 @@ export function SlicedVoxelViewport() {
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
             <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-black/40 px-1 tabular-nums">
-              6.5 – 14.0m Soft clay (Uncertainty pocket)
+              6.5 to 14.0m Soft clay (Uncertainty pocket)
             </span>
           </div>
 
@@ -158,7 +158,7 @@ export function SlicedVoxelViewport() {
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
             <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-[#1C130D]/80 px-1 tabular-nums">
-              14.0 – 25.0m Dense sand (Bearing stratum qc ≥ 15 MPa)
+              14.0 to 25.0m Dense sand (Bearing stratum qc ≥ 15 MPa)
             </span>
           </div>
 

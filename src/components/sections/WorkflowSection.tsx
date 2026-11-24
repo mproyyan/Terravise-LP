@@ -24,7 +24,7 @@ const willChangeAll = { willChange: "transform, opacity" } as const
 
 function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
   if (stepIndex === 0) {
-    // Step 01: CAD / GIS BOUNDARY INGESTION — MapKit Satellite Polygon & UTM 48S Vertices
+    // Step 01: CAD / GIS BOUNDARY INGESTION : MapKit Satellite Polygon & UTM 48S Vertices
     return (
       <div className="relative w-full h-full flex flex-col justify-between p-5 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 text-[10px]">
@@ -128,7 +128,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
   }
 
   if (stepIndex === 1) {
-    // Step 02: SBTn NORMALIZATION & TELEMETRY — Multi-Instrument File Parsing & Robertson Curves
+    // Step 02: SBTn NORMALIZATION & TELEMETRY : Multi-Instrument File Parsing & Robertson Curves
     return (
       <div className="relative w-full h-full flex flex-col justify-between p-5 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 text-[10px]">
@@ -215,7 +215,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
   }
 
   if (stepIndex === 2) {
-    // Step 03: MDP REINFORCEMENT LEARNING — 29-Feature Candidate Evaluation & DQN Policy
+    // Step 03: MDP REINFORCEMENT LEARNING : 29-Feature Candidate Evaluation & DQN Policy
     return (
       <div className="relative w-full h-full flex flex-col justify-between p-5 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 text-[10px]">
@@ -281,7 +281,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
     )
   }
 
-  // Step 04: 3D VOXEL PILE TOE SCHEDULE — RealityKit 3D & Foundation Pile Handoff
+  // Step 04: 3D VOXEL PILE TOE SCHEDULE : RealityKit 3D & Foundation Pile Handoff
   return (
     <div className="relative w-full h-full flex flex-col justify-between p-5 font-mono text-xs">
       <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 text-[10px]">
@@ -396,7 +396,7 @@ export function WorkflowSection() {
     shouldReduceMotion ? [0, 0] : [18, -18]
   )
 
-  // Purely scroll-driven step switching (0%–25% = 01, 25%–50% = 02, 50%–75% = 03, 75%–100% = 04)
+  // Purely scroll-driven step switching (0% to 25% = 01, 25% to 50% = 02, 50% to 75% = 03, 75% to 100% = 04)
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     const clamped = Math.max(0, Math.min(0.9999, latest))
     const rawStep = clamped * 4

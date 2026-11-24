@@ -658,8 +658,8 @@ export function HeroProblemGroundCanvas({ isMobileInline = false }: { isMobileIn
 
 /**
  * Rapidkert-style `section#ground` wrapper around Section 00 (Hero) and Section 01 (Problem).
- * The 3D Canvas sits at `z-0` inside a sticky viewport layer scoped strictly to Sections 00–01,
- * so it NEVER floats over Sections 02–06 and NEVER blocks foreground text (`z-10`).
+ * The 3D Canvas sits at `z-0` inside a sticky viewport layer scoped strictly to Sections 00 to 01,
+ * so it NEVER floats over Sections 02 to 06 and NEVER blocks foreground text (`z-10`).
  */
 export function HeroProblemGroundWrapper({ children }: { children: React.ReactNode }) {
   return (

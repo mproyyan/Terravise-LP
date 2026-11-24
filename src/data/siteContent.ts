@@ -282,4 +282,48 @@ export const SITE_CONTENT = {
       a: "The BearingRuleEngine evaluates voxels where cone resistance qc ≥ 15 MPa and Soil Behavior Index Ic ≤ 1.80 over a continuous vertical thickness ≥ 2.0 meters using 6-neighbor 3D connected component clustering.",
     },
   ],
+  team: {
+    tag: "09 / Engineering team & creators",
+    heading: "The minds behind Terravise",
+    subheading:
+      "A multidisciplinary engineering collective uniting geotechnical soil mechanics, deep reinforcement learning, and native spatial computing on iPadOS.",
+    members: [
+      {
+        name: "Royyan",
+        role: "Machine Learning & Core Architecture",
+        image: "/people/royyan.webp",
+        linkedin: "https://www.linkedin.com/in/",
+      },
+      {
+        name: "Daffa",
+        role: "iOS Engineering & Core ML Pipeline",
+        image: "/people/daffa.webp",
+        linkedin: "https://www.linkedin.com/in/",
+      },
+      {
+        name: "Irfan",
+        role: "Spatial Computing & RealityKit 3D",
+        image: "/people/Irfan.webp",
+        linkedin: "https://www.linkedin.com/in/",
+      },
+      {
+        name: "Jovi",
+        role: "Geotechnical Systems & Data Architecture",
+        image: "/people/jovi.webp",
+        linkedin: "https://www.linkedin.com/in/",
+      },
+      {
+        name: "Nadia",
+        role: "Product Design & UI/UX Experience",
+        image: "/people/nadia.webp",
+        linkedin: "https://www.linkedin.com/in/",
+      },
+      {
+        name: "Safa",
+        role: "Geotechnical Intelligence & Quality",
+        image: "/people/safa.webp",
+        linkedin: "https://www.linkedin.com/in/",
+      },
+    ],
+  },
 }

@@ -162,3 +162,18 @@ export interface LeadFormData {
   rigCount: string
   notes?: string
 }
+
+export interface TeamMember {
+  name: string
+  role: string
+  image: string
+  linkedin: string
+  bio?: string
+}
+
+export interface TeamSectionContent {
+  tag: string
+  heading: string
+  subheading: string
+  members: TeamMember[]
+}

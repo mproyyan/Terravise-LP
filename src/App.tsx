@@ -10,6 +10,7 @@ import { WorkflowSection } from "./components/sections/WorkflowSection"
 import { TechnicalTrustSection } from "./components/sections/TechnicalTrustSection"
 import { AppDemoSection } from "./components/sections/AppDemoSection"
 import { TechnicalFaqSection } from "./components/sections/TechnicalFaqSection"
+import { TeamSection } from "./components/sections/TeamSection"
 import { FinalCtaSection } from "./components/sections/FinalCtaSection"
 import { Subsurface3DProvider } from "./context/Subsurface3DContext"
 import { HeroProblemGroundWrapper } from "./components/three/HeroProblemGroundStage"
@@ -45,6 +46,7 @@ export function App() {
           <TechnicalTrustSection />
           <AppDemoSection />
           <TechnicalFaqSection />
+          <TeamSection />
           <FinalCtaSection onOpenAppStore={handleOpenAppStore} />
         </main>
 

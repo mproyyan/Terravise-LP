@@ -233,10 +233,16 @@ export function FeedbackWallPage() {
           >
             <QRCodeSVG
               value={feedbackTargetUrl}
-              size={92}
+              size={96}
               bgColor="#FAF5EE"
               fgColor="#1C130D"
-              level="M"
+              level="H"
+              imageSettings={{
+                src: "/terravise-logo.png",
+                height: 22,
+                width: 22,
+                excavate: true,
+              }}
             />
           </a>
         </div>

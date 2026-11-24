@@ -326,21 +326,21 @@ function MilestoneCard({
           {step.metrics.map((metric) => (
             <div
               key={metric.label}
-              className={`p-2 border transition-colors ${
+              className={`p-2.5 border transition-colors ${
                 isActive
-                  ? "bg-[#1C130D] border-[#FAD9BA]/30 text-[#EFE7DE]"
-                  : "bg-[#170E08] border-[#EFE7DE]/10 text-[#EFE7DE]/60"
+                  ? "bg-[#FAD9BA]/[0.04] border-[#FAD9BA]/30 text-[#EFE7DE]"
+                  : "bg-transparent border-[#EFE7DE]/15 text-[#EFE7DE]/60"
               }`}
             >
-              <span className="text-[#EFE7DE]/45 block text-[8px] uppercase">{metric.label}</span>
-              <span className="text-[#FAD9BA] font-bold truncate block">{metric.value}</span>
+              <span className="text-[#EFE7DE]/50 block text-[8px] uppercase font-mono">{metric.label}</span>
+              <span className="text-[#FAD9BA] font-bold text-xs truncate block font-mono mt-0.5">{metric.value}</span>
             </div>
           ))}
         </div>
       )}
 
-      {/* Clean Interactive Visual Snapshot (Steps 01, 02, 04) */}
-      {stepIndex !== 2 && (
+      {/* Clean Interactive Visual Snapshot (Steps 01, 02) */}
+      {stepIndex < 2 && (
         <div className="pt-2">
           <WorkflowStepVisual stepIndex={stepIndex} isActive={isActive} />
         </div>

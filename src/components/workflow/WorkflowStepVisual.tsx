@@ -4,7 +4,7 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   Share2,
-  TrendingDown,
+  Crosshair,
   Layers,
 } from "lucide-react"
 
@@ -200,52 +200,99 @@ export function WorkflowStepVisual({ stepIndex, isActive }: WorkflowStepVisualPr
   }
 
   if (stepIndex === 2) {
-    // Step 03: Autonomous Rig Routing to High-Uncertainty Targets (Spot 2)
+    // Step 03: Autonomous Rig Routing to High-Uncertainty Targets (Spot 2) per CPTRecommendationView
     return (
       <div className="relative w-full h-full min-h-[220px] sm:min-h-[250px] bg-[#120B07] border border-[#EFE7DE]/15 p-4 flex flex-col justify-between overflow-hidden">
         <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2 text-[10px] font-mono">
           <span className="text-[#FAD9BA] font-bold flex items-center gap-1.5">
-            <TrendingDown className="w-3.5 h-3.5 text-[#BD8564]" />
-            RIG TARGET NAVIGATION
+            <Crosshair className="w-3.5 h-3.5 text-[#10B981]" />
+            CPTRECOMMENDATIONVIEW · IPADOS
           </span>
-          <span className="text-[#10B981] font-bold">NEXT: SPOT 2</span>
+          <span className="text-[#10B981] font-bold">84% CONFIDENCE (RANK #1)</span>
         </div>
 
-        <div className="my-auto py-2 space-y-2">
-          {/* Target Location Card */}
-          <div className="bg-[#1C130D] border border-[#FAD9BA]/40 p-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
-              <div>
-                <div className="text-xs font-bold font-mono text-[#FAD9BA]">Spot 2 (Priority #1)</div>
-                <div className="text-[9px] font-mono text-[#EFE7DE]/60">48S 704,120m E · 9,309,850m N</div>
-              </div>
-            </div>
-            <span className="text-[9px] font-mono bg-[#10B981]/20 text-[#10B981] px-1.5 py-0.5 uppercase tracking-wider font-bold">
-              Highest Info Gain
-            </span>
+        <div className="my-auto py-2 space-y-2.5">
+          {/* Mini Interactive Map Layer with Crosshairs over Spot 2 */}
+          <div className="relative h-20 bg-[#1C130D] border border-[#EFE7DE]/15 overflow-hidden flex items-center justify-center">
+            <svg className="w-full h-full" viewBox="0 0 280 80">
+              {/* Site Boundary Outline */}
+              <polygon
+                points="30,12 250,8 265,68 45,72"
+                fill="#FAD9BA"
+                fillOpacity="0.06"
+                stroke="#FAD9BA"
+                strokeWidth="1"
+                strokeDasharray="4 2"
+              />
+
+              {/* Completed CPT Soundings (B-01, B-02, B-03) */}
+              {[
+                { x: 75, y: 32, id: "B-01" },
+                { x: 195, y: 24, id: "B-02" },
+                { x: 215, y: 55, id: "B-03" },
+              ].map((cpt) => (
+                <g key={cpt.id}>
+                  <circle cx={cpt.x} cy={cpt.y} r="3" fill="#BD8564" />
+                  <text x={cpt.x + 5} y={cpt.y + 3} fill="#EFE7DE" fillOpacity="0.5" fontSize="7" fontFamily="monospace">
+                    {cpt.id}
+                  </text>
+                </g>
+              ))}
+
+              {/* Recommended Target Coordinate (Spot 2) with Animated Crosshair */}
+              <g transform="translate(135, 42)">
+                {/* Distance vector line from B-01 (16.2m) */}
+                <line x1="-60" y1="-10" x2="0" y2="0" stroke="#FAD9BA" strokeWidth="1" strokeDasharray="2 2" strokeOpacity="0.6" />
+                <text x="-30" y="-8" fill="#FAD9BA" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+                  16.2m gap
+                </text>
+
+                {/* Pulsing Target Ring */}
+                <circle cx="0" cy="0" r="10" fill="#10B981" fillOpacity="0.2" className="animate-ping" />
+                <circle cx="0" cy="0" r="5" fill="#1C130D" stroke="#10B981" strokeWidth="2" />
+                <circle cx="0" cy="0" r="2" fill="#10B981" />
+
+                {/* Crosshair Reticle Lines */}
+                <line x1="-14" y1="0" x2="-6" y2="0" stroke="#10B981" strokeWidth="1.2" />
+                <line x1="6" y1="0" x2="14" y2="0" stroke="#10B981" strokeWidth="1.2" />
+                <line x1="0" y1="-14" x2="0" y2="-6" stroke="#10B981" strokeWidth="1.2" />
+                <line x1="0" y1="6" x2="0" y2="14" stroke="#10B981" strokeWidth="1.2" />
+
+                <text x="8" y="-6" fill="#10B981" fontSize="8" fontWeight="bold" fontFamily="monospace">
+                  Spot 2
+                </text>
+              </g>
+            </svg>
           </div>
 
-          {/* 3 Clear Rationale Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[9px] font-mono">
-            <div className="bg-[#271C14] border border-[#EFE7DE]/10 p-1.5">
-              <span className="text-[#EFE7DE]/50 block">DATA VOID</span>
-              <span className="text-[#FAD9BA] font-bold">16.2m without test</span>
+          {/* Primary Recommendation Card Bottom Sheet */}
+          <div className="bg-[#1C130D] border border-[#FAD9BA]/40 p-2 space-y-1.5 font-mono text-[9px]">
+            <div className="flex items-center justify-between text-[#EFE7DE]/80">
+              <span className="font-bold text-[#FAD9BA] text-[10px]">Spot 2 · 48S 704,120E, 9,309,850N</span>
+              <span className="text-[#10B981]">16.2m to B-01</span>
             </div>
-            <div className="bg-[#271C14] border border-[#EFE7DE]/10 p-1.5">
-              <span className="text-[#EFE7DE]/50 block">STRATA SHIFT</span>
-              <span className="text-[#EFE7DE] font-bold">Predicted clay lens</span>
-            </div>
-            <div className="bg-[#271C14] border border-[#EFE7DE]/10 p-1.5">
-              <span className="text-[#EFE7DE]/50 block">LOAD PRIORITY</span>
-              <span className="text-[#10B981] font-bold">Core tower zone</span>
+
+            {/* "Why this point?" 3 Transparent Rationale Cards */}
+            <div className="grid grid-cols-3 gap-1 pt-1 border-t border-[#EFE7DE]/10 text-[8px]">
+              <div className="bg-[#271C14] p-1 border border-[#EFE7DE]/10">
+                <span className="text-[#BD8564] block font-bold">1. DATA GAP</span>
+                <span className="text-[#EFE7DE]/80">16.2m void under core</span>
+              </div>
+              <div className="bg-[#271C14] p-1 border border-[#EFE7DE]/10">
+                <span className="text-[#BD8564] block font-bold">2. STRATA SHIFT</span>
+                <span className="text-[#EFE7DE]/80">-8.5m dipping clay lens</span>
+              </div>
+              <div className="bg-[#271C14] p-1 border border-[#EFE7DE]/10">
+                <span className="text-[#BD8564] block font-bold">3. SOIL ANOMALY</span>
+                <span className="text-[#EFE7DE]/80">ΔIc = 0.18 offset</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="pt-2 border-t border-[#EFE7DE]/15 flex items-center justify-between text-[10px] font-mono">
-          <span className="text-[#EFE7DE]/70">Routes rig directly to coordinates</span>
-          <span className="text-[#FAD9BA] font-bold">+14.2% certainty</span>
+          <span className="text-[#EFE7DE]/70">Formation Characterization: Stable</span>
+          <span className="text-[#10B981] font-bold">Rig Ready for Route</span>
         </div>
       </div>
     )

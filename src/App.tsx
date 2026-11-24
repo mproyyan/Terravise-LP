@@ -45,8 +45,8 @@ export function App() {
           <WorkflowSection />
           <TechnicalTrustSection />
           <AppDemoSection />
-          <TechnicalFaqSection />
           <TeamSection />
+          <TechnicalFaqSection />
           <FinalCtaSection onOpenAppStore={handleOpenAppStore} />
         </main>
 

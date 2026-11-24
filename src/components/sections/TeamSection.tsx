@@ -34,7 +34,7 @@ export function TeamSection() {
         {/* Plate Header */}
         <div>
           <PlateHeader
-            number="09"
+            number="08"
             title={team.tag.split(" / ")[1] || "Engineering team & creators"}
             metaRight="6 Core contributors"
             tone="light"
@@ -72,11 +72,6 @@ export function TeamSection() {
 
                 {/* Subtle Gradient Vignette at Photo Foot */}
                 <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#FAF5EE]/70 to-transparent pointer-events-none" />
-
-                {/* Technical Corner Badge */}
-                <div className="absolute top-3 left-3 bg-[#1C130D]/90 text-[#FAD9BA] px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider backdrop-blur-xs border border-[#FAD9BA]/20">
-                  CREATOR 0{idx + 1}
-                </div>
               </div>
 
               {/* Card Information Body */}

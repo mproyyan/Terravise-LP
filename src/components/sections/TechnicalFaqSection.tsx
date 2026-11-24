@@ -23,7 +23,7 @@ export function TechnicalFaqSection() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-[#1C130D]/15 gap-4">
             <div>
               <span className="font-mono text-xs uppercase tracking-widest text-[#7A421D] font-bold block">
-                08 / Technical engineering dossier
+                09 / Technical engineering dossier
               </span>
               <h3 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight mt-1 text-balance">
                 Common technical questions

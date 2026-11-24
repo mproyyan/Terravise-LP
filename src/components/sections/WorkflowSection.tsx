@@ -120,7 +120,7 @@ export function WorkflowSection() {
             DESKTOP LAYOUT (lg+): Alternating Sounding Descent Timeline
             Left Milestones | Center Steel Sounding Rod with Conical Tip | Right Milestones
            ========================================================================= */}
-        <div className="hidden lg:grid grid-cols-12 gap-8 relative items-start">
+        <div className="hidden lg:grid grid-cols-12 gap-4 xl:gap-8 relative items-start">
           {/* Central Vertical Sounding Spine (Col 6..7 Anchor) */}
           <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-32 pointer-events-none z-20">
             <CptPenetrometerSpine progress={smoothProgress} activeStep={activeStep} />
@@ -154,12 +154,12 @@ export function WorkflowSection() {
                   {/* Center Column Spacer (Pass-through for Central Sounding Rod) */}
                   <div className="col-span-2 flex justify-center items-center pointer-events-none">
                     {/* Architectural Datum Caliper Connector */}
-                    <div className="w-full flex items-center justify-between px-2 font-mono text-[9px] text-[#BD8564]">
-                      <span className={isEven ? "opacity-100" : "opacity-0"}>───►</span>
-                      <span className="bg-[#1C130D] px-1.5 py-0.5 border border-[#EFE7DE]/20 text-[#FAD9BA] font-bold">
+                    <div className="w-full flex items-center justify-center gap-1 xl:gap-2 px-1 font-mono text-[9px] text-[#BD8564] select-none">
+                      <span className={`shrink-0 ${isEven ? "opacity-100" : "opacity-0"}`}>──►</span>
+                      <span className="bg-[#1C130D] px-1.5 py-0.5 border border-[#EFE7DE]/20 text-[#FAD9BA] font-bold shrink-0 text-center text-[9px]">
                         {step.depthDisplay}
                       </span>
-                      <span className={!isEven ? "opacity-100" : "opacity-0"}>◄───</span>
+                      <span className={`shrink-0 ${!isEven ? "opacity-100" : "opacity-0"}`}>◄──</span>
                     </div>
                   </div>
 

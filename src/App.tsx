@@ -104,7 +104,7 @@ export function App() {
         </main>
 
         {/* Engineering Footer */}
-        <Footer onNavigateToFeedback={() => navigateTo("/feedback")} />
+        <Footer />
       </div>
     </Subsurface3DProvider>
   )

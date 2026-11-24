@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { QRCodeSVG } from "qrcode.react"
 import {
   fetchFeedbacks,
   supabase,
@@ -190,8 +191,63 @@ export function FeedbackWallPage() {
   const parallaxGrainOffsetY = -((distanceDrilledPx * 1.15) % 480)
   const coneVibrationY = Math.sin(distanceDrilledPx * 0.18) * 1.8
 
+  // Resolve dynamic base URL from environment variable (fallback to current origin)
+  const rawBaseUrl =
+    import.meta.env.VITE_APP_BASE_URL ||
+    import.meta.env.VITE_BASE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "http://localhost:5173")
+  const cleanBaseUrl = String(rawBaseUrl).trim().replace(/\/+$/, "")
+  const feedbackTargetUrl = `${cleanBaseUrl}/feedback`
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#140D08] text-[#EFE7DE] font-sans select-none relative">
+      {/* =====================================================================
+          0. TOP-RIGHT FLOATING QR INVITATION CARD
+         ===================================================================== */}
+      <aside
+        aria-label="Scan QR Code untuk mengisi feedback"
+        className="fixed top-4 right-4 sm:top-6 sm:right-8 z-40 max-w-[320px] sm:max-w-[360px] bg-[#1C130D]/95 backdrop-blur-md border border-[#FAD9BA]/55 shadow-[0_16px_48px_rgba(0,0,0,0.75)] p-4 sm:p-5"
+      >
+        {/* Top Accent Line */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#10B981] via-[#FAD9BA] to-[#BD8564]" />
+
+        <div className="flex items-center gap-4">
+          {/* Narrative Invitation Copy */}
+          <div className="flex-1 space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#FAD9BA] font-bold">
+                Suara Anda
+              </span>
+            </div>
+
+            <h2 className="font-sans font-black text-sm sm:text-base text-[#EFE7DE] uppercase tracking-tight leading-snug">
+              Bagikan Masukan untuk Terravise
+            </h2>
+
+            <p className="font-sans text-[11px] sm:text-xs text-[#EFE7DE]/80 leading-relaxed">
+              Scan QR code di samping untuk menyampaikan pandangan, saran fitur, atau peluang kolaborasi bersama kami.
+            </p>
+          </div>
+
+          {/* Dynamic QR Code Box pointing to ${VITE_APP_BASE_URL}/feedback */}
+          <a
+            href={feedbackTargetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={feedbackTargetUrl}
+            className="shrink-0 bg-[#FAF5EE] p-2.5 border-2 border-[#FAD9BA] shadow-md hover:scale-[1.03] transition-transform"
+          >
+            <QRCodeSVG
+              value={feedbackTargetUrl}
+              size={92}
+              bgColor="#FAF5EE"
+              fgColor="#1C130D"
+              level="M"
+            />
+          </a>
+        </div>
+      </aside>
       {/* =====================================================================
           1. INFINITE UPWARD-MOVING SUBSURFACE SOIL STRATA BACKGROUND
          ===================================================================== */}
@@ -458,8 +514,12 @@ export function FeedbackWallPage() {
               0,
               Math.min(1, drilledPastPx / 55)
             )
+            // Right-side cards fade out smoothly before reaching the top-right floating QR card
+            const topFadeThreshold = card.side === "right" ? 210 : 60
             const exitProgress =
-              cardY < 60 ? Math.max(0, Math.min(1, (cardY + 120) / 180)) : 1
+              cardY < topFadeThreshold
+                ? Math.max(0, Math.min(1, (cardY + 80) / (topFadeThreshold + 80)))
+                : 1
             const opacity = entranceProgress * exitProgress
             const scale = 0.92 + 0.08 * entranceProgress
 

@@ -256,9 +256,6 @@ function MilestoneCard({
           >
             {step.stepNumber}
           </span>
-          <span className="text-[10px] text-[#FAD9BA] font-bold">
-            {step.depthDisplay}
-          </span>
         </div>
 
         <Badge

@@ -113,6 +113,12 @@ export interface WorkflowMetric {
   value: string
 }
 
+export interface WorkflowRationale {
+  title: string
+  desc: string
+  badge: string
+}
+
 export interface WorkflowStep {
   stepNumber: string
   depthM: number
@@ -125,6 +131,7 @@ export interface WorkflowStep {
   deliverable: string
   badgeText: string
   metrics: WorkflowMetric[]
+  rationales?: WorkflowRationale[]
 }
 
 export interface LeadFormData {

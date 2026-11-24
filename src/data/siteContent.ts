@@ -132,15 +132,32 @@ export const SITE_CONTENT = {
       stratumName: "Sensitive Clay & Void Zone",
       stratumColor: "#A0522D",
       title: "Autonomous coordinate guidance & 'Why this point?' rationale",
-      subtitle: "CPTRecommendationView on iPadOS",
+      subtitle: "Autonomous coordinate guidance",
       description:
         "The on-device DQN agent analyzes completed soundings and recommends the optimal next coordinate (Spot 2). It presents transparent 'Why this point?' rationale cards: data voids, strata boundaries, and soil anomalies.",
       deliverable: "Spot 2 coordinate & 3-card rationale",
-      badgeText: "CPTRECOMMENDATIONVIEW ON IPADOS",
+      badgeText: "AUTONOMOUS RIG TARGET ROUTING",
       metrics: [
         { label: "Target Coordinate", value: "Spot 2 (48S 704120E)" },
         { label: "Primary Rationale", value: "16.2 m Spatial Void" },
         { label: "Model Confidence", value: "84% (Q-Value #1)" },
+      ],
+      rationales: [
+        {
+          title: "1. Data Gap",
+          desc: "16.2 m spatial void under heavy structural core load. Zero soundings within 4.0 meters.",
+          badge: "High Information Gain",
+        },
+        {
+          title: "2. Strata Boundary",
+          desc: "Predicted dipping boundary: clean sand terminates into soft sensitive marine clay at -8.5 m.",
+          badge: "Clay Lens Interface",
+        },
+        {
+          title: "3. Soil Anomaly",
+          desc: "Localized soil behavior index offset (ΔIc = 0.18) relative to completed soundings B-01 and B-03.",
+          badge: "DQN Spatial Priority",
+        },
       ],
     },
     {

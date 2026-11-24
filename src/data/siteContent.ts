@@ -204,47 +204,63 @@ export const SITE_CONTENT = {
     ],
   },
   appDemo: {
-    tag: "07 / Application live walkthrough",
-    heading: "See Terravise in action on the rig",
+    tag: "07 / Product film & demo",
+    heading: "See Beneath. Decide Better.",
     subheading:
-      "Watch the on-device iPadOS system guide an active CPT campaign in real time: from satellite footprint definition to autonomous DQN coordinate routing and continuous 3D stratigraphy inspection.",
-    chapters: [
+      "Before designing a foundation, engineers need to understand the ground it will stand on. Watch how Terravise transforms isolated CPT soundings into site-wide intelligence and recommends where to test next.",
+    slogan: "See Beneath. Decide Better.",
+    scenes: [
       {
         time: "00:00",
         seconds: 0,
-        title: "Site Boundary Lock",
-        desc: "Trace building footprint on satellite imagery with geodetic UTM locking.",
+        sceneNumber: "01",
+        title: "The Ground Beneath",
+        narration:
+          "Every building begins with a vision. But what holds that vision up... lies beneath the surface.",
+        desc: "Setting the foundation challenge: understanding site geology before construction.",
       },
       {
-        time: "01:15",
-        seconds: 75,
-        title: "CPT Ingestion",
-        desc: "Automated spreadsheet (.xlsx / .csv) column mapping parsed in under 15 ms.",
+        time: "00:45",
+        seconds: 45,
+        sceneNumber: "02",
+        title: "Cone Penetration Testing",
+        narration:
+          "Before designing a foundation, geotech engineers need to understand the ground it will stand on. One way to investigate the ground is through Cone Penetration Testing, or CPT. Each test provides information about the soil at a specific location.",
+        desc: "Investigating soil resistance and stratigraphy at specific test coordinates.",
       },
       {
-        time: "02:10",
-        seconds: 130,
-        title: "Autonomous Routing",
-        desc: "On-device DQN agent recommends Spot 2 target with 3 transparent criteria.",
+        time: "01:30",
+        seconds: 90,
+        sceneNumber: "03",
+        title: "The Site-Wide Dilemma",
+        narration:
+          "But each test only tells us about one spot. Engineers still need to decide where to test next and get a better understanding of the soil conditions of the entire site.",
+        desc: "Overcoming blind spots between soundings without costly redundant drilling.",
+      },
+      {
+        time: "02:20",
+        seconds: 140,
+        sceneNumber: "04",
+        title: "Informed Recommendation",
+        narration:
+          "Using existing CPT data, Terravise recommends the next location to investigate and explains why it is recommended, helping engineers make informed decisions.",
+        desc: "Real-time coordinate guidance backed by transparent information-gain rationale.",
       },
       {
         time: "03:15",
         seconds: 195,
-        title: "3D Stratigraphy",
-        desc: "RealityKit continuous voxel volume slicing with dual Easting/Northing cutters.",
-      },
-      {
-        time: "04:05",
-        seconds: 245,
-        title: "Bearing Layer Heatmap",
-        desc: "Filter competent bearing depth (qc ≥ 15 MPa) and compare building columns.",
+        sceneNumber: "05",
+        title: "3D Strata & Hard Soil",
+        narration:
+          "It also visualizes predicted soil layers in 3D, helping engineers estimate the depth of hard soil across the site. This gives engineers a better understanding of the ground across their construction site.",
+        desc: "Synthesizing continuous 3D stratigraphy and verifying competent bearing strata across the site.",
       },
     ],
     takeaways: [
-      "100% Offline Apple Silicon Neural Engine",
-      "Compatible with Electrical, Bicone & Piezocone CPT",
-      "Instant Column Depth Comparisons",
-      "ASTM D5778 & SNI 8460 Geotechnical Compliance",
+      "Every CPT Sounding Contributes to Site-Wide Intelligence",
+      "Transparent 'Why this point?' Target Rationale",
+      "Predictive Continuous 3D Stratigraphy Volume",
+      "Hard Soil Bearing Layer Depth Estimation Across the Site",
     ],
   },
   faq: [

@@ -134,10 +134,12 @@ export interface WorkflowStep {
   rationales?: WorkflowRationale[]
 }
 
-export interface AppDemoChapter {
+export interface AppDemoScene {
   time: string
   seconds: number
+  sceneNumber: string
   title: string
+  narration: string
   desc: string
 }
 
@@ -145,7 +147,8 @@ export interface AppDemoContent {
   tag: string
   heading: string
   subheading: string
-  chapters: AppDemoChapter[]
+  slogan: string
+  scenes: AppDemoScene[]
   takeaways: string[]
 }
 

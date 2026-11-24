@@ -292,14 +292,14 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
           /* =========================================================================
               ACTIVE STEP CARD / TAB WIZARD
              ========================================================================= */
-          <div className="bg-[#FAF5EE] border border-[#1C130D]/15 shadow-xl p-6 sm:p-10 space-y-8 relative">
+          <div className="bg-[#FAF5EE] border border-[#1C130D]/15 shadow-xl p-5 sm:p-10 space-y-8 relative overflow-hidden">
             {/* Step Navigation Pill Indicator (No literal 'Wajib' or 'tidak dapat dilewati') */}
-            <div className="flex items-center justify-between border-b border-[#1C130D]/15 pb-4">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#1C130D] text-[#FAD9BA] font-mono text-xs font-bold flex items-center justify-center">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1C130D]/15 pb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-6 h-6 shrink-0 rounded-full bg-[#1C130D] text-[#FAD9BA] font-mono text-xs font-bold flex items-center justify-center">
                   {currentStep}
                 </span>
-                <span className="font-mono text-xs uppercase tracking-widest text-[#7A421D] font-bold">
+                <span className="font-mono text-xs uppercase tracking-widest text-[#7A421D] font-bold truncate">
                   {currentStep === 1 && "Identitas Diri"}
                   {currentStep === 2 && "Peran & Latar Belakang"}
                   {currentStep === 3 && "Sektor Industri"}
@@ -315,7 +315,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="font-mono text-[11px] text-[#63554B] hover:text-[#7A421D] underline cursor-pointer"
+                  className="font-mono text-[11px] text-[#63554B] hover:text-[#7A421D] underline cursor-pointer shrink-0"
                 >
                   Lewati langkah ini →
                 </button>
@@ -880,27 +880,27 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
             </AnimatePresence>
 
             {/* Bottom Stepper Controls Toolbar */}
-            <div className="border-t border-[#1C130D]/15 pt-6 flex items-center justify-between gap-4 font-mono text-xs">
+            <div className="border-t border-[#1C130D]/15 pt-6 flex flex-wrap items-center justify-between gap-2 sm:gap-4 font-mono text-xs">
               <div>
                 {currentStep > 1 && (
                   <button
                     type="button"
                     onClick={handlePrev}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#FAF5EE] border border-[#1C130D]/20 text-[#1C130D] hover:bg-[#EAE2D5] transition-colors font-bold cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-[#FAF5EE] border border-[#1C130D]/20 text-[#1C130D] hover:bg-[#EAE2D5] transition-colors font-bold cursor-pointer whitespace-nowrap"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
                     <span>Sebelumnya</span>
                   </button>
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 ml-auto">
                 {/* Skip button for optional steps */}
                 {currentStep !== 2 && currentStep !== 7 && (
                   <button
                     type="button"
                     onClick={handleSkip}
-                    className="text-[#63554B] hover:text-[#1C130D] underline cursor-pointer py-2 px-3"
+                    className="text-[#63554B] hover:text-[#1C130D] underline cursor-pointer py-2 px-2 sm:px-3 whitespace-nowrap"
                   >
                     Lewati
                   </button>
@@ -910,26 +910,26 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#1C130D] text-[#FAD9BA] hover:bg-[#5A3008] hover:text-[#EFE7DE] transition-colors font-bold cursor-pointer uppercase tracking-wider"
+                    className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 bg-[#1C130D] text-[#FAD9BA] hover:bg-[#5A3008] hover:text-[#EFE7DE] transition-colors font-bold cursor-pointer uppercase tracking-wider whitespace-nowrap"
                   >
                     <span>Lanjutkan</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#10B981] text-white hover:bg-[#059669] disabled:opacity-50 transition-colors font-bold cursor-pointer uppercase tracking-wider shadow-md"
+                    className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 bg-[#10B981] text-white hover:bg-[#059669] disabled:opacity-50 transition-colors font-bold cursor-pointer uppercase tracking-wider shadow-md whitespace-nowrap"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                         <span>Mengirim Data...</span>
                       </>
                     ) : (
                       <>
-                        <Send className="w-3.5 h-3.5" />
+                        <Send className="w-3.5 h-3.5 shrink-0" />
                         <span>Kirim Feedback</span>
                       </>
                     )}

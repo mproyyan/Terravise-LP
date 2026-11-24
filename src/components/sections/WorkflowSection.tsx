@@ -25,7 +25,7 @@ const willChangeAll = { willChange: "transform, opacity" } as const
 
 function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
   if (stepIndex === 0) {
-    // Step 01: BoundaryCreationView — MapKit Satellite Polygon & UTM 48S Vertices
+    // Step 01: CAD / GIS BOUNDARY INGESTION — MapKit Satellite Polygon & UTM 48S Vertices
     return (
       <div className="relative w-full h-full flex flex-col justify-between p-5 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 text-[10px]">
@@ -33,7 +33,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
             <Compass className="w-3.5 h-3.5" />
             MAPKIT SATELLITE FOOTPRINT
           </span>
-          <span className="text-[#EFE7DE]/60">UTM ZONE 48S · DGN95</span>
+          <span className="text-[#EFE7DE]/60 tabular-nums">UTM ZONE 48S · DGN95</span>
         </div>
 
         <div className="relative my-3 flex-1 bg-[#120B07] border border-[#EFE7DE]/15 overflow-hidden flex items-center justify-center">
@@ -113,7 +113,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
         <div className="grid grid-cols-3 gap-2 text-[10px]">
           <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2">
             <span className="text-[#EFE7DE]/50 block">POLYGON AREA</span>
-            <span className="text-[#FAD9BA] font-bold">0.96 Hectares</span>
+            <span className="text-[#FAD9BA] font-bold tabular-nums">0.96 Hectares</span>
           </div>
           <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2">
             <span className="text-[#EFE7DE]/50 block">PROJECTION</span>
@@ -121,7 +121,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
           </div>
           <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2">
             <span className="text-[#EFE7DE]/50 block">GRID CANDIDATES</span>
-            <span className="text-[#10B981] font-bold">144 Nodes</span>
+            <span className="text-[#10B981] font-bold tabular-nums">144 Nodes</span>
           </div>
         </div>
       </div>
@@ -129,7 +129,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
   }
 
   if (stepIndex === 1) {
-    // Step 02: CPTRecommendationView — Multi-Instrument Telemetry & Robertson SBT Curves
+    // Step 02: SBTn NORMALIZATION & TELEMETRY — Multi-Instrument File Parsing & Robertson Curves
     return (
       <div className="relative w-full h-full flex flex-col justify-between p-5 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 text-[10px]">
@@ -208,7 +208,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
           </div>
           <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2">
             <span className="text-[#EFE7DE]/50 block">PARSE SPEED</span>
-            <span className="text-[#10B981] font-bold">&lt; 15 ms / file</span>
+            <span className="text-[#10B981] font-bold tabular-nums">&lt; 15 ms / file</span>
           </div>
         </div>
       </div>
@@ -216,21 +216,21 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
   }
 
   if (stepIndex === 2) {
-    // Step 03: DQN Active Rig Routing — 29-Feature Candidate Evaluation
+    // Step 03: MDP REINFORCEMENT LEARNING — 29-Feature Candidate Evaluation & DQN Policy
     return (
       <div className="relative w-full h-full flex flex-col justify-between p-5 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 text-[10px]">
           <span className="text-[#FAD9BA] font-bold flex items-center gap-1.5">
             <Cpu className="w-3.5 h-3.5" />
-            DQN V4.6-A CORE ML POLICY
+            MDP REINFORCEMENT LEARNING
           </span>
-          <span className="text-[#10B981]">29 FEATURES EVALUATED</span>
+          <span className="text-[#10B981] tabular-nums">29 FEATURES EVALUATED</span>
         </div>
 
         <div className="relative my-3 flex-1 bg-[#120B07] border border-[#EFE7DE]/15 p-4 flex flex-col justify-between">
           <div className="flex items-center justify-between text-[10px]">
             <span className="text-[#EFE7DE]/70">TOP CANDIDATE: SPOT 2</span>
-            <span className="text-[#10B981] font-bold">Q-VALUE: 0.942 (RANK #1)</span>
+            <span className="text-[#10B981] font-bold tabular-nums">Q-VALUE: 0.942 (RANK #1)</span>
           </div>
 
           {/* Animated Feature Weight Bars */}
@@ -238,12 +238,12 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
             {[
               { label: "Spatial Data Gap (16.2m to B-01)", pct: 92, color: "#FAD9BA" },
               { label: "SchemaGAN Strata Transition (-8.5m Clay)", pct: 86, color: "#E76F51" },
-              { label: "Lateral Index Anomaly (delta Ic = 0.18)", pct: 79, color: "#10B981" },
+              { label: "Lateral Index Anomaly (ΔIc = 0.18)", pct: 79, color: "#10B981" },
             ].map((feat, i) => (
               <div key={feat.label} className="space-y-1">
                 <div className="flex justify-between text-[9px]">
                   <span className="text-[#EFE7DE]/80">{feat.label}</span>
-                  <span className="text-[#FAD9BA] font-bold">{feat.pct}%</span>
+                  <span className="text-[#FAD9BA] font-bold tabular-nums">{feat.pct}%</span>
                 </div>
                 <div className="w-full h-2 bg-[#271C14] overflow-hidden">
                   <motion.div
@@ -258,8 +258,8 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
             ))}
           </div>
 
-          <div className="pt-2 border-t border-[#EFE7DE]/15 flex items-center justify-between text-[9px] text-[#EFE7DE]/60">
-            <span>TARGET UTM: 48S 704120m E, 9309850m N</span>
+          <div className="pt-2 border-t border-[#EFE7DE]/15 flex items-center justify-between text-[9px] text-[#EFE7DE]/60 tabular-nums">
+            <span>TARGET UTM: 48S 704,120m E, 9,309,850m N</span>
             <span className="text-[#FAD9BA]">CERTAINTY +14.2%</span>
           </div>
         </div>
@@ -267,7 +267,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
         <div className="grid grid-cols-3 gap-2 text-[10px]">
           <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2">
             <span className="text-[#EFE7DE]/50 block">INFERENCE</span>
-            <span className="text-[#FAD9BA] font-bold">82 ms Local ANE</span>
+            <span className="text-[#FAD9BA] font-bold tabular-nums">82 ms Local ANE</span>
           </div>
           <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2">
             <span className="text-[#EFE7DE]/50 block">RATIONALE</span>
@@ -282,15 +282,15 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
     )
   }
 
-  // Step 04: ResultAnalysisView — 3D Voxel & Foundation Pile Handoff
+  // Step 04: 3D VOXEL PILE TOE SCHEDULE — RealityKit 3D & Foundation Pile Handoff
   return (
     <div className="relative w-full h-full flex flex-col justify-between p-5 font-mono text-xs">
       <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 text-[10px]">
         <span className="text-[#FAD9BA] font-bold flex items-center gap-1.5">
           <Boxes className="w-3.5 h-3.5" />
-          REALITYKIT 3D &amp; PILE SCHEDULE
+          3D VOXEL PILE TOE SCHEDULE
         </span>
-        <span className="text-[#E76F51] font-bold">qc &gt;= 15.0 MPa VERIFIED</span>
+        <span className="text-[#E76F51] font-bold tabular-nums">qc ≥ 15.0 MPa VERIFIED</span>
       </div>
 
       <div className="relative my-3 flex-1 bg-[#120B07] border border-[#EFE7DE]/15 p-3 flex flex-col justify-between">
@@ -352,7 +352,7 @@ function WorkflowStageSchematic({ stepIndex }: { stepIndex: number }) {
       <div className="grid grid-cols-3 gap-2 text-[10px]">
         <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2">
           <span className="text-[#EFE7DE]/50 block">PILE TOE DEPTH</span>
-          <span className="text-[#FAD9BA] font-bold">-16.0m to -17.5m</span>
+          <span className="text-[#FAD9BA] font-bold tabular-nums">-16.0m to -17.5m</span>
         </div>
         <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2">
           <span className="text-[#EFE7DE]/50 block">CLUSTERING</span>
@@ -414,6 +414,7 @@ export function WorkflowSection() {
     <section
       ref={sectionRef}
       id="workflow"
+      aria-label="Section 05: iPadOS application workflow"
       className="relative h-[300vh] bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12"
     >
       {/* Sticky Viewport Stage pinned during the 300vh scroll journey */}
@@ -449,11 +450,11 @@ export function WorkflowSection() {
           {/* Top Compact Heading + Overall Scroll Progress Bar */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
             <div className="max-w-2xl space-y-2">
-              <h2 className="font-sans font-black text-2xl sm:text-4xl xl:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92]">
+              <h2 className="font-sans font-black text-2xl sm:text-4xl xl:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
                 Four integrated steps from site boundary to foundation handoff
               </h2>
-              <p className="font-sans text-[#EFE7DE]/70 text-xs sm:text-sm leading-relaxed">
-                Keep scrolling to advance automatically through each native iPadOS field stage.
+              <p className="font-sans text-[#EFE7DE]/70 text-xs sm:text-sm leading-relaxed text-pretty">
+                Scroll to advance through each native iPadOS field stage.
               </p>
             </div>
 
@@ -482,7 +483,7 @@ export function WorkflowSection() {
                 {workflow.map((s, idx) => (
                   <span
                     key={s.stepNumber}
-                    className={`transition-colors ${
+                    className={`transition-colors tabular-nums ${
                       activeStep === idx
                         ? "text-[#FAD9BA] font-bold"
                         : idx < activeStep
@@ -567,7 +568,7 @@ export function WorkflowSection() {
                         </div>
                       </div>
 
-                      <p className="font-sans text-xs text-[#EFE7DE]/75 leading-relaxed">
+                      <p className="font-sans text-xs text-[#EFE7DE]/75 leading-relaxed text-pretty">
                         {step.description}
                       </p>
                     </div>
@@ -597,7 +598,7 @@ export function WorkflowSection() {
               })}
             </div>
 
-            {/* Right 5 Columns: Live Animated iPadOS Blueprint Viewport */}
+            {/* Right 5 Columns: Live Animated iPadOS Viewport */}
             <motion.div
               style={{ y: yViewportFloat, ...willChangeTransform }}
               className="lg:col-span-5"
@@ -633,12 +634,12 @@ export function WorkflowSection() {
                   </AnimatePresence>
                 </div>
 
-                {/* Bottom Stage Status Strip (Read-Only Scroll Synced) */}
+                {/* Bottom Stage Status Strip */}
                 <div className="grid grid-cols-4 gap-1.5 pt-2.5 bg-[#271C14] font-mono text-[10px] select-none">
                   {workflow.map((step, idx) => (
                     <div
                       key={step.stepNumber}
-                      className={`py-1.5 px-2 text-center border transition-colors truncate ${
+                      className={`py-1.5 px-2 text-center border transition-colors truncate tabular-nums ${
                         activeStep === idx
                           ? "bg-[#5A3008] text-[#FAD9BA] border-[#FAD9BA] font-bold"
                           : idx < activeStep

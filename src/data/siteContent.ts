@@ -2,7 +2,7 @@ import type { WorkflowStep } from "../types"
 
 export const SITE_CONTENT = {
   hero: {
-    badge: "Native iPadOS app. Apple silicon M-series",
+    badge: "iPadOS Geotechnical Field Intelligence · Apple Silicon M-Series",
     titleLine1: "A defensible foundation starts",
     titleLine2: "below the blind grid.",
     subtitle:
@@ -14,7 +14,7 @@ export const SITE_CONTENT = {
       { label: "Rig hours saved", value: "35% to 45%" },
       { label: "On-device latency", value: "82 ms" },
       { label: "Neural engine", value: "100% offline Core ML" },
-      { label: "Standard test code", value: "ASTM D5778 and SNI 8460" },
+      { label: "Standard test code", value: "ASTM D5778 & SNI 8460" },
     ],
   },
   problem: {
@@ -54,7 +54,7 @@ export const SITE_CONTENT = {
     heading: "Reinforcement learning selects each sounding coordinate",
     subheading:
       "The on-device deep Q-network evaluates candidate coordinates across the site boundary using 29 engineered features. It routes the CPT rig to the coordinate that resolves the largest strata uncertainty.",
-    recommendationTitle: "DQN target coordinate. Spot 2",
+    recommendationTitle: "DQN target coordinate · Spot 2",
     tabs: [
       {
         id: "gap",
@@ -72,7 +72,7 @@ export const SITE_CONTENT = {
         id: "anomaly",
         label: "Soil behavior anomaly",
         description:
-          "The interpolated soil behavior type index shows an offset of delta Ic 0.18 against soundings B-01 and B-03.",
+          "The interpolated soil behavior type index shows an offset of ΔIc = 0.18 against soundings B-01 and B-03.",
       },
     ],
   },
@@ -96,7 +96,7 @@ export const SITE_CONTENT = {
       description:
         "Draw structural building footprints directly on high-resolution satellite maps. Support tap-to-add coordinates, UTM Zone 48S inputs, and real-time polygon area calculations.",
       deliverable: "Georeferenced site polygon and area",
-      badgeText: "BoundaryCreationView",
+      badgeText: "CAD / GIS BOUNDARY INGESTION",
     },
     {
       stepNumber: "02",
@@ -105,7 +105,7 @@ export const SITE_CONTENT = {
       description:
         "Import standard CSV and Excel (.xlsx) files directly on the rig. Terravise automatically maps column headers for Electrical CPT, CPTm Bicone, and CPTu piezocone instruments.",
       deliverable: "Normalized Robertson SBT profiles",
-      badgeText: "CPTRecommendationView",
+      badgeText: "SBTn NORMALIZATION & CURVES",
     },
     {
       stepNumber: "03",
@@ -114,16 +114,16 @@ export const SITE_CONTENT = {
       description:
         "The on-device reinforcement learning agent ranks candidate locations within the boundary polygon. It displays target coordinates with transparent rationale cards.",
       deliverable: "Target coordinates and rationale cards",
-      badgeText: "DQN V4.6-A Core ML",
+      badgeText: "MDP REINFORCEMENT LEARNING",
     },
     {
       stepNumber: "04",
       title: "3D voxel and bearing analysis",
-      subtitle: "RealityKit foundation handoff",
+      subtitle: "Foundation handoff & export",
       description:
-        "Inspect the 3D voxel volume with interactive Easting and Northing slicing cutters. Apply parametric criteria (qc >= 15 MPa, Ic <= 1.80) to export pile toe schedules.",
+        "Inspect the 3D voxel volume with interactive Easting and Northing slicing cutters. Apply parametric criteria (qc ≥ 15 MPa, Ic ≤ 1.80) to export pile toe schedules.",
       deliverable: "Pile toe schedule (CSV, LandXML, DXF)",
-      badgeText: "ResultAnalysisView",
+      badgeText: "3D VOXEL PILE TOE SCHEDULE",
     },
   ] as WorkflowStep[],
   trust: {
@@ -145,7 +145,7 @@ export const SITE_CONTENT = {
         desc: "SchemaGAN and DQN policies run on the local Apple neural engine. Field soundings never leave the iPad.",
       },
       {
-        title: "ASTM D5778 and SNI 8460",
+        title: "ASTM D5778 & SNI 8460",
         desc: "Follows ASTM D5778 standard test methods for electronic friction cone testing and Indonesian SNI 8460:2017 foundation requirements.",
       },
     ],
@@ -153,7 +153,7 @@ export const SITE_CONTENT = {
   faq: [
     {
       q: "Does Terravise replace the licensed geotechnical engineer?",
-      a: "No. Terravise provides decision support during active drilling. Recommendations, uncertainty ranges, and stopping calculations support professional engineering judgment.",
+      a: "No. Terravise provides computational decision support during active drilling campaigns. Recommendations, uncertainty distributions, and stopping criteria support professional engineering judgment.",
     },
     {
       q: "What file formats can the rig operator import in the field?",
@@ -161,11 +161,11 @@ export const SITE_CONTENT = {
     },
     {
       q: "Can Terravise run on an iPad without an internet connection?",
-      a: "Yes. Terravise runs completely offline on iPadOS. All Core ML neural models execute locally through the Apple neural engine.",
+      a: "Yes. Terravise is engineered to operate 100% offline in remote field sites. All Core ML models execute on the local Apple Neural Engine without transmitting data off-device.",
     },
     {
       q: "How does Terravise determine the foundation bearing layer?",
-      a: "The BearingRuleEngine evaluates voxels where cone resistance qc >= 15 MPa and Soil Behavior Index Ic <= 1.80 over a continuous vertical thickness >= 2.0 meters using 3D connected component clustering.",
+      a: "The BearingRuleEngine evaluates voxels where cone resistance qc ≥ 15 MPa and Soil Behavior Index Ic ≤ 1.80 over a continuous vertical thickness ≥ 2.0 meters using 6-neighbor 3D connected component clustering.",
     },
   ],
 }

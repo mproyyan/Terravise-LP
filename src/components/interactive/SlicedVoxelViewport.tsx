@@ -4,7 +4,6 @@ import { Badge } from "../ui/Badge"
 import { MOCK_SOIL_LAYERS } from "../../data/mockGeology"
 import { RefreshCw } from "lucide-react"
 
-// SWAP POINT: Replace with React Three Fiber canvas when WebGL model is ready
 export function SlicedVoxelViewport() {
   const [sliceX, setSliceX] = useState<number>(55) // Easting slice percentage
   const [sliceY, setSliceY] = useState<number>(45) // Northing slice percentage
@@ -25,7 +24,7 @@ export function SlicedVoxelViewport() {
             <span className="w-1.5 h-1.5 rounded-none bg-[#FAD9BA] inline-block mr-1.5" />
             Voxel model active
           </Badge>
-          <span className="text-[#EFE7DE]/60">
+          <span className="text-[#EFE7DE]/60 tabular-nums">
             Site volume: 120m × 80m × 25m depth
           </span>
         </div>
@@ -33,8 +32,10 @@ export function SlicedVoxelViewport() {
         <div className="flex items-center gap-2">
           <div className="flex bg-[#271C14] border border-[#EFE7DE]/20 p-0.5 text-[11px]">
             <button
+              type="button"
+              aria-pressed={perspectiveView === "iso"}
               onClick={() => setPerspectiveView("iso")}
-              className={`px-3 py-1 cursor-pointer transition-colors min-h-[32px] ${
+              className={`px-3 py-1 cursor-pointer transition-colors min-h-[32px] focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] ${
                 perspectiveView === "iso"
                   ? "bg-[#36271D] text-[#EFE7DE] font-bold"
                   : "text-[#EFE7DE]/50 hover:text-[#EFE7DE]"
@@ -43,8 +44,10 @@ export function SlicedVoxelViewport() {
               Isometric cut
             </button>
             <button
+              type="button"
+              aria-pressed={perspectiveView === "front"}
               onClick={() => setPerspectiveView("front")}
-              className={`px-3 py-1 cursor-pointer transition-colors min-h-[32px] ${
+              className={`px-3 py-1 cursor-pointer transition-colors min-h-[32px] focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] ${
                 perspectiveView === "front"
                   ? "bg-[#36271D] text-[#EFE7DE] font-bold"
                   : "text-[#EFE7DE]/50 hover:text-[#EFE7DE]"
@@ -55,10 +58,11 @@ export function SlicedVoxelViewport() {
           </div>
 
           <button
+            type="button"
             onClick={handleReset}
             title="Reset cutters"
-            aria-label="Reset slicing cutters"
-            className="p-2 bg-[#271C14] border border-[#EFE7DE]/20 text-[#EFE7DE]/60 hover:text-[#EFE7DE] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+            aria-label="Reset slicing cutters to default position"
+            className="p-2 bg-[#271C14] border border-[#EFE7DE]/20 text-[#EFE7DE]/60 hover:text-[#EFE7DE] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA]"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
@@ -108,8 +112,8 @@ export function SlicedVoxelViewport() {
             }}
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
-            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-[#1C130D] bg-[#EFE7DE]/80 px-1">
-              0.0 - 2.0m Sand
+            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-[#1C130D] bg-[#EFE7DE]/80 px-1 tabular-nums">
+              0.0 – 2.0m Sand
             </span>
           </div>
 
@@ -123,8 +127,8 @@ export function SlicedVoxelViewport() {
             }}
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
-            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-black/40 px-1">
-              2.0 - 6.5m Silt
+            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-black/40 px-1 tabular-nums">
+              2.0 – 6.5m Silt
             </span>
           </div>
 
@@ -138,8 +142,8 @@ export function SlicedVoxelViewport() {
             }}
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
-            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-black/40 px-1">
-              6.5 - 14.0m Soft clay (Uncertainty pocket)
+            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-black/40 px-1 tabular-nums">
+              6.5 – 14.0m Soft clay (Uncertainty pocket)
             </span>
           </div>
 
@@ -153,8 +157,8 @@ export function SlicedVoxelViewport() {
             }}
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent" />
-            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-[#1C130D]/80 px-1">
-              14.0 - 25.0m Dense sand (Bearing stratum qc ≥ 15 MPa)
+            <span className="absolute top-1 left-2 font-mono text-[9px] font-bold text-white bg-[#1C130D]/80 px-1 tabular-nums">
+              14.0 – 25.0m Dense sand (Bearing stratum qc ≥ 15 MPa)
             </span>
           </div>
 
@@ -188,7 +192,7 @@ export function SlicedVoxelViewport() {
                   <span className="font-bold text-[#EFE7DE]">{layer.name}</span>
                 </div>
                 <div className="text-[11px] text-[#EFE7DE]/70">{layer.description}</div>
-                <div className="flex justify-between text-[10px] text-[#EFE7DE]/50 pt-1 border-t border-[#EFE7DE]/15">
+                <div className="flex justify-between text-[10px] text-[#EFE7DE]/50 pt-1 border-t border-[#EFE7DE]/15 tabular-nums">
                   <span>Avg qc: {layer.qcMpaAvg} MPa</span>
                   <span>Avg Ic: {layer.icAvg}</span>
                 </div>

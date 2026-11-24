@@ -43,7 +43,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
       <div className="h-28 bg-[#1C130D] border border-[#1C130D] p-3 flex flex-col justify-between font-mono text-[9px] text-[#EFE7DE] overflow-hidden">
         <div className="flex items-center justify-between text-[#FAD9BA]">
           <span>SBTn ZONES 1–9</span>
-          <span>Ic &lt;= 1.80</span>
+          <span className="tabular-nums">Ic ≤ 1.80</span>
         </div>
         <div className="flex items-end justify-between gap-1.5 h-14 pt-2">
           {zoneHeights.map((h, i) => (
@@ -58,7 +58,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
                 }}
                 transition={{ type: "spring", stiffness: 220, damping: 18, delay: i * 0.02 }}
               />
-              <span className="text-[7px] text-[#EFE7DE]/50">Z{i + 1}</span>
+              <span className="text-[7px] text-[#EFE7DE]/50 tabular-nums">Z{i + 1}</span>
             </div>
           ))}
         </div>
@@ -70,7 +70,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
     // Pillar 02: UTM Coordinate Precision & Geodetic Compass
     return (
       <div className="h-28 bg-[#1C130D] border border-[#1C130D] p-3 flex items-center justify-between font-mono text-[9px] text-[#EFE7DE] overflow-hidden relative">
-        <div className="space-y-1 z-10">
+        <div className="space-y-1 z-10 tabular-nums">
           <div className="text-[#FAD9BA] font-bold">DATUM: WGS84 / DGN95</div>
           <div className="text-[#EFE7DE]/70">E: 704,120.00 m</div>
           <div className="text-[#EFE7DE]/70">N: 9,309,850.00 m</div>
@@ -110,7 +110,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
       <div className="h-28 bg-[#1C130D] border border-[#1C130D] p-3 flex flex-col justify-between font-mono text-[9px] text-[#EFE7DE] overflow-hidden">
         <div className="flex items-center justify-between">
           <span className="text-[#FAD9BA] font-bold">APPLE SILICON ANE</span>
-          <span className="px-1.5 py-0.5 bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/40 text-[8px]">
+          <span className="px-1.5 py-0.5 bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/40 text-[8px] tabular-nums">
             0 KB CLOUD I/O
           </span>
         </div>
@@ -187,7 +187,7 @@ function PillarMicroSchematic({ index, isActive }: { index: number; isActive: bo
         </text>
       </svg>
 
-      <div className="flex items-center justify-between text-[8px] text-[#EFE7DE]/60">
+      <div className="flex items-center justify-between text-[8px] text-[#EFE7DE]/60 tabular-nums">
         <span>RATE: 20 mm/s ± 5 mm/s</span>
         <span className="text-[#10B981]">VERIFIED</span>
       </div>
@@ -203,7 +203,7 @@ export function TechnicalTrustSection() {
   const [activePillar, setActivePillar] = useState<number>(0)
   const [pillarSubProgress, setPillarSubProgress] = useState<number>(0)
 
-  // Dedicated 240vh sticky scroll track for the 4 Specification Plates (100% scroll-driven)
+  // Dedicated 240vh sticky scroll track for the 4 Specification Plates
   const { scrollYProgress } = useScroll({
     target: pillarsTrackRef,
     offset: ["start start", "end end"],
@@ -220,7 +220,7 @@ export function TechnicalTrustSection() {
   const yColB = useTransform(smoothScroll, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 20])
   const yBgBand = useTransform(smoothScroll, [0, 1], shouldReduceMotion ? [0, 0] : [-45, 45])
 
-  // Purely scroll-driven specification plate spotlight (0%–25% = Spec 01, 25%–50% = Spec 02, 50%–75% = Spec 03, 75%–100% = Spec 04)
+  // Purely scroll-driven specification plate spotlight
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     const clamped = Math.max(0, Math.min(0.9999, latest))
     const rawIdx = clamped * 4
@@ -254,6 +254,7 @@ export function TechnicalTrustSection() {
   return (
     <section
       id="trust"
+      aria-label="Section 06: Standards and data privacy"
       className="relative bg-[#FBF7F2] border-b border-[#1C130D]/15 scroll-mt-12"
     >
       {/* Part A: 240vh Sticky Scroll-Driven Specification Plates Track */}
@@ -290,10 +291,10 @@ export function TechnicalTrustSection() {
             {/* Section Heading + Scroll Spotlight Progress */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
               <div className="max-w-3xl space-y-3">
-                <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92]">
+                <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
                   {trust.heading}
                 </h2>
-                <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed">
+                <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed text-pretty">
                   {trust.subheading}
                 </p>
               </div>
@@ -321,7 +322,7 @@ export function TechnicalTrustSection() {
               </div>
             </div>
 
-            {/* 4 Scroll-Driven Parallax Specification Plates (Zero Click/Hover Required) */}
+            {/* 4 Scroll-Driven Parallax Specification Plates */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {trust.badges.map((badge, idx) => {
                 const isSelected = activePillar === idx
@@ -360,7 +361,7 @@ export function TechnicalTrustSection() {
                       <div className="flex items-center justify-between font-mono text-[10px] border-b border-[#1C130D]/10 pb-2.5">
                         <span className="font-bold text-[#7A421D] flex items-center gap-1.5">
                           {getPillarIcon(idx)}
-                          <span>SPEC 0{idx + 1}</span>
+                          <span className="tabular-nums">SPEC 0{idx + 1}</span>
                         </span>
                         <Badge
                           variant={isSelected ? "emerald" : "default"}
@@ -383,7 +384,7 @@ export function TechnicalTrustSection() {
                         <h3 className="font-sans font-bold text-lg text-[#1C130D] tracking-tight">
                           {badge.title}
                         </h3>
-                        <p className="font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed">
+                        <p className="font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed text-pretty">
                           {badge.desc}
                         </p>
                       </div>
@@ -417,7 +418,7 @@ export function TechnicalTrustSection() {
         </div>
       </div>
 
-      {/* Part B: Technical Engineering Dossier FAQ (Kept interactive click-to-toggle as requested) */}
+      {/* Part B: Technical Engineering Dossier FAQ */}
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 pb-28 pt-8 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-[#1C130D]/15 gap-4">
@@ -425,11 +426,11 @@ export function TechnicalTrustSection() {
               <span className="font-mono text-xs uppercase tracking-widest text-[#7A421D] font-bold block">
                 Technical engineering dossier
               </span>
-              <h3 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight mt-1">
+              <h3 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight mt-1 text-balance">
                 Common technical questions
               </h3>
             </div>
-            <span className="font-mono text-[11px] text-[#63554B] flex items-center gap-1.5">
+            <span className="font-mono text-[11px] text-[#63554B] flex items-center gap-1.5 tabular-nums">
               <FileText className="w-3.5 h-3.5 text-[#7A421D]" />
               4 Reference specifications
             </span>
@@ -438,6 +439,7 @@ export function TechnicalTrustSection() {
           <div className="divide-y divide-[#1C130D]/15 border-b border-[#1C130D]/15 bg-[#FAF5EE] border-x border-t">
             {faq.map((item, idx) => {
               const isOpen = openFaq === idx
+              const contentId = `faq-item-content-${idx}`
               return (
                 <div
                   key={item.q}
@@ -455,8 +457,10 @@ export function TechnicalTrustSection() {
 
                   <button
                     type="button"
+                    aria-expanded={isOpen}
+                    aria-controls={contentId}
                     onClick={() => toggleFaq(idx)}
-                    className="w-full flex items-center justify-between text-left gap-4 font-mono text-xs sm:text-sm font-bold text-[#1C130D] hover:text-[#7A421D] transition-colors cursor-pointer px-6 py-5 min-h-[56px]"
+                    className="w-full flex items-center justify-between text-left gap-4 font-mono text-xs sm:text-sm font-bold text-[#1C130D] hover:text-[#7A421D] transition-colors cursor-pointer px-6 py-5 min-h-[56px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008] focus-visible:ring-inset"
                   >
                     <span className="flex items-center gap-3.5">
                       <span
@@ -485,6 +489,9 @@ export function TechnicalTrustSection() {
                   <AnimatePresence initial={false}>
                     {isOpen && (
                       <motion.div
+                        id={contentId}
+                        role="region"
+                        aria-label={item.q}
                         key="content"
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
@@ -492,7 +499,7 @@ export function TechnicalTrustSection() {
                         transition={{ type: "spring", stiffness: 260, damping: 26 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-6 pb-6 pt-1 pl-[5.5rem] pr-8 font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed border-t border-[#1C130D]/5">
+                        <div className="px-6 pb-6 pt-1 pl-[5.5rem] pr-8 font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed border-t border-[#1C130D]/5 text-pretty">
                           {item.a}
                         </div>
                       </motion.div>

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react"
 import { PlateHeader } from "../ui/PlateHeader"
-import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { STRATA_LAYER_SPECS } from "../three/geology3DUtils"
@@ -43,6 +42,7 @@ export function ProblemSection() {
   return (
     <section
       id="problem"
+      aria-label="Section 01: Investigation limits"
       className="py-24 border-b border-[#1C130D]/15 scroll-mt-12 relative"
     >
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
@@ -61,23 +61,24 @@ export function ProblemSection() {
               <Layers className="w-3.5 h-3.5" />
               <span>Building stripped · 4 L-cutaway horizons separated to expose clay trap</span>
             </div>
-            <h2 className="font-sans font-black text-3xl sm:text-5xl xl:text-[54px] text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.9]">
+            <h2 className="font-sans font-black text-3xl sm:text-5xl xl:text-[54px] text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.9] text-balance">
               {problem.heading}
             </h2>
           </div>
           <div className="lg:col-span-5">
-            <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed bg-[#FBF7F2]/85 backdrop-blur-xs p-4 border-l-2 border-[#7A421D]">
+            <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed bg-[#FBF7F2]/85 backdrop-blur-xs p-4 border-l-2 border-[#7A421D] text-pretty">
               {problem.subheading}
             </p>
           </div>
         </div>
 
-        {/* Rapidkert "03 — Under the Lawn" Stage: Center Exploded 3D L-Cutaway Block + Horizontal Stratigraphic Callout Lines */}
+        {/* Rapidkert Stage: Exploded 3D L-Cutaway Block + Horizontal Stratigraphic Callout Lines */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-4">
-          {/* Left 3 Columns: Rapidkert-Style Horizontal Stratigraphic Callout Pointers (01..04) */}
+          {/* Left 4 Columns: Stratigraphic Callout Pointers (01..04) */}
           <div className="lg:col-span-4 space-y-2.5 font-mono relative z-20">
-            <div className="text-[10px] uppercase tracking-[0.16em] text-[#7A421D] font-bold pb-1 border-b border-[#1C130D]/15">
-              Exploded Stratigraphic Horizons (Hover to highlight 3D layer)
+            <div className="text-[10px] uppercase tracking-[0.16em] text-[#7A421D] font-bold pb-1 border-b border-[#1C130D]/15 flex items-center justify-between">
+              <span>Exploded Stratigraphic Horizons</span>
+              <span className="text-[9px] text-[#63554B]">Hover or focus to highlight</span>
             </div>
             {STRATA_LAYER_SPECS.map((spec) => {
               const isHovered = hoveredLayerId === spec.id
@@ -85,9 +86,19 @@ export function ProblemSection() {
               return (
                 <div
                   key={spec.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${spec.name}, depth ${spec.depthLabel}`}
                   onMouseEnter={() => setHoveredLayerId(spec.id)}
                   onMouseLeave={() => setHoveredLayerId(null)}
-                  className={`p-3 border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  onFocus={() => setHoveredLayerId(spec.id)}
+                  onBlur={() => setHoveredLayerId(null)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setHoveredLayerId(isHovered ? null : spec.id)
+                    }
+                  }}
+                  className={`p-3 border transition-all cursor-pointer flex items-center justify-between gap-3 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008] select-none ${
                     isHovered
                       ? "bg-white border-[#5A3008] translate-x-1 shadow-md"
                       : isClayTrap
@@ -123,7 +134,7 @@ export function ProblemSection() {
             })}
           </div>
 
-          {/* Right 8 Columns: Dedicated 3D Exploded L-Cutaway Dissection Stage (0% overlap with text!) */}
+          {/* Right 8 Columns: Dedicated 3D Exploded L-Cutaway Dissection Stage */}
           <div className="lg:col-span-8 relative">
             <div
               ref={problemDockRef}
@@ -132,14 +143,14 @@ export function ProblemSection() {
               <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
                 <span>+</span>
                 <span className="text-[9px] tracking-[0.2em]">
-                  01 / EXPLODED L-CUTAWAY SUBSURFACE DISSECTION (-0.0M TO -25.0M)
+                  01 / EXPLODED L-CUTAWAY SUBSURFACE DISSECTION (0.0M TO -25.0M)
                 </span>
                 <span>+</span>
               </div>
               <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
                 <span>+</span>
                 <span className="text-[9px] tracking-[0.16em] text-[#7A421D]">
-                  WEST: OVER-DRILLING · CENTER: HIDDEN CLAY LENS · EAST: BUDGET CUTOFF
+                  DISSECTED SOIL MONOLITH · UNIFORM BOREHOLE GRID FAILS TO CAPTURE DIPPING LENSES
                 </span>
                 <span>+</span>
               </div>
@@ -147,70 +158,57 @@ export function ProblemSection() {
           </div>
         </div>
 
-        {/* Bottom 3-Column Horizontal Failure Diagnostic Deck (Foreground z-20 with translucent backdrop) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-20 mt-4">
+        {/* Bottom 3-Card Technical Grid Breakdown (Interactive with 3D Ground Stage) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-[#1C130D]/15">
           {problem.cards.map((card, idx) => {
             const isFocused = hoveredProblemZone === idx
-            const isCenterClay = idx === 1
-
             return (
-              <div
+              <article
                 key={card.number}
+                role="button"
+                tabIndex={0}
+                aria-label={`${card.title}: ${card.impact}`}
                 onMouseEnter={() => setHoveredProblemZone(idx)}
                 onMouseLeave={() => setHoveredProblemZone(null)}
-                onClick={() =>
-                  setHoveredProblemZone(hoveredProblemZone === idx ? null : idx)
-                }
-                className="flex flex-col cursor-pointer group"
+                onFocus={() => setHoveredProblemZone(idx)}
+                onBlur={() => setHoveredProblemZone(null)}
+                onClick={() => setHoveredProblemZone(hoveredProblemZone === idx ? null : idx)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setHoveredProblemZone(hoveredProblemZone === idx ? null : idx)
+                  }
+                }}
+                className={`p-6 border flex flex-col justify-between space-y-4 transition-all cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008] select-none ${
+                  isFocused
+                    ? "bg-white border-[#5A3008] -translate-y-1 shadow-lg"
+                    : "bg-[#FAF5EE] border-[#1C130D]/15 hover:border-[#1C130D]/35"
+                }`}
               >
-                <div className="hidden lg:flex items-center justify-between pb-2 font-mono text-[9px] tracking-widest uppercase text-[#7A421D]">
-                  <span className="px-2 py-0.5 bg-[#EFE7DE] border border-[#1C130D]/15">
-                    {zoneTags[idx]}
-                  </span>
-                  <span className="text-[#63554B]">Hover to focus 3D zone ↑</span>
-                </div>
-
-                <div
-                  className={`flex-1 bg-[#FAF5EE]/95 backdrop-blur-xs border p-6 flex flex-col justify-between transition-all shadow-xs ${
-                    isFocused
-                      ? "border-[#5A3008] bg-white -translate-y-1 shadow-xl"
-                      : isCenterClay
-                        ? "border-t-4 border-t-[#E76F51] border-[#1C130D]/20"
-                        : "border-[#1C130D]/15 hover:border-[#1C130D]/40"
-                  }`}
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b border-[#1C130D]/10 pb-3">
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-xs font-bold text-[#7A421D] bg-[#EFE7DE] px-1.5 py-0.5 border border-[#1C130D]/10">
-                          {card.number}
-                        </span>
-                        <div className="p-1.5 bg-[#E3D7C8]/50 border border-[#1C130D]/10">
-                          {getCardIcon(idx)}
-                        </div>
-                      </div>
-                      <Badge variant={idx === 0 ? "amber" : idx === 1 ? "clay" : "slate"}>
-                        {card.badge}
-                      </Badge>
-                    </div>
-
-                    <h3 className="font-sans font-bold text-lg text-[#1C130D] tracking-tight">
-                      {card.title}
-                    </h3>
-
-                    <p className="font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed">
-                      {card.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-6 pt-3 border-t border-[#1C130D]/10 flex items-center justify-between font-mono text-xs">
-                    <span className="text-[10px] uppercase text-[#63554B] tracking-wider">
-                      Field consequence
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-[#7A421D] tabular-nums">
+                      {card.number}
                     </span>
-                    <span className="font-bold text-[#1C130D]">{card.impact}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-mono text-[#7A421D] hidden xl:inline">
+                        {zoneTags[idx].split("·")[0].trim()}
+                      </span>
+                      {getCardIcon(idx)}
+                    </div>
                   </div>
+                  <h3 className="font-sans font-bold text-lg uppercase tracking-tight text-[#1C130D]">
+                    {card.title}
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed text-pretty">
+                    {card.description}
+                  </p>
                 </div>
-              </div>
+
+                <div className="pt-3 border-t border-[#1C130D]/10 flex items-center justify-between font-mono text-[10px]">
+                  <span className="text-[#63554B] uppercase tracking-wider">IMPACT</span>
+                  <span className="font-bold text-[#1C130D] tabular-nums">{card.impact}</span>
+                </div>
+              </article>
             )
           })}
         </div>

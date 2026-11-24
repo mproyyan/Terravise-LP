@@ -28,12 +28,12 @@ export function BearingComparisonTable() {
           <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#1C130D]">
             Bearing layer heatmap schedule
           </span>
-          <Badge variant="emerald" className="text-[10px]">
-            Target: qc &gt;= {minQc.toFixed(1)} MPa
+          <Badge variant="emerald" className="text-[10px] tabular-nums">
+            Target: qc ≥ {minQc.toFixed(1)} MPa
           </Badge>
         </div>
         <span className="font-mono text-[10px] text-[#7A421D]">
-          Hover row to locate on 3D heatmap
+          Hover or focus row to locate on 3D heatmap
         </span>
       </div>
 
@@ -41,12 +41,12 @@ export function BearingComparisonTable() {
         <table className="w-full text-left font-mono text-xs border-collapse">
           <thead>
             <tr className="border-b border-[#1C130D]/10 bg-[#E3D7C8]/35 text-[#63554B] uppercase text-[10px] tracking-wider">
-              <th className="py-2.5 px-3.5">Sounding ID</th>
-              <th className="py-2.5 px-3.5">Top Depth (zb)</th>
-              <th className="py-2.5 px-3.5">Cone qc</th>
-              <th className="py-2.5 px-3.5">Soil Ic</th>
-              <th className="py-2.5 px-3.5">Pile toe schedule</th>
-              <th className="py-2.5 px-3.5 text-right">Heatmap status</th>
+              <th scope="col" className="py-2.5 px-3.5">Sounding ID</th>
+              <th scope="col" className="py-2.5 px-3.5">Top Depth (zb)</th>
+              <th scope="col" className="py-2.5 px-3.5">Cone qc</th>
+              <th scope="col" className="py-2.5 px-3.5">Soil Ic</th>
+              <th scope="col" className="py-2.5 px-3.5">Pile toe schedule</th>
+              <th scope="col" className="py-2.5 px-3.5 text-right">Heatmap status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#1C130D]/5 text-[#1C130D]">
@@ -60,9 +60,19 @@ export function BearingComparisonTable() {
               return (
                 <tr
                   key={pt.id}
+                  tabIndex={0}
+                  aria-label={`${pt.pointName}: top depth ${adjustedDepth}m, qc ${pt.qcMpa} MPa, ${meetsCriteria ? "Verified" : "Deepen"}`}
                   onMouseEnter={() => setHoveredBearingPointId(pt.id)}
+                  onMouseLeave={() => setHoveredBearingPointId(null)}
+                  onFocus={() => setHoveredBearingPointId(pt.id)}
+                  onBlur={() => setHoveredBearingPointId(null)}
                   onClick={() => setHoveredBearingPointId(pt.id)}
-                  className={`transition-colors cursor-pointer ${
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setHoveredBearingPointId(isSelected ? null : pt.id)
+                    }
+                  }}
+                  className={`transition-colors cursor-pointer focus-visible:outline-hidden focus-visible:bg-[#FAD9BA]/50 ${
                     isSelected
                       ? "bg-[#FAD9BA]/45 font-semibold"
                       : "hover:bg-[#E3D7C8]/25"
@@ -113,7 +123,7 @@ export function BearingComparisonTable() {
       <div className="p-3.5 bg-[#E3D7C8]/25 border-t border-[#1C130D]/10 flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] text-[#63554B]">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 bg-[#7A421D]" />
-          <span>6-neighbor 3D connected component thickness &gt;= {minThickness.toFixed(1)}m</span>
+          <span className="tabular-nums">6-neighbor 3D connected component thickness ≥ {minThickness.toFixed(1)}m</span>
         </div>
         <div>Export: CSV, LandXML, Bentley gINT</div>
       </div>

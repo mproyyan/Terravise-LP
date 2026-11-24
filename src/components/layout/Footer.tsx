@@ -18,7 +18,7 @@ export function Footer() {
                 TERRAVISE
               </span>
             </div>
-            <p className="text-[#EFE7DE]/70 text-xs sm:text-sm max-w-sm leading-relaxed font-sans">
+            <p className="text-[#EFE7DE]/70 text-xs sm:text-sm max-w-sm leading-relaxed font-sans text-pretty">
               Native iPadOS geotechnical investigation system. Directs CPT sounding
               locations using on-device reinforcement learning and verified foundation bearing layer analysis.
             </p>
@@ -27,8 +27,8 @@ export function Footer() {
                 <Compass className="w-3.5 h-3.5 text-[#BD8564]" />
                 Datum: DGN95, UTM 48S
               </span>
-              <span>•</span>
-              <span>Release 4.6.2</span>
+              <span>·</span>
+              <span className="tabular-nums">Release 4.6.2</span>
             </div>
           </div>
 
@@ -39,28 +39,43 @@ export function Footer() {
             </span>
             <ul className="space-y-2 text-xs font-mono text-[#EFE7DE]/60">
               <li>
-                <a href="#problem" className="hover:text-[#EFE7DE] transition-colors py-1 block">
-                  01. Fixed grid limits
+                <a
+                  href="#problem"
+                  className="hover:text-[#EFE7DE] transition-colors py-1 block focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA]"
+                >
+                  01. Fixed Grid Limits
                 </a>
               </li>
               <li>
-                <a href="#dqn" className="hover:text-[#EFE7DE] transition-colors py-1 block">
-                  02. DQN coordinate selection
+                <a
+                  href="#dqn"
+                  className="hover:text-[#EFE7DE] transition-colors py-1 block focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA]"
+                >
+                  02. DQN Coordinate Selection
                 </a>
               </li>
               <li>
-                <a href="#voxel" className="hover:text-[#EFE7DE] transition-colors py-1 block">
-                  03. 3D soil volume inspection
+                <a
+                  href="#voxel"
+                  className="hover:text-[#EFE7DE] transition-colors py-1 block focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA]"
+                >
+                  03. 3D Soil Volume Inspection
                 </a>
               </li>
               <li>
-                <a href="#stratum" className="hover:text-[#EFE7DE] transition-colors py-1 block">
-                  04. Bearing stratum criteria
+                <a
+                  href="#stratum"
+                  className="hover:text-[#EFE7DE] transition-colors py-1 block focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA]"
+                >
+                  04. Bearing Stratum Criteria
                 </a>
               </li>
               <li>
-                <a href="#workflow" className="hover:text-[#EFE7DE] transition-colors py-1 block">
-                  05. iPadOS app workflow
+                <a
+                  href="#workflow"
+                  className="hover:text-[#EFE7DE] transition-colors py-1 block focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA]"
+                >
+                  05. iPadOS App Workflow
                 </a>
               </li>
             </ul>
@@ -75,21 +90,21 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <HardHat className="w-4 h-4 text-[#E3D7C8] mt-0.5 shrink-0" />
                 <span>
-                  <strong>ASTM D5778.</strong> Standard test method for electronic
+                  <strong className="text-[#EFE7DE]">ASTM D5778.</strong> Standard test method for electronic
                   friction cone and piezocone penetration testing of soils.
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <FileText className="w-4 h-4 text-[#E3D7C8] mt-0.5 shrink-0" />
                 <span>
-                  <strong>SNI 8460:2017.</strong> Indonesian geotechnical design standard
+                  <strong className="text-[#EFE7DE]">SNI 8460:2017.</strong> Indonesian geotechnical design standard
                   for deep pile foundations and soil stability.
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <ExternalLink className="w-4 h-4 text-[#BD8564] mt-0.5 shrink-0" />
                 <span>
-                  <strong>Robertson SBT (1990/2010).</strong> Automated soil
+                  <strong className="text-[#EFE7DE]">Robertson SBTn (1990/2010).</strong> Automated soil
                   behavior type index calculation from normalized cone parameters.
                 </span>
               </li>
@@ -99,12 +114,12 @@ export function Footer() {
 
         {/* Disclaimer Note */}
         <div className="mt-8 pt-6 border-t border-[#EFE7DE]/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs font-mono text-[#EFE7DE]/50">
-          <p className="max-w-3xl leading-relaxed text-[10px]">
+          <p className="max-w-3xl leading-relaxed text-[10px] text-pretty">
             ENGINEERING NOTICE: Terravise supports licensed geotechnical engineers with computational analysis.
-            Calculations, uncertainty ranges, and stopping metrics support but do not replace professional
+            Calculations, uncertainty distributions, and stopping criteria support but do not replace professional
             engineering judgment, local statutory building codes, or mandatory geological investigation standards.
           </p>
-          <div className="shrink-0 text-[10px]">
+          <div className="shrink-0 text-[10px] tabular-nums">
             © {new Date().getFullYear()} Terravise Technologies. All rights reserved.
           </div>
         </div>

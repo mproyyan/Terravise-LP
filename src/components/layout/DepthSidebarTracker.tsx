@@ -49,7 +49,7 @@ export function DepthSidebarTracker() {
     }
   }
 
-  // Minimized Mode: Tiny Floating Depth Pill in Bottom-Right Corner
+  // Minimized Mode: Floating Depth Pill in Bottom-Right Corner
   if (minimized) {
     return (
       <aside
@@ -59,8 +59,8 @@ export function DepthSidebarTracker() {
         <button
           type="button"
           onClick={() => setMinimized(false)}
-          title="Show depth datum rail"
-          className="bg-[#1C130D]/95 hover:bg-[#271C14] border border-[#EFE7DE]/25 px-2.5 py-1.5 shadow-lg flex items-center gap-2 font-mono text-[10px] text-[#EFE7DE] cursor-pointer transition-colors"
+          aria-label="Expand depth datum rail"
+          className="bg-[#1C130D]/95 hover:bg-[#271C14] border border-[#EFE7DE]/25 px-2.5 py-1.5 shadow-lg flex items-center gap-2 font-mono text-[10px] text-[#EFE7DE] cursor-pointer transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FAD9BA]"
         >
           <Ruler className="w-3 h-3 text-[#FAD9BA]" />
           <span className="font-bold text-[#FAD9BA] tabular-nums">{activeDepth}</span>
@@ -87,9 +87,8 @@ export function DepthSidebarTracker() {
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              title={expanded ? "Collapse depth labels" : "Expand depth stages"}
               aria-label={expanded ? "Collapse depth labels" : "Expand depth stages"}
-              className="text-[#EFE7DE]/60 hover:text-[#FAD9BA] p-0.5 cursor-pointer transition-colors"
+              className="text-[#EFE7DE]/60 hover:text-[#FAD9BA] p-1 cursor-pointer transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] min-h-[28px] min-w-[28px] flex items-center justify-center"
             >
               {expanded ? (
                 <ChevronRight className="w-3 h-3" />
@@ -107,9 +106,8 @@ export function DepthSidebarTracker() {
             <button
               type="button"
               onClick={() => setMinimized(true)}
-              title="Minimize depth tracker"
               aria-label="Minimize depth tracker"
-              className="text-[#EFE7DE]/45 hover:text-[#EFE7DE] p-0.5 cursor-pointer transition-colors"
+              className="text-[#EFE7DE]/45 hover:text-[#EFE7DE] p-1 cursor-pointer transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] min-h-[28px] min-w-[28px] flex items-center justify-center"
             >
               <EyeOff className="w-2.5 h-2.5" />
             </button>
@@ -132,8 +130,8 @@ export function DepthSidebarTracker() {
                   key={stage.depth}
                   type="button"
                   onClick={() => scrollToSection(stage.sectionId)}
-                  title={`${stage.depth} — ${stage.label}`}
-                  className={`text-right transition-colors cursor-pointer group flex items-center justify-end gap-1.5 py-0.5 min-h-[24px] ${
+                  aria-label={`Jump to ${stage.label} at depth ${stage.depth}`}
+                  className={`text-right transition-colors cursor-pointer group flex items-center justify-end gap-1.5 py-0.5 min-h-[28px] focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] ${
                     isActive
                       ? "text-[#EFE7DE] font-bold"
                       : "text-[#EFE7DE]/45 hover:text-[#EFE7DE]/85"
@@ -162,14 +160,11 @@ export function DepthSidebarTracker() {
             })}
           </div>
 
-          {/* Slim Surveyor's Brass Rod (4px wide) */}
-          <div className="relative w-1 bg-[#271C14] border border-[#EFE7DE]/20 self-stretch my-0.5 overflow-hidden flex flex-col justify-between shrink-0">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="w-full h-px bg-[#EFE7DE]/20" />
-            ))}
+          {/* Continuous Micro Depth Progress Bar */}
+          <div className="w-1 bg-[#271C14] border border-[#EFE7DE]/15 relative overflow-hidden flex flex-col justify-end">
             <div
-              className="absolute top-0 left-0 right-0 bg-[#BD8564] transition-all duration-75"
-              style={{ height: `${depthProgress * 100}%` }}
+              className="w-full bg-[#10B981] transition-all duration-150"
+              style={{ height: `${Math.round(depthProgress * 100)}%` }}
             />
           </div>
         </div>

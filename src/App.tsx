@@ -56,8 +56,8 @@ export function App() {
         {/* Sticky Architectural Navbar */}
         <Navbar onOpenAppStore={handleOpenAppStore} />
 
-        {/* Main Landing Sections Flow (No Global Fixed z-20 3D Overlay Blocking Content!) */}
-        <main className="relative z-10">
+        {/* Main Landing Sections Flow with semantic id for skip links */}
+        <main id="main-content" className="relative z-10 focus:outline-hidden">
           {/* Rapidkert-style Pinned Ground Sequence for Section 00 (Hero) -> Section 01 (Problem) */}
           <HeroProblemGroundWrapper>
             <HeroSection
@@ -67,7 +67,7 @@ export function App() {
             <ProblemSection />
           </HeroProblemGroundWrapper>
 
-          {/* Section 02..07 with Dedicated Section-Scoped 3D Visualizers & Scroll Tracks */}
+          {/* Section 02..07 with Dedicated Section-Scoped Visualizers & Scroll Tracks */}
           <DQNRecommendationSection />
           <SubsurfaceVoxelSection />
           <BearingStratumSection />
@@ -84,7 +84,11 @@ export function App() {
 
         {/* Floating Download Notification Toast */}
         {downloadNotification && (
-          <div className="fixed bottom-6 left-6 z-50 bg-[#1C130D] text-[#EFE7DE] border border-[#7A421D] px-4 py-3 shadow-2xl flex items-center gap-3 font-mono text-xs animate-in slide-in-from-bottom-4 duration-200">
+          <div
+            role="status"
+            aria-live="polite"
+            className="fixed bottom-6 left-6 z-50 bg-[#1C130D] text-[#EFE7DE] border border-[#7A421D] px-4 py-3 shadow-2xl flex items-center gap-3 font-mono text-xs animate-in slide-in-from-bottom-4 duration-200"
+          >
             <div className="w-5 h-5 bg-[#5A3008] text-[#FAD9BA] flex items-center justify-center shrink-0">
               <Check className="w-3.5 h-3.5" />
             </div>

@@ -26,6 +26,7 @@ export function SubsurfaceVoxelSection() {
   return (
     <section
       id="voxel"
+      aria-label="Section 03: Subsurface volume"
       className="py-24 bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12 relative z-10"
     >
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
@@ -39,10 +40,10 @@ export function SubsurfaceVoxelSection() {
 
         {/* Top Editorial Row */}
         <div className="max-w-3xl space-y-2.5 mb-8">
-          <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92]">
+          <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
             {voxel.heading}
           </h2>
-          <p className="font-sans text-[#EFE7DE]/70 text-xs sm:text-sm leading-relaxed">
+          <p className="font-sans text-[#EFE7DE]/70 text-xs sm:text-sm leading-relaxed text-pretty">
             {voxel.subheading}
           </p>
         </div>
@@ -60,9 +61,19 @@ export function SubsurfaceVoxelSection() {
                 return (
                   <div
                     key={layer.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Stratigraphic layer 0${idx + 1}: ${layer.soilType}`}
                     onMouseEnter={() => setHoveredLayerId(layer.id)}
                     onMouseLeave={() => setHoveredLayerId(null)}
-                    className={`p-3 border transition-colors cursor-pointer flex items-center justify-between gap-2 ${
+                    onFocus={() => setHoveredLayerId(layer.id)}
+                    onBlur={() => setHoveredLayerId(null)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        setHoveredLayerId(isHovered ? null : layer.id)
+                      }
+                    }}
+                    className={`p-3 border transition-colors cursor-pointer flex items-center justify-between gap-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FAD9BA] select-none ${
                       isHovered
                         ? "bg-[#36271D] border-[#FAD9BA]"
                         : "bg-[#271C14]/90 border-[#EFE7DE]/15 hover:border-[#EFE7DE]/35"
@@ -84,7 +95,7 @@ export function SubsurfaceVoxelSection() {
                     </div>
                     <Badge
                       variant="outline"
-                      className="text-[9px] py-0 px-1.5 text-[#FAD9BA] border-[#FAD9BA]/30 shrink-0"
+                      className="text-[9px] py-0 px-1.5 text-[#FAD9BA] border-[#FAD9BA]/30 shrink-0 tabular-nums"
                     >
                       qc {layer.qcMpaAvg}
                     </Badge>
@@ -106,7 +117,8 @@ export function SubsurfaceVoxelSection() {
                 <button
                   type="button"
                   onClick={resetSlicing}
-                  className="text-[#EFE7DE]/70 hover:text-[#FAD9BA] flex items-center gap-1 cursor-pointer"
+                  aria-label="Reset slicing cutters to 100%"
+                  className="text-[#EFE7DE]/70 hover:text-[#FAD9BA] flex items-center gap-1 cursor-pointer focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] px-1 py-0.5"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>Reset Cut</span>
@@ -116,8 +128,9 @@ export function SubsurfaceVoxelSection() {
               <div className="grid grid-cols-2 bg-[#1C130D] border border-[#EFE7DE]/20 p-0.5 text-[10px]">
                 <button
                   type="button"
+                  aria-pressed={cameraView === "iso"}
                   onClick={() => setCameraView("iso")}
-                  className={`py-2 cursor-pointer transition-colors ${
+                  className={`py-2 cursor-pointer transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] ${
                     cameraView === "iso"
                       ? "bg-[#5A3008] text-[#FAD9BA] font-bold"
                       : "text-[#EFE7DE]/50 hover:text-[#EFE7DE]"
@@ -127,8 +140,9 @@ export function SubsurfaceVoxelSection() {
                 </button>
                 <button
                   type="button"
+                  aria-pressed={cameraView === "front"}
                   onClick={() => setCameraView("front")}
-                  className={`py-2 cursor-pointer transition-colors ${
+                  className={`py-2 cursor-pointer transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] ${
                     cameraView === "front"
                       ? "bg-[#5A3008] text-[#FAD9BA] font-bold"
                       : "text-[#EFE7DE]/50 hover:text-[#EFE7DE]"
@@ -139,85 +153,86 @@ export function SubsurfaceVoxelSection() {
               </div>
             </div>
 
-            {/* Easting & Northing Boundary Cut Sliders (Pipes Stay Intact!) */}
-            <div className="space-y-5 border-b border-[#EFE7DE]/15 pb-5">
-              <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-[#BD8564]">
-                <span className="flex items-center gap-1.5 font-bold">
-                  <Scissors className="w-3.5 h-3.5" />
-                  Smooth Boundary Slicing
-                </span>
-                <span className="text-[#10B981]">5 Pipes Stay Intact</span>
+            {/* Interactive Dual Parametric Slicers */}
+            <div className="space-y-4 border-b border-[#EFE7DE]/15 pb-5">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#EFE7DE] uppercase">
+                <Scissors className="w-3.5 h-3.5 text-[#7A421D]" />
+                <span>Orthogonal Slicing Cutters</span>
               </div>
 
               <Slider
-                label="Easting boundary cut (X axis)"
+                label="Easting Cutter (X Axis)"
                 value={[sliceX]}
                 onValueChange={(val) => setSliceX(val[0])}
-                min={15}
+                min={10}
                 max={100}
                 step={1}
-                valueDisplay={`${Math.round((sliceX / 100) * 120)} m`}
+                valueDisplay={`${Math.round((sliceX / 100) * 120)}m`}
                 unit={`(${sliceX}%)`}
               />
 
               <Slider
-                label="Northing boundary cut (Y axis)"
+                label="Northing Cutter (Y Axis)"
                 value={[sliceY]}
                 onValueChange={(val) => setSliceY(val[0])}
-                min={15}
+                min={10}
                 max={100}
                 step={1}
-                valueDisplay={`${Math.round((sliceY / 100) * 80)} m`}
+                valueDisplay={`${Math.round((sliceY / 100) * 80)}m`}
                 unit={`(${sliceY}%)`}
               />
             </div>
 
-            {/* 5 Installed CPT Test Standpipes Directory (Click to open Popover on 3D Pipe) */}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between text-[10px] uppercase tracking-wider">
-                <span className="text-[#FAD9BA] font-bold flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#10B981]" />
-                  5 Installed CPT Test Pipes
+            {/* 5 Field CPT Standpipe Soundings Telemetry Ingestion List */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-[#BD8564]">
+                <span className="flex items-center gap-1 font-bold">
+                  <MapPin className="w-3 h-3" />
+                  Intact CPT Standpipes
                 </span>
-                <span className="text-[#EFE7DE]/50 text-[9px]">Click pipe or row</span>
+                <span>5 Soundings</span>
               </div>
 
               <div className="space-y-1.5">
                 {MOCK_CPT_TEST_PIPES.map((pipe) => {
                   const isSelected = selectedPipeId === pipe.id
+                  const isCoreProbe = pipe.id === "cpt-03"
                   return (
-                    <button
+                    <div
                       key={pipe.id}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`CPT sounding ${pipe.code}: 0.0m to ${pipe.terminationDepthM}m (${pipe.sector})`}
                       onClick={() => setSelectedPipeId(isSelected ? null : pipe.id)}
-                      className={`w-full px-3 py-2 border text-left transition-all cursor-pointer flex items-center justify-between ${
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          setSelectedPipeId(isSelected ? null : pipe.id)
+                        }
+                      }}
+                      className={`p-2.5 border transition-all cursor-pointer flex items-center justify-between text-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] select-none ${
                         isSelected
-                          ? "bg-[#150E09] border-[#10B981] text-[#EFE7DE] shadow-md"
-                          : "bg-[#1C130D]/90 border-[#EFE7DE]/15 text-[#EFE7DE]/75 hover:border-[#FAD9BA]/50"
+                          ? "bg-[#5A3008] border-[#FAD9BA] text-[#FAD9BA]"
+                          : "bg-[#1C130D] border-[#EFE7DE]/15 hover:border-[#EFE7DE]/30 text-[#EFE7DE]"
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <span
-                          className={`w-2 h-2 ${
-                            isSelected ? "bg-[#10B981]" : "bg-[#BD8564]/50"
-                          }`}
+                          className="w-2 h-2 rounded-full"
+                          style={{
+                            backgroundColor: isCoreProbe ? "#10B981" : "#FAD9BA",
+                          }}
                         />
-                        <div>
-                          <div className="text-xs font-bold text-[#FAD9BA]">
-                            {pipe.code} · {pipe.sector}
-                          </div>
-                          <div className="text-[9px] text-[#EFE7DE]/50">{pipe.utm}</div>
-                        </div>
+                        <span className="font-bold">{pipe.code}</span>
+                        {isCoreProbe && (
+                          <span className="text-[9px] bg-[#10B981]/20 text-[#10B981] px-1 py-0.5 uppercase tracking-wider">
+                            Core Probe
+                          </span>
+                        )}
                       </div>
-                      <div className="text-right text-[10px]">
-                        <div className="text-[#10B981] font-bold">
-                          zb {pipe.bearingDepthM}m
-                        </div>
-                        <div className="text-[9px] text-[#EFE7DE]/45">
-                          {isSelected ? "POPOVER OPEN" : "INSPECT →"}
-                        </div>
-                      </div>
-                    </button>
+                      <span className="text-[10px] text-[#EFE7DE]/60 tabular-nums">
+                        0.0m to {pipe.terminationDepthM}m
+                      </span>
+                    </div>
                   )
                 })}
               </div>

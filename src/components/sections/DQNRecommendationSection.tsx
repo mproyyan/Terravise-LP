@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { FullWidthTopographicBackground } from "../motion/FullWidthTopographicBackground"
-import { ArrowRight, Compass, Sparkles, AlertTriangle } from "lucide-react"
+import { Compass } from "lucide-react"
 
 interface StepContent {
   id: string
@@ -102,11 +102,12 @@ export function DQNRecommendationSection() {
     <section
       id="dqn"
       ref={trackRef}
+      aria-label="Section 02: Next sounding selection"
       className="relative bg-[#150E09] text-[#EFE7DE] border-b border-[#EFE7DE]/15 h-[300vh]"
     >
       {/* Pinned Sticky Viewport (100% Scroll-Driven ala Rapidkert Section 09) */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between p-6 sm:p-10 lg:p-16 z-10 select-none">
-        {/* Full-Width Dynamic Motion Graphic Background (NOT split 50/50!) */}
+        {/* Full-Width Dynamic Motion Graphic Background */}
         <FullWidthTopographicBackground
           scrollProgress={scrollProgress}
           activeStep={activeStep}
@@ -150,66 +151,53 @@ export function DQNRecommendationSection() {
             >
               {/* Step Number Tag */}
               <div className="font-mono text-xs font-bold tracking-[0.2em] text-[#BD8564] flex items-center gap-2">
-                <span>{currentStep.stepNumber}</span>
+                <span className="tabular-nums">{currentStep.stepNumber}</span>
               </div>
 
               {/* Monumental Condensed Headline spanning boldly over the strata */}
-              <h3 className="font-sans font-black text-5xl sm:text-7xl xl:text-[84px] uppercase tracking-[-0.04em] leading-[0.88] text-[#EFE7DE]">
+              <h3 className="font-sans font-black text-5xl sm:text-7xl xl:text-[84px] uppercase tracking-[-0.04em] leading-[0.88] text-[#EFE7DE] text-balance">
                 <span className="block">{currentStep.titleLine1}</span>
                 <span className="block text-[#FAD9BA]">{currentStep.titleLine2}</span>
               </h3>
 
-              {/* Architectural Category Tag */}
-              <div className="font-mono text-xs uppercase tracking-widest text-[#BD8564] pt-1">
-                {currentStep.category}
+              {/* Category / Sub-specs hairline pill */}
+              <div className="border-t border-[#EFE7DE]/20 pt-3">
+                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#BD8564] block">
+                  {currentStep.category}
+                </span>
               </div>
 
-              {/* Concise Editorial Copy */}
-              <p className="font-sans text-[#EFE7DE]/75 text-sm sm:text-base leading-relaxed max-w-xl">
+              {/* Editorial Description Text */}
+              <p className="font-sans text-[#EFE7DE]/80 text-sm sm:text-base leading-relaxed max-w-xl text-pretty">
                 {currentStep.description}
               </p>
 
-              {/* Action / Key Metric Badge Link */}
+              {/* Technical Metric Pill Readout */}
               <div className="pt-2">
-                <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#FAD9BA] border-b border-[#FAD9BA]/40 pb-1">
-                  <span>{currentStep.metricText}</span>
-                  {activeStep === 0 && <AlertTriangle className="w-3.5 h-3.5 text-[#E76F51]" />}
-                  {activeStep === 1 && <Compass className="w-3.5 h-3.5 text-[#FAD9BA]" />}
-                  {activeStep === 2 && <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />}
-                </div>
+                <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#FAD9BA] border-b border-[#FAD9BA]/40 pb-1 tabular-nums">
+                  {currentStep.metricText}
+                </span>
               </div>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Bottom Horizontal Timeline Stepper Indicator (Rapidkert style) */}
-        <footer className="relative z-10 w-full pt-4 border-t border-[#EFE7DE]/15 flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] sm:text-xs">
-          <div className="flex items-center gap-6 sm:gap-10">
-            {STEPS_DATA.map((step, idx) => {
-              const isActive = activeStep === idx
-              return (
-                <div
-                  key={step.id}
-                  className={`flex items-center gap-2 transition-colors duration-200 ${
-                    isActive ? "text-[#FAD9BA] font-bold" : "text-[#EFE7DE]/35"
-                  }`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 ${
-                      isActive ? "bg-[#10B981]" : "bg-[#EFE7DE]/20"
-                    }`}
-                  />
-                  <span>
-                    {step.stepNumber} · {step.titleLine1} {step.titleLine2}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+        {/* Bottom Status Ticker: Scroll Instructions & Real-time Coordinates */}
+        <footer className="relative z-10 w-full border-t border-[#EFE7DE]/15 pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] text-[#EFE7DE]/50">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5 text-[#FAD9BA]">
+                <Compass className="w-3.5 h-3.5" />
+                <span>ACTIVE POLICY ENGINE: CORE ML DEEP Q-NETWORK</span>
+              </span>
+              <span className="hidden sm:inline">·</span>
+              <span className="hidden sm:inline">29 SPATIAL SOIL FEATURES</span>
+            </div>
 
-          <div className="flex items-center gap-2 text-[#EFE7DE]/40 text-[10px]">
-            <span>SCROLL TO ADVANCE</span>
-            <ArrowRight className="w-3 h-3 text-[#10B981]" />
+            <div className="flex items-center gap-2 text-[#EFE7DE]/70">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              <span>SCROLL DOWN TO PROGRESS SOUNDING STAGES</span>
+            </div>
           </div>
         </footer>
       </div>

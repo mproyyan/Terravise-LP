@@ -21,6 +21,7 @@ export function BearingStratumSection() {
   return (
     <section
       id="stratum"
+      aria-label="Section 04: Bearing layer verification"
       className="py-24 bg-[#FBF7F2] border-b border-[#1C130D]/15 scroll-mt-12 relative z-10"
     >
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
@@ -35,10 +36,10 @@ export function BearingStratumSection() {
         {/* Top Editorial Row + Live Footprint Sufficiency Readout */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
           <div className="max-w-3xl space-y-2">
-            <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92]">
+            <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
               {bearing.heading}
             </h2>
-            <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed">
+            <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed text-pretty">
               {bearing.subheading}
             </p>
           </div>
@@ -68,7 +69,7 @@ export function BearingStratumSection() {
                   3D Heatmap Criteria
                 </span>
                 <span className="text-[10px] text-[#7A421D] font-normal">
-                  Drag sliders to morph 3D relief →
+                  Adjust sliders to morph 3D relief →
                 </span>
               </div>
 
@@ -131,7 +132,7 @@ export function BearingStratumSection() {
               </span>
 
               <div className="flex items-center gap-2.5 flex-1 min-w-[220px]">
-                <span className="text-[#10B981] font-bold shrink-0">-13.6m Shallow</span>
+                <span className="text-[#10B981] font-bold shrink-0 tabular-nums">-13.6m Shallow</span>
                 <div
                   className="h-2.5 flex-1 border border-[#1C130D]/20"
                   style={{
@@ -139,21 +140,14 @@ export function BearingStratumSection() {
                       "linear-gradient(90deg, #10B981 0%, #EAB308 38%, #E76F51 72%, #9A3412 100%)",
                   }}
                 />
-                <span className="text-[#9A3412] font-bold shrink-0">-18.5m+ Deep</span>
-              </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="w-2.5 h-2.5 bg-[#231710] inline-block border border-[#1C130D]/20" />
-                <span className="text-[#63554B]">Unverified (&lt; {minQc.toFixed(1)} MPa)</span>
+                <span className="text-[#9A3412] font-bold shrink-0 tabular-nums">-16.5m Deep</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Row (Full 12 Columns): Full-Width Foundation Bearing Comparison Table */}
-        <div className="w-full">
-          <BearingComparisonTable />
-        </div>
+        {/* Full-Width Pile Toe Schedule & Depth Comparison Table */}
+        <BearingComparisonTable />
       </div>
     </section>
   )

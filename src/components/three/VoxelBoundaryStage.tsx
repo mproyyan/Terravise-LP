@@ -5,17 +5,25 @@ import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { MOCK_CPT_TEST_PIPES } from "../../data/mockGeology"
 import {
   STRATA_LAYER_SPECS,
-  createProceduralStrataTexture,
+  createRealisticStrataPBRTextures,
   getGeologicalWave,
   smoothstep,
 } from "./geology3DUtils"
 import { X, MapPin, Layers, ArrowDownToLine } from "lucide-react"
 
-interface SmoothHorizonEntry {
+interface SolidHorizonEntry {
   id: string
+  specIndex: number
+  topY: number
+  botY: number
+  height: number
   group: THREE.Group
+  geometry: THREE.BufferGeometry
+  baseUnitPos: Float32Array
+  baseNormals: Float32Array
   material: THREE.MeshStandardMaterial
-  edgeMaterial: THREE.LineBasicMaterial
+  borderGeo: THREE.BufferGeometry
+  borderPositions: Float32Array
 }
 
 interface PipeVisualEntry {
@@ -55,42 +63,45 @@ export function VoxelBoundaryStage() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(width, height)
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.1
+    renderer.toneMappingExposure = 1.12
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFShadowMap
-    renderer.localClippingEnabled = true
     renderer.setClearColor(0x000000, 0)
     container.appendChild(renderer.domElement)
+
+    const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8)
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(33, width / height, 0.1, 100)
     camera.position.set(7.4, 4.9, 8.2)
     camera.lookAt(0, -1.35, 0)
 
-    // Architectural Studio Lighting
-    const ambientLight = new THREE.AmbientLight(0xfbf7f2, 0.92)
+    // Architectural & Subsurface Cross-Section Studio Lighting
+    const ambientLight = new THREE.AmbientLight(0xfbf7f2, 1.05)
     scene.add(ambientLight)
 
-    const hemiLight = new THREE.HemisphereLight(0xfad9ba, 0x381800, 0.65)
+    const hemiLight = new THREE.HemisphereLight(0xfff3e6, 0x381800, 0.78)
     scene.add(hemiLight)
 
-    const keyLight = new THREE.DirectionalLight(0xfff5eb, 2.5)
+    const keyLight = new THREE.DirectionalLight(0xfff7ed, 2.75)
     keyLight.position.set(8, 13, 9)
     keyLight.castShadow = true
     keyLight.shadow.mapSize.set(1024, 1024)
     scene.add(keyLight)
 
-    const rimLight = new THREE.DirectionalLight(0xfad9ba, 1.25)
+    // Cross-section fill light aimed directly at the +X and +Z slice walls
+    const sliceWallLight = new THREE.DirectionalLight(0xffe6cc, 1.55)
+    sliceWallLight.position.set(7, 1.5, 8)
+    scene.add(sliceWallLight)
+
+    const rimLight = new THREE.DirectionalLight(0xfad9ba, 1.3)
     rimLight.position.set(-8, 6, -6)
     scene.add(rimLight)
 
     const BLOCK_W = 4.2
     const BLOCK_D = 3.3
-
-    // Local Clipping Planes for Smooth 3D Soil Volume (Does NOT clip the 5 CPT pipes!)
-    const clipPlaneX = new THREE.Plane(new THREE.Vector3(-1, 0, 0), BLOCK_W / 2 + 0.5)
-    const clipPlaneZ = new THREE.Plane(new THREE.Vector3(0, 0, -1), BLOCK_D / 2 + 0.5)
-    const smoothVolumeClipPlanes = [clipPlaneX, clipPlaneZ]
+    const MIN_X = -BLOCK_W / 2
+    const MIN_Z = -BLOCK_D / 2
 
     const boundaryRoot = new THREE.Group()
     boundaryRoot.position.y = 0.3
@@ -114,8 +125,14 @@ export function VoxelBoundaryStage() {
     disposableGeometries.push(boundaryFrameGeo, boundaryFrameEdges)
     disposableMaterials.push(boundaryFrameLineMat)
 
-    // 2. 4 Smooth Undulating Continuous Stratigraphic Layers (Clipped smoothly by Easting/Northing sliders)
-    const smoothHorizonEntries: SmoothHorizonEntry[] = []
+    // 2. 4 Solid Undulating Continuous Stratigraphic Layers
+    // Dynamically morphed to [MIN_X..cutX, MIN_Z..cutZ] so the sliced interior is 100% solid and richly textured!
+    const SEG_X = 26
+    const SEG_Y = 4
+    const SEG_Z = 22
+    const BORDER_RING_STEPS = 28
+
+    const solidHorizonEntries: SolidHorizonEntry[] = []
     let smoothCursorY = 0
 
     for (let sIdx = 0; sIdx < STRATA_LAYER_SPECS.length; sIdx++) {
@@ -127,34 +144,36 @@ export function VoxelBoundaryStage() {
       const hGroup = new THREE.Group()
       boundaryRoot.add(hGroup)
 
-      const sGeo = new THREE.BoxGeometry(BLOCK_W, spec.height, BLOCK_D, 30, 4, 24)
-      const sPos = sGeo.attributes.position
-      for (let i = 0; i < sPos.count; i++) {
-        const vx = sPos.getX(i)
-        const vy = sPos.getY(i)
-        const vz = sPos.getZ(i)
-        const ny = vy / spec.height + 0.5
-        const topWave = sIdx === 0 ? 0 : getGeologicalWave(vx, vz, sIdx * 1.7)
-        const botWave =
-          sIdx === STRATA_LAYER_SPECS.length - 1 ? 0 : getGeologicalWave(vx, vz, (sIdx + 1) * 1.7)
-        const worldY = THREE.MathUtils.lerp(botY + botWave, topY + topWave, ny)
-        sPos.setY(i, worldY)
-      }
-      sGeo.computeVertexNormals()
+      // Unit box [-0.5..+0.5]^3 with separate face normals for clean world-space triplanar UVs
+      const sGeo = new THREE.BoxGeometry(1, 1, 1, SEG_X, SEG_Y, SEG_Z)
+      const posAttr = sGeo.attributes.position
+      const normAttr = sGeo.attributes.normal
+      const baseUnitPos = new Float32Array(posAttr.count * 3)
+      const baseNormals = new Float32Array(normAttr.count * 3)
 
-      const sTex = createProceduralStrataTexture(spec.colorHex, spec.pattern)
-      disposableTextures.push(sTex)
+      for (let i = 0; i < posAttr.count; i++) {
+        baseUnitPos[i * 3] = posAttr.getX(i)
+        baseUnitPos[i * 3 + 1] = posAttr.getY(i)
+        baseUnitPos[i * 3 + 2] = posAttr.getZ(i)
+
+        baseNormals[i * 3] = normAttr.getX(i)
+        baseNormals[i * 3 + 1] = normAttr.getY(i)
+        baseNormals[i * 3 + 2] = normAttr.getZ(i)
+      }
+
+      const pbrTex = createRealisticStrataPBRTextures(spec.colorHex, spec.pattern, maxAnisotropy)
+      disposableTextures.push(pbrTex.map, pbrTex.bumpMap, pbrTex.roughnessMap)
 
       const sMat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(spec.colorHex),
-        map: sTex,
-        roughness: 0.62,
-        metalness: 0.08,
-        side: THREE.DoubleSide,
-        clippingPlanes: smoothVolumeClipPlanes,
-        clipShadows: true,
+        color: 0xffffff,
+        map: pbrTex.map,
+        bumpMap: pbrTex.bumpMap,
+        bumpScale: spec.bumpScale * 1.15,
+        roughnessMap: pbrTex.roughnessMap,
+        roughness: spec.roughness,
+        metalness: spec.metalness,
         transparent: true,
-        opacity: 0.96,
+        opacity: 0.98,
       })
 
       const sMesh = new THREE.Mesh(sGeo, sMat)
@@ -162,39 +181,173 @@ export function VoxelBoundaryStage() {
       sMesh.receiveShadow = true
       hGroup.add(sMesh)
 
-      const sEdgeGeo = new THREE.EdgesGeometry(sGeo, 22)
-      const sEdgeMat = new THREE.LineBasicMaterial({
+      // Dynamic stratigraphic horizon seam outline around top perimeter of the sliced block
+      const borderSegCount = BORDER_RING_STEPS * 4
+      const borderPositions = new Float32Array(borderSegCount * 2 * 3)
+      const borderGeo = new THREE.BufferGeometry()
+      borderGeo.setAttribute("position", new THREE.BufferAttribute(borderPositions, 3))
+      const borderMat = new THREE.LineBasicMaterial({
         color: 0x1c130d,
-        clippingPlanes: smoothVolumeClipPlanes,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.58,
       })
-      const sEdgeLines = new THREE.LineSegments(sEdgeGeo, sEdgeMat)
-      hGroup.add(sEdgeLines)
+      const borderLines = new THREE.LineSegments(borderGeo, borderMat)
+      hGroup.add(borderLines)
 
-      disposableGeometries.push(sGeo, sEdgeGeo)
-      disposableMaterials.push(sMat, sEdgeMat)
+      disposableGeometries.push(sGeo, borderGeo)
+      disposableMaterials.push(sMat, borderMat)
 
-      smoothHorizonEntries.push({
+      solidHorizonEntries.push({
         id: spec.id,
+        specIndex: sIdx,
+        topY,
+        botY,
+        height: spec.height,
         group: hGroup,
+        geometry: sGeo,
+        baseUnitPos,
+        baseNormals,
         material: sMat,
-        edgeMaterial: sEdgeMat,
+        borderGeo,
+        borderPositions,
       })
     }
 
-    // 3. 5 CPT Test Sounding Pipes Mounted on the 3D Boundary (Remain INTACT when soil is sliced!)
+    // Function to update solid 3D horizon vertices and world-space UVs for any slice [MIN_X..cutX, MIN_Z..cutZ]
+    const updateSolidHorizonsSlice = (cutX: number, cutZ: number) => {
+      const clampedCutX = Math.max(MIN_X + 0.25, Math.min(BLOCK_W / 2, cutX))
+      const clampedCutZ = Math.max(MIN_Z + 0.25, Math.min(BLOCK_D / 2, cutZ))
+      const scaleU = 0.44
+      const scaleV = 0.92
+
+      for (let sIdx = 0; sIdx < solidHorizonEntries.length; sIdx++) {
+        const entry = solidHorizonEntries[sIdx]
+        const pos = entry.geometry.attributes.position
+        const uv = entry.geometry.attributes.uv
+        const uPos = entry.baseUnitPos
+        const bNorm = entry.baseNormals
+
+        for (let i = 0; i < pos.count; i++) {
+          const ux = uPos[i * 3] + 0.5 // 0..1
+          const uy = uPos[i * 3 + 1] + 0.5 // 0..1
+          const uz = uPos[i * 3 + 2] + 0.5 // 0..1
+
+          const worldX = MIN_X + ux * (clampedCutX - MIN_X)
+          const worldZ = MIN_Z + uz * (clampedCutZ - MIN_Z)
+
+          const topWave = sIdx === 0 ? 0 : getGeologicalWave(worldX, worldZ, sIdx * 1.7)
+          const botWave =
+            sIdx === solidHorizonEntries.length - 1
+              ? 0
+              : getGeologicalWave(worldX, worldZ, (sIdx + 1) * 1.7)
+          const worldY = THREE.MathUtils.lerp(
+            entry.botY + botWave,
+            entry.topY + topWave,
+            uy
+          )
+
+          pos.setXYZ(i, worldX, worldY, worldZ)
+
+          // World-space box-projected UVs so textures stay sharp and unstretched during slicing
+          const nx = Math.abs(bNorm[i * 3])
+          const ny = Math.abs(bNorm[i * 3 + 1])
+          const nz = Math.abs(bNorm[i * 3 + 2])
+
+          if (ny >= nx && ny >= nz) {
+            uv.setXY(i, (worldX + 2.5) * scaleU, (worldZ + 2.5) * scaleU)
+          } else if (nx >= nz) {
+            uv.setXY(i, (worldZ + 2.5) * scaleU, (worldY + 4.0) * scaleV)
+          } else {
+            uv.setXY(i, (worldX + 2.5) * scaleU, (worldY + 4.0) * scaleV)
+          }
+        }
+
+        pos.needsUpdate = true
+        uv.needsUpdate = true
+        entry.geometry.computeVertexNormals()
+
+        // Update top stratigraphic seam border along the 4 edges of the sliced block
+        const bArr = entry.borderPositions
+        let ptr = 0
+        const evalTopY = (wx: number, wz: number) =>
+          entry.topY + (sIdx === 0 ? 0 : getGeologicalWave(wx, wz, sIdx * 1.7)) + 0.004
+
+        const writeEdge = (x0: number, z0: number, x1: number, z1: number) => {
+          for (let k = 0; k < BORDER_RING_STEPS; k++) {
+            const t0 = k / BORDER_RING_STEPS
+            const t1 = (k + 1) / BORDER_RING_STEPS
+            const ax = x0 + (x1 - x0) * t0
+            const az = z0 + (z1 - z0) * t0
+            const bx = x0 + (x1 - x0) * t1
+            const bz = z0 + (z1 - z0) * t1
+            bArr[ptr++] = ax
+            bArr[ptr++] = evalTopY(ax, az)
+            bArr[ptr++] = az
+            bArr[ptr++] = bx
+            bArr[ptr++] = evalTopY(bx, bz)
+            bArr[ptr++] = bz
+          }
+        }
+
+        writeEdge(MIN_X, MIN_Z, clampedCutX, MIN_Z)
+        writeEdge(clampedCutX, MIN_Z, clampedCutX, clampedCutZ)
+        writeEdge(clampedCutX, clampedCutZ, MIN_X, clampedCutZ)
+        writeEdge(MIN_X, clampedCutZ, MIN_X, MIN_Z)
+
+        entry.borderGeo.attributes.position.needsUpdate = true
+      }
+    }
+
+    updateSolidHorizonsSlice(BLOCK_W / 2, BLOCK_D / 2)
+
+    // 3. Embedded Interior Geological Inclusions (Exposed clearly along the cut face when slicing!)
+    const interiorClastGeo = new THREE.DodecahedronGeometry(0.065, 1)
+    const bearingTex = createRealisticStrataPBRTextures("#C86442", "bearing", maxAnisotropy)
+    disposableTextures.push(bearingTex.map, bearingTex.bumpMap, bearingTex.roughnessMap)
+    const interiorClastMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      map: bearingTex.map,
+      bumpMap: bearingTex.bumpMap,
+      bumpScale: 0.03,
+      roughness: 0.65,
+      metalness: 0.08,
+    })
+    disposableGeometries.push(interiorClastGeo)
+    disposableMaterials.push(interiorClastMat)
+
+    const interiorClasts: Array<{ mesh: THREE.Mesh; wx: number; wz: number }> = []
+    const lastHorizon = solidHorizonEntries[solidHorizonEntries.length - 1]
+    for (let c = 0; c < 36; c++) {
+      const wx = MIN_X + 0.35 + ((c * 53) % 100) / 100 * (BLOCK_W - 0.7)
+      const wz = MIN_Z + 0.35 + ((c * 79) % 100) / 100 * (BLOCK_D - 0.7)
+      const wy =
+        lastHorizon.botY + 0.22 + ((c * 31) % 100) / 100 * (lastHorizon.height - 0.42)
+      const cMesh = new THREE.Mesh(interiorClastGeo, interiorClastMat)
+      cMesh.position.set(wx, wy, wz)
+      const sc = 0.65 + (c % 4) * 0.28
+      cMesh.scale.set(sc * 1.3, sc * 0.65, sc * 0.95)
+      cMesh.rotation.set(c * 0.5, c * 1.1, c * 0.3)
+      cMesh.castShadow = true
+      cMesh.receiveShadow = true
+      lastHorizon.group.add(cMesh)
+      interiorClasts.push({ mesh: cMesh, wx, wz })
+    }
+
+    // 4. 5 CPT Test Sounding Pipes Mounted on the 3D Boundary (Remain INTACT with 60-degree cones when soil is sliced!)
     const pipeVisualEntries: PipeVisualEntry[] = []
     const pickablePipeProxies: THREE.Object3D[] = []
 
     const pipeCollarGeo = new THREE.CylinderGeometry(0.115, 0.115, 0.3, 20)
     const pipeTopFlangeGeo = new THREE.CylinderGeometry(0.155, 0.155, 0.065, 20)
+    const pipeConeTipGeo = new THREE.ConeGeometry(0.082, 0.22, 18)
+    pipeConeTipGeo.rotateX(Math.PI)
     const pipeBeaconRingGeo = new THREE.RingGeometry(0.18, 0.26, 28)
     pipeBeaconRingGeo.rotateX(-Math.PI / 2)
     const pipeHitProxyGeo = new THREE.CylinderGeometry(0.32, 0.32, 4.5, 12)
     disposableGeometries.push(
       pipeCollarGeo,
       pipeTopFlangeGeo,
+      pipeConeTipGeo,
       pipeBeaconRingGeo,
       pipeHitProxyGeo
     )
@@ -210,8 +363,8 @@ export function VoxelBoundaryStage() {
         color: 0xfbf7f2,
         emissive: 0x7a421d,
         emissiveIntensity: 0.25,
-        roughness: 0.3,
-        metalness: 0.5,
+        roughness: 0.26,
+        metalness: 0.62,
         transparent: true,
         opacity: 1,
       })
@@ -236,19 +389,19 @@ export function VoxelBoundaryStage() {
       beaconRing.position.y = 0.42
       pGroup.add(beaconRing)
 
-      // 4 Underground Pipe Core Segments (No clippingPlanes so the pipe stays 100% intact when sliced!)
+      // 4 Underground Pipe Core Segments with textured soil core appearance + metallic joints
       const shaftMats: THREE.MeshStandardMaterial[] = []
       let pipeCursorY = 0
 
       for (const lData of pipeData.layers) {
         const segH = (lData.thicknessM / 25.0) * TOTAL_WORLD_DEPTH
-        const segGeo = new THREE.CylinderGeometry(0.072, 0.072, segH, 16)
+        const segGeo = new THREE.CylinderGeometry(0.074, 0.074, segH, 18)
         const segMat = new THREE.MeshStandardMaterial({
           color: new THREE.Color(lData.colorHex),
           emissive: new THREE.Color(lData.colorHex),
-          emissiveIntensity: 0.2,
-          roughness: 0.35,
-          metalness: 0.35,
+          emissiveIntensity: 0.22,
+          roughness: 0.32,
+          metalness: 0.42,
           transparent: true,
           opacity: 1,
         })
@@ -258,7 +411,7 @@ export function VoxelBoundaryStage() {
         segMesh.castShadow = true
         pGroup.add(segMesh)
 
-        const jointGeo = new THREE.CylinderGeometry(0.088, 0.088, 0.025, 16)
+        const jointGeo = new THREE.CylinderGeometry(0.092, 0.092, 0.028, 18)
         const jointMesh = new THREE.Mesh(jointGeo, capMat)
         jointMesh.position.y = pipeCursorY
         pGroup.add(jointMesh)
@@ -267,6 +420,11 @@ export function VoxelBoundaryStage() {
         disposableGeometries.push(segGeo, jointGeo)
         disposableMaterials.push(segMat)
       }
+
+      // 60-degree ASTM D5778 conical penetrometer tip at bottom of pipe
+      const coneTipMesh = new THREE.Mesh(pipeConeTipGeo, capMat)
+      coneTipMesh.position.y = pipeCursorY - 0.11
+      pGroup.add(coneTipMesh)
 
       const hitMat = new THREE.MeshBasicMaterial({ visible: false })
       const hitProxy = new THREE.Mesh(pipeHitProxyGeo, hitMat)
@@ -363,8 +521,10 @@ export function VoxelBoundaryStage() {
     const projectedVec = new THREE.Vector3()
 
     let currentEntryT = 0
-    let currentClipX = BLOCK_W / 2 + 0.5
-    let currentClipZ = BLOCK_D / 2 + 0.5
+    let currentClipX = BLOCK_W / 2
+    let currentClipZ = BLOCK_D / 2
+    let lastBuiltClipX = BLOCK_W / 2
+    let lastBuiltClipZ = BLOCK_D / 2
     let currentCamX = 7.4
     let currentCamY = 4.9
     let currentCamZ = 8.2
@@ -382,26 +542,36 @@ export function VoxelBoundaryStage() {
       const elapsed = timer.getElapsed()
       const state = sceneStateRef.current
 
-      // Physical Scroll Entry Choreography:
-      // 1) Smooth undulating soil layers extrude upward wave-by-wave from the deep bedrock datum
-      // 2) The 5 CPT Standpipes drop down from the sky and drive into the ground one after another!
       const rect = container.getBoundingClientRect()
       const vpH = window.innerHeight
       const rawEntry = (vpH - rect.top) / Math.max(1, vpH * 0.68)
       const targetEntryT = smoothstep(rawEntry)
       currentEntryT = THREE.MathUtils.damp(currentEntryT, targetEntryT, 5.5, dt)
 
-      const targetClipX = -BLOCK_W / 2 + (state.sliceX / 100) * BLOCK_W
-      const targetClipZ = -BLOCK_D / 2 + (state.sliceY / 100) * BLOCK_D
-      currentClipX = THREE.MathUtils.damp(currentClipX, targetClipX, 8, dt)
-      currentClipZ = THREE.MathUtils.damp(currentClipZ, targetClipZ, 8, dt)
-      clipPlaneX.constant = currentClipX
-      clipPlaneZ.constant = currentClipZ
+      const targetClipX = MIN_X + (state.sliceX / 100) * BLOCK_W
+      const targetClipZ = MIN_Z + (state.sliceY / 100) * BLOCK_D
+      currentClipX = THREE.MathUtils.damp(currentClipX, targetClipX, 9.0, dt)
+      currentClipZ = THREE.MathUtils.damp(currentClipZ, targetClipZ, 9.0, dt)
+
+      if (
+        Math.abs(currentClipX - lastBuiltClipX) > 0.0015 ||
+        Math.abs(currentClipZ - lastBuiltClipZ) > 0.0015
+      ) {
+        lastBuiltClipX = currentClipX
+        lastBuiltClipZ = currentClipZ
+        updateSolidHorizonsSlice(currentClipX, currentClipZ)
+
+        // Show interior gravel cobbles along or inside the active solid cross-section
+        for (const item of interiorClasts) {
+          item.mesh.visible =
+            item.wx <= currentClipX + 0.04 && item.wz <= currentClipZ + 0.04
+        }
+      }
 
       // Bottom-to-top sequential horizon extrusion
-      for (let idx = 0; idx < smoothHorizonEntries.length; idx++) {
-        const sEntry = smoothHorizonEntries[idx]
-        const reverseIdx = smoothHorizonEntries.length - 1 - idx
+      for (let idx = 0; idx < solidHorizonEntries.length; idx++) {
+        const sEntry = solidHorizonEntries[idx]
+        const reverseIdx = solidHorizonEntries.length - 1 - idx
         const layerProgress = THREE.MathUtils.clamp(
           (currentEntryT - reverseIdx * 0.12) / 0.55,
           0,

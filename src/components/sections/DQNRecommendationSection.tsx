@@ -1,183 +1,232 @@
-import { PlateHeader } from "../ui/PlateHeader"
-import { Badge } from "../ui/Badge"
-import { SITE_CONTENT } from "../../data/siteContent"
-import { MOCK_RECOMMENDED_POINT } from "../../data/mockGeology"
-import { DqnRadarStage } from "../three/DqnRadarStage"
-import { useSubsurface3D } from "../../context/Subsurface3DContext"
-import { Crosshair, Compass, Navigation, Cpu, Activity } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { TopographicStrataCanvas } from "../motion/TopographicStrataCanvas"
+import { Compass, Sparkles, AlertTriangle, ArrowRight } from "lucide-react"
+
+interface StepContent {
+  id: string
+  code: string
+  stepNumber: string
+  title: string
+  category: string
+  metricLabel: string
+  metricValue: string
+  description: string
+  badgeTone: "amber" | "clay" | "emerald"
+}
+
+const STEPS_DATA: StepContent[] = [
+  {
+    id: "gap",
+    code: "01 / 03",
+    stepNumber: "01",
+    title: "16.2M EXPLORATION VOID",
+    category: "DISTANCE VORONOI · UNEXPLORED BLIND ZONE",
+    metricLabel: "Nearest sounding distance",
+    metricValue: "16.2m · ZERO WITHIN 4.0M",
+    description:
+      "Prior fixed-grid boreholes left an uninvestigated 16.2-meter radius void in the site center. Standard engineering layouts blindly assume uniform stratigraphy across this gap, risking catastrophic foundation differential settlement.",
+    badgeTone: "amber",
+  },
+  {
+    id: "transition",
+    code: "02 / 03",
+    stepNumber: "02",
+    title: "FAULT BOUNDARY DIP",
+    category: "SHEAR INTERFACE · SOFT CLAY BASIN TRAP",
+    metricLabel: "Predicted layer boundary",
+    metricValue: "CLEAN SAND → SOFT CLAY (-8.5M)",
+    description:
+      "Subsurface kriging models a steep dipping shear boundary plunging from competent sand into an undetected soft clay trap at -8.5m. Linear spacing fails to capture sloping interfaces, leaving high-risk blind zones undetected.",
+    badgeTone: "clay",
+  },
+  {
+    id: "anomaly",
+    code: "03 / 03",
+    stepNumber: "03",
+    title: "SPOT 2 RECOMMENDED",
+    category: "DQN V4.6-A CORE ML · MAXIMUM ENTROPY REDUCTION",
+    metricLabel: "Optimal sounding telemetry",
+    metricValue: "X=68.4M Y=44.1M · GAIN +14.2% · 94.2% CONF",
+    description:
+      "Deep Q-Network optimizes the Markov Decision Process, locking Spot 2 as the single highest-value sounding. It resolves maximum geological variance in a single probe, eliminating 4 redundant holes and saving up to $14,000 in field budget.",
+    badgeTone: "emerald",
+  },
+]
 
 export function DQNRecommendationSection() {
-  const { dqn } = SITE_CONTENT
-  const { activeDqnTab, setActiveDqnTab } = useSubsurface3D()
+  const trackRef = useRef<HTMLDivElement>(null)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [activeStep, setActiveStep] = useState(0)
 
-  const consolePanels = [
-    {
-      id: "gap",
-      code: "01 / SPATIAL DATA GAP",
-      title: MOCK_RECOMMENDED_POINT.reasoning.gap.title,
-      metricLabel: "Nearest sounding",
-      metricVal: "16.2 meters (0 within 4.0m)",
-      overlayTag: "3D Overlay: 16.2m Emerald Radius Cylinder",
-      description: MOCK_RECOMMENDED_POINT.reasoning.gap.description,
-      accent: "#10B981",
-    },
-    {
-      id: "transition",
-      code: "02 / STRATIGRAPHIC SHIFT",
-      title: MOCK_RECOMMENDED_POINT.reasoning.transition.title,
-      metricLabel: "Predicted boundary",
-      metricVal: "Clean sand → Soft clay (-8.5m)",
-      overlayTag: "3D Overlay: Dipping -8.5m Wireframe Fault Plane",
-      description: MOCK_RECOMMENDED_POINT.reasoning.transition.description,
-      accent: "#E76F51",
-    },
-    {
-      id: "anomaly",
-      code: "03 / LATERAL SOIL ANOMALY",
-      title: MOCK_RECOMMENDED_POINT.reasoning.anomaly.title,
-      metricLabel: "SBT Index offset",
-      metricVal: "delta Ic = 0.18 vs. B-01/B-03",
-      overlayTag: "3D Overlay: Amplified Q-Value Spike Cluster",
-      description: MOCK_RECOMMENDED_POINT.reasoning.anomaly.description,
-      accent: "#FAD9BA",
-    },
-  ]
+  useEffect(() => {
+    let rafId = 0
+
+    const updateScroll = () => {
+      const track = trackRef.current
+      if (!track) return
+
+      const rect = track.getBoundingClientRect()
+      const totalDist = rect.height - window.innerHeight
+      if (totalDist <= 0) return
+
+      // Normalized progress (0.0 to 1.0) through the 280vh track
+      const rawProg = -rect.top / totalDist
+      const prog = Math.max(0, Math.min(1, rawProg))
+      setScrollProgress(prog)
+
+      // 3 Discrete Steps: 0%..33%, 33%..66%, 66%..100%
+      let step = 0
+      if (prog >= 0.64) {
+        step = 2
+      } else if (prog >= 0.31) {
+        step = 1
+      }
+      setActiveStep(step)
+    }
+
+    const onScroll = () => {
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(updateScroll)
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    window.addEventListener("resize", onScroll, { passive: true })
+    updateScroll()
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", onScroll)
+    }
+  }, [])
+
+  const currentStep = STEPS_DATA[activeStep]
 
   return (
     <section
       id="dqn"
-      className="py-24 bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12 relative z-10"
+      ref={trackRef}
+      className="relative bg-[#150E09] text-[#EFE7DE] border-b border-[#EFE7DE]/15 h-[280vh]"
     >
-      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
-        {/* Plate Header */}
-        <PlateHeader
-          number="02"
-          title="Next sounding selection"
-          metaRight="Panoramic 3D geodetic radar table & neural trajectory arcs"
-          tone="dark"
-        />
-
-        {/* Top Cockpit Bar: Left Floating Target Telemetry | Center Heading | Right Neural Gain HUD */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8">
-          {/* Left Floating HUD Pill (3 Cols) */}
-          <div className="lg:col-span-3 bg-[#271C14]/90 border border-[#EFE7DE]/15 p-3.5 font-mono text-xs space-y-1.5">
-            <div className="flex items-center justify-between text-[10px] text-[#10B981]">
-              <span className="flex items-center gap-1.5 font-bold uppercase">
-                <Crosshair className="w-3.5 h-3.5" />
-                Target Locked
+      {/* Sticky Full-Viewport Stage (100% Scroll-Driven ala Rapidkert Section 09) */}
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden p-6 sm:p-10 lg:p-14 z-10 select-none">
+        {/* Top Header Plate & Counter */}
+        <div className="w-full border-b border-[#EFE7DE]/15 pb-4">
+          <div className="flex items-center justify-between font-mono text-xs sm:text-sm">
+            <div className="flex items-center gap-3">
+              <span className="font-bold text-[#FAD9BA]">02</span>
+              <span className="uppercase tracking-[0.16em] text-[#EFE7DE]/80">
+                NEXT SOUNDING SELECTION
               </span>
-              <Badge variant="emerald" className="text-[9px] py-0 px-1.5">
-                RANK #1
-              </Badge>
-            </div>
-            <div className="font-bold text-[#EFE7DE] text-sm">
-              {MOCK_RECOMMENDED_POINT.name}
-            </div>
-            <div className="text-[10px] text-[#FAD9BA] flex items-center gap-1">
-              <Navigation className="w-3 h-3 shrink-0" />
-              <span className="truncate">{MOCK_RECOMMENDED_POINT.utm}</span>
-            </div>
-          </div>
-
-          {/* Center Monumental Title (6 Cols) */}
-          <div className="lg:col-span-6 text-center space-y-2.5 px-2">
-            <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.9]">
-              {dqn.heading}
-            </h2>
-            <p className="font-sans text-[#EFE7DE]/70 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-              {dqn.subheading}
-            </p>
-          </div>
-
-          {/* Right Floating HUD Pill (3 Cols) */}
-          <div className="lg:col-span-3 bg-[#271C14]/90 border border-[#EFE7DE]/15 p-3.5 font-mono text-xs space-y-1.5">
-            <div className="flex items-center justify-between text-[10px] text-[#FAD9BA]">
-              <span className="flex items-center gap-1.5 font-bold uppercase">
-                <Cpu className="w-3.5 h-3.5" />
-                DQN V4.6-A Core ML
+              <span className="hidden md:inline-block w-px h-3 bg-[#EFE7DE]/20" />
+              <span className="hidden md:inline-block text-[10px] uppercase tracking-wider text-[#BD8564]">
+                100% Scroll-Driven Geodetic Intelligence
               </span>
-              <span className="text-[#10B981] font-bold">+14.2% Gain</span>
             </div>
-            <div className="flex items-center justify-between text-xs pt-0.5">
-              <span className="text-[#EFE7DE]/60">Model Confidence:</span>
-              <span className="font-bold text-[#EFE7DE]">{MOCK_RECOMMENDED_POINT.confidence}%</span>
-            </div>
-            <div className="text-[10px] text-[#EFE7DE]/50 flex items-center gap-1">
-              <Compass className="w-3 h-3 text-[#BD8564]" />
-              <span>144 nodes · 29 engineered features</span>
+
+            {/* Rapidkert-style Fractional Counter (01 / 03 -> 02 / 03 -> 03 / 03) */}
+            <div className="flex items-center gap-3">
+              <div className="w-20 sm:w-28 h-1 bg-[#271C14] border border-[#EFE7DE]/20 overflow-hidden">
+                <div
+                  className="h-full bg-[#10B981] transition-all duration-150"
+                  style={{ width: `${Math.round(scrollProgress * 100)}%` }}
+                />
+              </div>
+              <span className="font-bold tracking-widest text-[#FAD9BA] tabular-nums">
+                {currentStep.code}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Dedicated In-Flow Panoramic 3D Geodetic Radar Table (Rises & unfolds from below section on scroll) */}
-        <div className="relative w-full my-4 z-0">
-          <DqnRadarStage />
-        </div>
+        {/* Main 5:7 Split: Left Monumental Editorial | Right Top-Down Topographic Motion Graphic */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center flex-1 my-4 min-h-0">
+          {/* Left 5 Columns: Monumental Editorial Stage with Smooth Transition */}
+          <div className="lg:col-span-5 flex flex-col justify-center min-h-[360px] relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep.id}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="space-y-6"
+              >
+                {/* Large Index Number */}
+                <div className="font-mono text-xs sm:text-sm font-bold tracking-[0.2em] text-[#BD8564] flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-none bg-[#10B981] inline-block" />
+                  <span>STEP {currentStep.stepNumber}</span>
+                  <span className="text-[#EFE7DE]/30">/</span>
+                  <span className="text-[#EFE7DE]/60 uppercase tracking-widest text-[10px]">
+                    {currentStep.category}
+                  </span>
+                </div>
 
-        {/* Bottom 3-Column Horizontal Cockpit Rationale Console Dock ("Why this point? Spot 2") */}
-        <div className="mt-6 relative z-10">
-          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-[#BD8564] mb-3 px-1">
-            <span className="flex items-center gap-1.5 font-bold">
-              <Activity className="w-3.5 h-3.5 text-[#10B981]" />
-              Why this point? (Spot 2) — Select any rationale module to transform 3D radar overlay
-            </span>
-            <span className="hidden sm:inline text-[#EFE7DE]/50">
-              Active overlay: {activeDqnTab.toUpperCase()}
-            </span>
+                {/* Monumental Headline */}
+                <h2 className="font-sans font-black text-4xl sm:text-5xl xl:text-6xl text-[#EFE7DE] uppercase tracking-[-0.04em] leading-[0.9]">
+                  {currentStep.title}
+                </h2>
+
+                {/* Technical Description */}
+                <p className="font-sans text-[#EFE7DE]/75 text-sm sm:text-base leading-relaxed max-w-xl">
+                  {currentStep.description}
+                </p>
+
+                {/* Metric Telemetry Card */}
+                <div className="bg-[#271C14]/90 border border-[#EFE7DE]/15 p-4 font-mono text-xs space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider text-[#BD8564] flex items-center justify-between">
+                    <span>{currentStep.metricLabel}</span>
+                    {activeStep === 0 && <AlertTriangle className="w-3.5 h-3.5 text-[#E76F51]" />}
+                    {activeStep === 1 && <Compass className="w-3.5 h-3.5 text-[#FAD9BA]" />}
+                    {activeStep === 2 && <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />}
+                  </div>
+                  <div className="font-bold text-sm sm:text-base text-[#FAD9BA] tabular-nums">
+                    {currentStep.metricValue}
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {consolePanels.map((panel) => {
-              const isSelected = activeDqnTab === panel.id
-              return (
-                <button
-                  key={panel.id}
-                  type="button"
-                  onMouseEnter={() => setActiveDqnTab(panel.id)}
-                  onClick={() => setActiveDqnTab(panel.id)}
-                  className={`text-left p-5 border transition-all cursor-pointer flex flex-col justify-between ${
-                    isSelected
-                      ? "bg-[#2E2016] border-[#FAD9BA] -translate-y-1 shadow-2xl"
-                      : "bg-[#271C14]/85 border-[#EFE7DE]/15 hover:border-[#EFE7DE]/40"
+          {/* Right 7 Columns: Top-Down Topographic Motion Graphic (No 3D object, pure 2D architectural map) */}
+          <div className="lg:col-span-7 h-[380px] sm:h-[440px] xl:h-[500px] border border-[#EFE7DE]/15 relative overflow-hidden bg-[#150E09] shadow-2xl">
+            {/* Top-Right Drafting Tag */}
+            <div className="absolute top-2.5 right-3.5 z-20 font-mono text-[9px] tracking-widest uppercase text-[#FAD9BA] bg-[#271C14]/90 px-2.5 py-1 border border-[#EFE7DE]/15 flex items-center gap-1.5 pointer-events-none">
+              <span className="w-1.5 h-1.5 bg-[#10B981] inline-block animate-pulse" />
+              <span>OVERHEAD TOPOGRAPHY &amp; SPOTLIGHT</span>
+            </div>
+
+            <TopographicStrataCanvas
+              scrollProgress={scrollProgress}
+              activeStep={activeStep}
+            />
+          </div>
+        </div>
+
+        {/* Bottom Horizontal Timeline Stepper Indicator */}
+        <div className="w-full pt-4 border-t border-[#EFE7DE]/15 grid grid-cols-3 gap-4 font-mono text-[10px] sm:text-xs">
+          {STEPS_DATA.map((step, idx) => {
+            const isActive = activeStep === idx
+            return (
+              <div
+                key={step.id}
+                className={`flex items-center gap-2.5 transition-colors duration-200 ${
+                  isActive ? "text-[#FAD9BA] font-bold" : "text-[#EFE7DE]/40"
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 ${
+                    isActive ? "bg-[#10B981]" : "bg-[#EFE7DE]/20"
                   }`}
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2.5 font-mono text-[10px]">
-                      <span className="font-bold text-[#FAD9BA] tracking-wider">
-                        {panel.code}
-                      </span>
-                      <span
-                        className="w-2 h-2"
-                        style={{
-                          backgroundColor: isSelected ? panel.accent : "rgba(239,231,222,0.25)",
-                        }}
-                      />
-                    </div>
-
-                    <div className="flex items-baseline justify-between gap-2 font-mono">
-                      <span className="text-[10px] text-[#EFE7DE]/50 uppercase">
-                        {panel.metricLabel}
-                      </span>
-                      <span className="text-xs font-bold text-[#FAD9BA]">
-                        {panel.metricVal}
-                      </span>
-                    </div>
-
-                    <p className="font-sans text-xs sm:text-sm text-[#EFE7DE]/80 leading-relaxed">
-                      {panel.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 pt-2.5 border-t border-[#EFE7DE]/15 font-mono text-[10px] text-[#10B981] flex items-center justify-between">
-                    <span>{panel.overlayTag}</span>
-                    <span className="text-[#FAD9BA] font-bold">
-                      {isSelected ? "● ACTIVE" : "INSPECT →"}
-                    </span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+                />
+                <span className="truncate">
+                  {step.stepNumber} · {step.title}
+                </span>
+                {isActive && <ArrowRight className="w-3 h-3 text-[#10B981] shrink-0" />}
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

@@ -60,7 +60,7 @@ export function Navbar({ onOpenAppStore }: NavbarProps) {
               <span className="font-sans font-black tracking-tighter text-[#1C130D] text-base leading-none uppercase">
                 TERRAVISE
               </span>
-              <span className="font-mono text-[9px] text-[#63554B] tracking-[0.16em] uppercase mt-0.5">
+              <span className="font-mono text-[9px] text-[#63554B] tracking-[0.16em] uppercase mt-0.5 hidden sm:block">
                 GEOTECHNICAL FIELD SYSTEM
               </span>
             </div>

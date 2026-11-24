@@ -3,6 +3,7 @@ import { PlateHeader } from "../ui/PlateHeader"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { STRATA_LAYER_SPECS } from "../three/geology3DUtils"
+import { HeroProblemGroundCanvas } from "../three/HeroProblemGroundStage"
 import { AlertCircle, Clock, Database } from "lucide-react"
 
 export function ProblemSection() {
@@ -136,6 +137,11 @@ export function ProblemSection() {
               ref={problemDockRef}
               className="hidden lg:block w-full h-[430px] xl:h-[470px] relative select-none pointer-events-none"
             />
+
+            {/* Mobile & Tablet Dedicated 3D Exploded L-Cutaway Stage */}
+            <div className="lg:hidden w-full h-[320px] sm:h-[400px] relative overflow-hidden my-4 border border-[#1C130D]/15 bg-[#FAF5EE]">
+              <HeroProblemGroundCanvas isMobileInline={true} inlineStage="problem" />
+            </div>
           </div>
         </div>
 

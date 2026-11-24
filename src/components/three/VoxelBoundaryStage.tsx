@@ -515,11 +515,11 @@ export function VoxelBoundaryStage() {
   }, [sceneStateRef, setPipeScreenCoords, setSelectedPipeId])
 
   return (
-    <div className="relative w-full h-[460px] sm:h-[510px] xl:h-[550px] bg-[#160F0A]/75 border border-[#EFE7DE]/15 overflow-hidden select-none">
+    <div className="relative w-full h-[360px] sm:h-[480px] xl:h-[550px] bg-[#160F0A]/75 border border-[#EFE7DE]/15 overflow-hidden select-none">
       {/* Dedicated In-Section 3D Canvas */}
       <div
         ref={containerRef}
-        className="w-full h-full cursor-grab active:cursor-grabbing"
+        className="w-full h-full cursor-grab active:cursor-grabbing touch-pan-y"
         aria-label="Interactive Smooth 3D Subsurface Boundary Volume and 5 Clickable CPT Standpipes"
       />
 
@@ -534,13 +534,13 @@ export function VoxelBoundaryStage() {
             transition={{ type: "spring", stiffness: 280, damping: 24 }}
             style={{
               left: pipeScreenCoords
-                ? `${Math.min(62, Math.max(3, pipeScreenCoords.xPct))}%`
-                : "48%",
+                ? `${Math.min(55, Math.max(2, pipeScreenCoords.xPct))}%`
+                : "20%",
               top: pipeScreenCoords
-                ? `${Math.min(38, Math.max(8, pipeScreenCoords.yPct - 12))}%`
-                : "12%",
+                ? `${Math.min(32, Math.max(6, pipeScreenCoords.yPct - 12))}%`
+                : "10%",
             }}
-            className="absolute z-20 w-72 bg-[#150E09]/95 backdrop-blur-md border border-[#FAD9BA]/50 shadow-2xl p-3.5 font-mono text-xs text-[#EFE7DE] pointer-events-auto"
+            className="absolute z-20 w-[calc(100%-1.5rem)] max-w-xs sm:w-72 bg-[#150E09]/95 backdrop-blur-md border border-[#FAD9BA]/50 shadow-2xl p-3 sm:p-3.5 font-mono text-xs text-[#EFE7DE] pointer-events-auto"
           >
             <div className="flex items-start justify-between gap-2 border-b border-[#EFE7DE]/15 pb-2">
               <div>

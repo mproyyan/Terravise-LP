@@ -106,7 +106,7 @@ export function DQNRecommendationSection() {
       className="relative bg-[#150E09] text-[#EFE7DE] border-b border-[#EFE7DE]/15 h-[300vh]"
     >
       {/* Pinned Sticky Viewport (100% Scroll-Driven ala Rapidkert Section 09) */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between p-6 sm:p-10 lg:p-16 z-10 select-none">
+      <div className="sticky top-0 h-screen min-h-[100dvh] w-full overflow-hidden flex flex-col justify-between p-4 sm:p-8 lg:p-16 z-10 select-none">
         {/* Full-Width Dynamic Motion Graphic Background */}
         <FullWidthTopographicBackground
           scrollProgress={scrollProgress}
@@ -134,7 +134,7 @@ export function DQNRecommendationSection() {
         </header>
 
         {/* Main Editorial Content (Directly Overlaid on the Topographic Motion Graphic!) */}
-        <div className="relative z-10 max-w-2xl sm:max-w-3xl space-y-6 my-auto pt-6 pb-8">
+        <div className="relative z-10 max-w-2xl sm:max-w-3xl space-y-4 sm:space-y-6 my-auto pt-4 sm:pt-6 pb-6 sm:pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStep.id}
@@ -142,7 +142,7 @@ export function DQNRecommendationSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
               {/* Step Number Tag */}
               <div className="font-mono text-xs font-bold tracking-[0.2em] text-[#BD8564] flex items-center gap-2">
@@ -150,26 +150,26 @@ export function DQNRecommendationSection() {
               </div>
 
               {/* Monumental Condensed Headline spanning boldly over the strata */}
-              <h3 className="font-sans font-black text-5xl sm:text-7xl xl:text-[84px] uppercase tracking-[-0.04em] leading-[0.88] text-[#EFE7DE] text-balance">
+              <h3 className="font-sans font-black text-3xl sm:text-5xl md:text-6xl xl:text-[84px] uppercase tracking-[-0.04em] leading-[0.9] text-[#EFE7DE] text-balance break-words">
                 <span className="block">{currentStep.titleLine1}</span>
                 <span className="block text-[#FAD9BA]">{currentStep.titleLine2}</span>
               </h3>
 
               {/* Category / Sub-specs hairline pill */}
               <div className="border-t border-[#EFE7DE]/20 pt-3">
-                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#BD8564] block">
+                <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.16em] text-[#BD8564] block">
                   {currentStep.category}
                 </span>
               </div>
 
               {/* Editorial Description Text */}
-              <p className="font-sans text-[#EFE7DE]/80 text-sm sm:text-base leading-relaxed max-w-xl text-pretty">
+              <p className="font-sans text-[#EFE7DE]/80 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl text-pretty">
                 {currentStep.description}
               </p>
 
               {/* Technical Metric Pill Readout */}
-              <div className="pt-2">
-                <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#FAD9BA] border-b border-[#FAD9BA]/40 pb-1 tabular-nums">
+              <div className="pt-1 sm:pt-2">
+                <span className="inline-flex items-center gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#FAD9BA] border-b border-[#FAD9BA]/40 pb-1 tabular-nums break-words">
                   {currentStep.metricText}
                 </span>
               </div>
@@ -178,15 +178,15 @@ export function DQNRecommendationSection() {
         </div>
 
         {/* Bottom Status Ticker: Scroll Instructions & Real-time Coordinates */}
-        <footer className="relative z-10 w-full border-t border-[#EFE7DE]/15 pt-4">
-          <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] text-[#EFE7DE]/50">
-            <div className="flex items-center gap-4">
+        <footer className="relative z-10 w-full border-t border-[#EFE7DE]/15 pt-3 sm:pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4 font-mono text-[9px] sm:text-[10px] text-[#EFE7DE]/50">
+            <div className="flex items-center gap-2 sm:gap-4">
               <span className="flex items-center gap-1.5 text-[#FAD9BA]">
                 <Compass className="w-3.5 h-3.5" />
                 <span>ACTIVE POLICY ENGINE: CORE ML DEEP Q-NETWORK</span>
               </span>
-              <span className="hidden sm:inline">·</span>
-              <span className="hidden sm:inline">29 SPATIAL SOIL FEATURES</span>
+              <span className="hidden md:inline">·</span>
+              <span className="hidden md:inline">29 SPATIAL SOIL FEATURES</span>
             </div>
 
             <div className="flex items-center gap-2 text-[#EFE7DE]/70">

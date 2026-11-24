@@ -493,22 +493,36 @@ export function FullWidthTopographicBackground({
         ctx.arc(targetPxX, targetPxY, 32 * pulse, 0, Math.PI * 2)
         ctx.stroke()
 
-        // Leader line & target telemetry
+        // Leader line & target telemetry with responsive direction clamping
+        const isNarrow = logicalW < 640
+        const dir = isNarrow || targetPxX > logicalW * 0.62 ? -1 : 1
+        const lineLen = isNarrow ? 110 : 155
+        const elbowX = (isNarrow ? 28 : 42) * dir
+        const elbowY = isNarrow ? -28 : -42
+
         ctx.strokeStyle = `rgba(250, 217, 186, ${0.75 * alpha})`
         ctx.beginPath()
         ctx.moveTo(targetPxX, targetPxY)
-        ctx.lineTo(targetPxX + 45, targetPxY - 45)
-        ctx.lineTo(targetPxX + 175, targetPxY - 45)
+        ctx.lineTo(targetPxX + elbowX, targetPxY + elbowY)
+        ctx.lineTo(targetPxX + elbowX + lineLen * dir, targetPxY + elbowY)
         ctx.stroke()
 
         ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`
-        ctx.font = "bold 11px monospace"
-        ctx.textAlign = "left"
-        ctx.fillText("TARGET RETICLE: SPOT 2", targetPxX + 50, targetPxY - 52)
+        ctx.font = `bold ${isNarrow ? 10 : 11}px monospace`
+        ctx.textAlign = dir === 1 ? "left" : "right"
+        ctx.fillText(
+          "TARGET RETICLE: SPOT 2",
+          targetPxX + elbowX + (dir === 1 ? 6 : -6),
+          targetPxY + elbowY - 6
+        )
 
         ctx.fillStyle = `rgba(250, 217, 186, ${0.9 * alpha})`
-        ctx.font = "9px monospace"
-        ctx.fillText("X=68.4M · Y=44.1M · GAIN +14.2%", targetPxX + 50, targetPxY - 36)
+        ctx.font = `${isNarrow ? 8 : 9}px monospace`
+        ctx.fillText(
+          "X=68.4M · Y=44.1M · GAIN +14.2%",
+          targetPxX + elbowX + (dir === 1 ? 6 : -6),
+          targetPxY + elbowY + 12
+        )
       }
 
       // 6. Draw Fixed Ground Sounding Borehole Pins (B-01, B-02, B-03)

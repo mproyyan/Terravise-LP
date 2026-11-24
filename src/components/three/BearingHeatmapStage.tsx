@@ -410,11 +410,11 @@ export function BearingHeatmapStage() {
   }, [sceneStateRef])
 
   return (
-    <div className="relative w-full h-[380px] sm:h-[410px] bg-[#FAF5EE] border border-[#1C130D]/15 overflow-hidden select-none">
+    <div className="relative w-full h-[280px] sm:h-[380px] xl:h-[410px] bg-[#FAF5EE] border border-[#1C130D]/15 overflow-hidden select-none">
       {/* Dedicated In-Section 3D Canvas */}
       <div
         ref={containerRef}
-        className="w-full h-full cursor-grab active:cursor-grabbing"
+        className="w-full h-full cursor-grab active:cursor-grabbing touch-pan-y"
         aria-label="Interactive 3D Top-of-Bearing Depth Heatmap and Structural Foundation Piles"
       />
     </div>

@@ -17,7 +17,13 @@ interface LayerVisualEntry {
   height: number
 }
 
-export function HeroProblemGroundCanvas({ isMobileInline = false }: { isMobileInline?: boolean }) {
+export function HeroProblemGroundCanvas({
+  isMobileInline = false,
+  inlineStage = "hero",
+}: {
+  isMobileInline?: boolean
+  inlineStage?: "hero" | "problem"
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const { dockElementsRef, sceneStateRef } = useSubsurface3D()
 
@@ -420,7 +426,20 @@ export function HeroProblemGroundCanvas({ isMobileInline = false }: { isMobileIn
           e.clientY <= r.bottom
         )
       }
-      if (!isMobileInline && !checkInRect(heroEl) && !checkInRect(probEl)) return
+      if (isMobileInline) {
+        if (!container) return
+        const cRect = container.getBoundingClientRect()
+        if (
+          e.clientX < cRect.left ||
+          e.clientX > cRect.right ||
+          e.clientY < cRect.top ||
+          e.clientY > cRect.bottom
+        ) {
+          return
+        }
+      } else if (!checkInRect(heroEl) && !checkInRect(probEl)) {
+        return
+      }
       isDragging = true
       dragStartX = e.clientX
     }
@@ -483,7 +502,12 @@ export function HeroProblemGroundCanvas({ isMobileInline = false }: { isMobileIn
       const heroEl = dockElementsRef.current.hero
       const probEl = dockElementsRef.current.problem
 
-      if (!isMobileInline && heroEl && probEl) {
+      if (isMobileInline) {
+        targetTProblem = inlineStage === "problem" ? 1 : 0
+        targetTExit = 0
+        targetCenterX = (container?.clientWidth || window.innerWidth) * 0.5
+        targetCenterY = (container?.clientHeight || window.innerHeight) * 0.5
+      } else if (heroEl && probEl) {
         const heroRect = heroEl.getBoundingClientRect()
         const probRect = probEl.getBoundingClientRect()
         const vpCenterY = window.innerHeight * 0.5
@@ -645,12 +669,12 @@ export function HeroProblemGroundCanvas({ isMobileInline = false }: { isMobileIn
         container.removeChild(renderer.domElement)
       }
     }
-  }, [dockElementsRef, isMobileInline, sceneStateRef])
+  }, [dockElementsRef, inlineStage, isMobileInline, sceneStateRef])
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-full relative select-none"
+      className="w-full h-full relative select-none cursor-grab active:cursor-grabbing touch-pan-y"
       aria-label="Interactive 3D Architectural Tower and L-Cutaway Geological Strata Monolith"
     />
   )

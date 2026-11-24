@@ -33,11 +33,12 @@ export function BearingComparisonTable() {
           </Badge>
         </div>
         <span className="font-mono text-[10px] text-[#7A421D]">
-          Hover or focus row to locate on 3D heatmap
+          <span className="hidden sm:inline">Hover or focus row to locate on 3D heatmap</span>
+          <span className="sm:hidden">Tap row to locate · Swipe table →</span>
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overscroll-x-contain">
         <table className="w-full text-left font-mono text-xs border-collapse">
           <thead>
             <tr className="border-b border-[#1C130D]/10 bg-[#E3D7C8]/35 text-[#63554B] uppercase text-[10px] tracking-wider">

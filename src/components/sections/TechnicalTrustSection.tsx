@@ -258,7 +258,7 @@ export function TechnicalTrustSection() {
     >
       {/* Part A: 240vh Sticky Scroll-Driven Specification Plates Track */}
       <div ref={pillarsTrackRef} className="relative h-[240vh]">
-        <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center py-16">
+        <div className="sticky top-0 h-screen min-h-[100dvh] w-full overflow-hidden flex flex-col justify-center py-6 sm:py-10 lg:py-16">
           {/* Parallax Drafting Table Architectural Background Lines */}
           <motion.div
             style={{ y: yBgBand, ...willChangeTransform }}
@@ -284,16 +284,16 @@ export function TechnicalTrustSection() {
               title="Standards and data privacy"
               metaRight="Scroll-driven specification inspection"
               tone="light"
-              className="mb-6"
+              className="mb-4 sm:mb-6"
             />
 
             {/* Section Heading + Scroll Spotlight Progress */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
-              <div className="max-w-3xl space-y-3">
-                <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-12">
+              <div className="max-w-3xl space-y-1 sm:space-y-3">
+                <h2 className="font-sans font-black text-2xl sm:text-4xl xl:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
                   {trust.heading}
                 </h2>
-                <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed text-pretty">
+                <p className="font-sans text-[#63554B] text-xs sm:text-sm md:text-base leading-relaxed text-pretty">
                   {trust.subheading}
                 </p>
               </div>
@@ -313,8 +313,8 @@ export function TechnicalTrustSection() {
               </div>
             </div>
 
-            {/* 4 Scroll-Driven Parallax Specification Plates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Desktop Layout (lg+): 4 Scroll-Driven Parallax Specification Plates */}
+            <div className="hidden lg:grid grid-cols-4 gap-6">
               {trust.badges.map((badge, idx) => {
                 const isSelected = activePillar === idx
                 const isPast = idx < activePillar
@@ -404,6 +404,70 @@ export function TechnicalTrustSection() {
                   </motion.div>
                 )
               })}
+            </div>
+
+            {/* Mobile & Tablet Layout (<lg): Stepper Indicator + Single Active Spec Plate */}
+            <div className="lg:hidden flex flex-col space-y-3 font-mono">
+              {/* Stepper Tabs Bar */}
+              <div className="grid grid-cols-4 gap-1 text-[9px] sm:text-[10px]">
+                {trust.badges.map((b, idx) => (
+                  <div
+                    key={b.title}
+                    className={`py-1.5 px-1 text-center border truncate tabular-nums transition-colors ${
+                      activePillar === idx
+                        ? "bg-[#5A3008] text-[#FAD9BA] border-[#5A3008] font-bold shadow-xs"
+                        : idx < activePillar
+                          ? "bg-[#EFE7DE] text-[#7A421D] border-[#1C130D]/20"
+                          : "bg-[#FAF5EE] text-[#63554B]/60 border-[#1C130D]/10"
+                    }`}
+                  >
+                    SPEC 0{idx + 1}
+                  </div>
+                ))}
+              </div>
+
+              {/* Single Active Spec Card on Mobile */}
+              <div className="bg-white border-2 border-[#5A3008] p-4 sm:p-5 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between border-b border-[#1C130D]/10 pb-2 text-[10px]">
+                  <span className="font-bold text-[#7A421D] flex items-center gap-1.5">
+                    {getPillarIcon(activePillar)}
+                    <span className="tabular-nums">SPEC 0{activePillar + 1}</span>
+                  </span>
+                  <Badge variant="emerald" className="text-[9px] py-0.5">
+                    {activePillar === 0
+                      ? "SBTn 9-ZONE"
+                      : activePillar === 1
+                        ? "UTM 48S"
+                        : activePillar === 2
+                          ? "CORE ML ANE"
+                          : "ASTM / SNI"}
+                  </Badge>
+                </div>
+
+                <PillarMicroSchematic index={activePillar} isActive={true} />
+
+                <div className="space-y-1">
+                  <h3 className="font-sans font-bold text-base sm:text-lg text-[#1C130D] tracking-tight">
+                    {trust.badges[activePillar]?.title}
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-[#63554B] leading-relaxed line-clamp-3">
+                    {trust.badges[activePillar]?.desc}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-[#1C130D]/10 space-y-2">
+                  <div className="flex items-center justify-between text-[10px] text-[#7A421D]">
+                    <span>SCROLL ACTIVE</span>
+                    <span className="font-bold text-[#1C130D]">FIELD VERIFIED</span>
+                  </div>
+                  <div className="w-full h-1 bg-[#E3D7C8] overflow-hidden">
+                    <div
+                      className="h-full bg-[#5A3008] transition-all duration-75"
+                      style={{ width: `${Math.round(pillarSubProgress * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -417,7 +417,7 @@ export function WorkflowSection() {
       className="relative h-[300vh] bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12"
     >
       {/* Sticky Viewport Stage pinned during the 300vh scroll journey */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center py-16">
+      <div className="sticky top-0 h-screen min-h-[100dvh] w-full overflow-hidden flex flex-col justify-center py-6 sm:py-10 lg:py-16">
         {/* Parallax Architectural Blueprint Background Grid & Watermark */}
         <motion.div
           style={{ y: yWatermark, ...willChangeTransform }}
@@ -443,13 +443,13 @@ export function WorkflowSection() {
             title="iPadOS application workflow"
             metaRight="Scroll-driven field telemetry sequence"
             tone="dark"
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           />
 
           {/* Top Compact Heading + Overall Scroll Progress Bar */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
-            <div className="max-w-2xl space-y-2">
-              <h2 className="font-sans font-black text-2xl sm:text-4xl xl:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="max-w-2xl space-y-1 sm:space-y-2">
+              <h2 className="font-sans font-black text-xl sm:text-3xl xl:text-5xl text-[#EFE7DE] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
                 Four integrated steps from site boundary to foundation handoff
               </h2>
               <p className="font-sans text-[#EFE7DE]/70 text-xs sm:text-sm leading-relaxed text-pretty">
@@ -472,10 +472,10 @@ export function WorkflowSection() {
             </div>
           </div>
 
-          {/* Split Scrollytelling Stage: Left 7 Cols Scroll-Activated Card Deck | Right 5 Cols Live iPadOS Viewport */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Desktop Layout (lg+): 2x2 Architectural Grid + Right Live iPadOS Viewport */}
+          <div className="hidden lg:grid grid-cols-12 gap-8 items-center">
             {/* Left 7 Columns: 2x2 Architectural Grid Driven Purely by Scroll */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="lg:col-span-7 grid grid-cols-2 gap-4">
               {workflow.map((step, idx) => {
                 const isSelected = activeStep === idx
                 const isPast = idx < activeStep
@@ -627,6 +627,85 @@ export function WorkflowSection() {
                 </div>
               </div>
             </motion.div>
+          </div>
+
+          {/* Mobile & Tablet Layout (<lg): Stepper Indicator + Active Card + Live Animated iPadOS Stage */}
+          <div className="lg:hidden flex flex-col space-y-3 font-mono">
+            {/* Stepper Tabs Bar */}
+            <div className="grid grid-cols-4 gap-1 text-[9px] sm:text-[10px]">
+              {workflow.map((step, idx) => (
+                <div
+                  key={step.stepNumber}
+                  className={`py-1 px-1 text-center border truncate tabular-nums transition-colors ${
+                    activeStep === idx
+                      ? "bg-[#5A3008] text-[#FAD9BA] border-[#FAD9BA] font-bold shadow-xs"
+                      : idx < activeStep
+                        ? "bg-[#1C130D] text-[#EFE7DE]/75 border-[#EFE7DE]/20"
+                        : "bg-[#1C130D]/60 text-[#EFE7DE]/40 border-[#EFE7DE]/10"
+                  }`}
+                >
+                  {step.stepNumber}. {step.title.split(" ")[0]}
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Active Card Summary */}
+            <div className="bg-[#2E2016] border border-[#FAD9BA] p-3 sm:p-4 shadow-xl space-y-2">
+              <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2 text-[10px]">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold px-1.5 py-0.5 bg-[#FAD9BA] text-[#1C130D] text-xs tabular-nums">
+                    {workflow[activeStep]?.stepNumber}
+                  </span>
+                  <span className="font-bold text-[#EFE7DE] text-sm font-sans">
+                    {workflow[activeStep]?.title}
+                  </span>
+                </div>
+                <Badge variant="outline" className="text-[9px] text-[#FAD9BA] border-[#FAD9BA]/40">
+                  {workflow[activeStep]?.badgeText}
+                </Badge>
+              </div>
+
+              <p className="font-sans text-xs text-[#EFE7DE]/80 leading-relaxed line-clamp-2">
+                {workflow[activeStep]?.description}
+              </p>
+
+              <div className="flex items-center justify-between text-[10px] text-[#FAD9BA] pt-1 border-t border-[#EFE7DE]/10">
+                <span className="uppercase text-[#EFE7DE]/50">Deliverable:</span>
+                <span className="font-bold text-right truncate max-w-[200px]">
+                  {workflow[activeStep]?.deliverable}
+                </span>
+              </div>
+            </div>
+
+            {/* Live Animated iPadOS Viewport Frame on Mobile */}
+            <div className="bg-[#271C14] border border-[#EFE7DE]/20 p-2 shadow-2xl">
+              <div className="bg-[#150E09] border-b border-[#EFE7DE]/15 px-3 py-1.5 flex items-center justify-between text-[9px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-[#10B981] inline-block animate-pulse" />
+                  <span className="font-bold text-[#EFE7DE] uppercase tracking-wider">
+                    LIVE IPADOS STAGE
+                  </span>
+                </div>
+                <span className="text-[#FAD9BA] tabular-nums">
+                  STAGE 0{activeStep + 1} / 04
+                </span>
+              </div>
+
+              <div className="h-[240px] sm:h-[300px] bg-[#170F0A] relative overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeStep}
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                    className="w-full h-full"
+                  >
+                    <WorkflowStageSchematic stepIndex={activeStep} />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
         </div>
       </div>

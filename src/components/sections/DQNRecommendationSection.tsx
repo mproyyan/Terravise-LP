@@ -123,17 +123,12 @@ export function DQNRecommendationSection() {
               </h2>
             </div>
 
-            {/* Counter: 01 / 03 -> 02 / 03 -> 03 / 03 */}
-            <div className="flex items-center gap-3">
-              <div className="w-16 sm:w-24 h-1 bg-[#271C14] border border-[#EFE7DE]/20 overflow-hidden">
-                <div
-                  className="h-full bg-[#10B981] transition-all duration-150"
-                  style={{ width: `${Math.round(scrollProgress * 100)}%` }}
-                />
-              </div>
-              <span className="font-bold tracking-widest text-[#FAD9BA] tabular-nums">
-                {currentStep.code}
-              </span>
+            {/* Scroll Indicator */}
+            <div className="w-16 sm:w-24 h-1.5 bg-[#271C14] border border-[#EFE7DE]/20 overflow-hidden">
+              <div
+                className="h-full bg-[#10B981] transition-all duration-150"
+                style={{ width: `${Math.round(scrollProgress * 100)}%` }}
+              />
             </div>
           </div>
         </header>
@@ -196,7 +191,6 @@ export function DQNRecommendationSection() {
 
             <div className="flex items-center gap-2 text-[#EFE7DE]/70">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              <span>SCROLL DOWN TO PROGRESS SOUNDING STAGES</span>
             </div>
           </div>
         </footer>

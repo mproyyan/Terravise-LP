@@ -3,7 +3,7 @@ import { Button } from "../ui/Button"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { HeroProblemGroundCanvas } from "../three/HeroProblemGroundStage"
-import { ArrowRight, CheckCircle, Rotate3d } from "lucide-react"
+import { ArrowRight, CheckCircle } from "lucide-react"
 
 interface HeroSectionProps {
   onOpenAppStore: () => void
@@ -59,38 +59,13 @@ export function HeroSection({ onOpenAppStore }: HeroSectionProps) {
           <div className="lg:col-span-6 relative">
             <div
               ref={heroDockRef}
-              className="hidden lg:flex flex-col justify-between w-full h-[500px] xl:h-[560px] relative select-none pointer-events-none"
-            >
-              <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
-                <span>+</span>
-                <span className="text-[9px] tracking-[0.2em]">
-                  ARCHITECTURAL TOWER &amp; L-CUTAWAY SOIL MONOLITH
-                </span>
-                <span>+</span>
-              </div>
-              <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
-                <span>+</span>
-                <span className="text-[9px] tracking-[0.16em] flex items-center gap-1.5 text-[#7A421D]">
-                  <Rotate3d className="w-3 h-3" />
-                  DRAG TO ROTATE
-                </span>
-                <span>+</span>
-              </div>
-            </div>
+              className="hidden lg:block w-full h-[500px] xl:h-[560px] relative select-none pointer-events-none"
+            />
 
             {/* Mobile & Tablet Inline View */}
-            <div className="lg:hidden w-full space-y-2">
+            <div className="lg:hidden w-full">
               <div className="w-full h-[380px] relative overflow-hidden">
                 <HeroProblemGroundCanvas isMobileInline={true} />
-              </div>
-              <div className="flex items-center justify-between font-mono text-[10px] px-2 py-1 border-t border-[#1C130D]/15 text-[#63554B]">
-                <span className="font-bold uppercase tracking-wider">
-                  Tower &amp; L-Cutaway Soil Monolith
-                </span>
-                <span className="flex items-center gap-1">
-                  <Rotate3d className="w-3 h-3" />
-                  4-Horizon Profile
-                </span>
               </div>
             </div>
           </div>

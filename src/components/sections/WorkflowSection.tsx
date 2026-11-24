@@ -17,7 +17,6 @@ import {
   Cpu,
   Boxes,
   CheckCircle2,
-  Sparkles,
 } from "lucide-react"
 
 const willChangeTransform = { willChange: "transform" } as const
@@ -458,17 +457,8 @@ export function WorkflowSection() {
               </p>
             </div>
 
-            {/* Automatic Scroll Telemetry Rail */}
-            <div className="w-full lg:w-80 bg-[#271C14] border border-[#EFE7DE]/15 p-3 font-mono text-xs shrink-0 select-none">
-              <div className="flex items-center justify-between text-[10px] mb-2">
-                <span className="text-[#FAD9BA] uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3" />
-                  Auto-scroll sequence
-                </span>
-                <span className="text-[#EFE7DE] font-bold tabular-nums">
-                  STAGE 0{activeStep + 1} / 04
-                </span>
-              </div>
+            {/* Scroll Indicator */}
+            <div className="w-full lg:w-72 bg-[#271C14] border border-[#EFE7DE]/15 p-2 shrink-0 select-none">
               <div className="w-full h-1.5 bg-[#150E09] overflow-hidden relative">
                 <motion.div
                   style={{
@@ -478,22 +468,6 @@ export function WorkflowSection() {
                   }}
                   className="h-full w-full bg-[#FAD9BA]"
                 />
-              </div>
-              <div className="flex justify-between text-[9px] text-[#EFE7DE]/45 mt-1.5">
-                {workflow.map((s, idx) => (
-                  <span
-                    key={s.stepNumber}
-                    className={`transition-colors tabular-nums ${
-                      activeStep === idx
-                        ? "text-[#FAD9BA] font-bold"
-                        : idx < activeStep
-                          ? "text-[#EFE7DE]/70"
-                          : "text-[#EFE7DE]/30"
-                    }`}
-                  >
-                    0{idx + 1}. {s.title.split(" ")[0]}
-                  </span>
-                ))}
               </div>
             </div>
           </div>

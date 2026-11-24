@@ -9,7 +9,7 @@ import {
   getGeologicalWave,
   smoothstep,
 } from "./geology3DUtils"
-import { Rotate3d, X, MapPin, Layers, ArrowDownToLine } from "lucide-react"
+import { X, MapPin, Layers, ArrowDownToLine } from "lucide-react"
 
 interface SmoothHorizonEntry {
   id: string
@@ -516,15 +516,6 @@ export function VoxelBoundaryStage() {
 
   return (
     <div className="relative w-full h-[460px] sm:h-[510px] xl:h-[550px] bg-[#160F0A]/75 border border-[#EFE7DE]/15 overflow-hidden select-none">
-      {/* Top Drafting Status Header inside Stage */}
-      <div className="absolute top-2.5 left-3.5 right-3.5 z-10 flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#EFE7DE]/50 pointer-events-none">
-        <span>+ FIG 03 · SMOOTH 3D BOUNDARY VOLUME &amp; 5 CPT STANDPIPES</span>
-        <span className="flex items-center gap-1.5 text-[#FAD9BA]">
-          <Rotate3d className="w-3.5 h-3.5" />
-          Click any 3D pipe for soil log · Drag to rotate
-        </span>
-      </div>
-
       {/* Dedicated In-Section 3D Canvas */}
       <div
         ref={containerRef}

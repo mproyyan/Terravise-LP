@@ -134,23 +134,8 @@ export function ProblemSection() {
           <div className="lg:col-span-8 relative">
             <div
               ref={problemDockRef}
-              className="hidden lg:flex flex-col justify-between w-full h-[430px] xl:h-[470px] relative select-none pointer-events-none"
-            >
-              <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
-                <span>+</span>
-                <span className="text-[9px] tracking-[0.2em]">
-                  EXPLODED L-CUTAWAY SUBSURFACE DISSECTION (0.0M TO -25.0M)
-                </span>
-                <span>+</span>
-              </div>
-              <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
-                <span>+</span>
-                <span className="text-[9px] tracking-[0.16em] text-[#7A421D]">
-                  DISSECTED SOIL MONOLITH · UNIFORM BOREHOLE GRID FAILS TO CAPTURE DIPPING LENSES
-                </span>
-                <span>+</span>
-              </div>
-            </div>
+              className="hidden lg:block w-full h-[430px] xl:h-[470px] relative select-none pointer-events-none"
+            />
           </div>
         </div>
 

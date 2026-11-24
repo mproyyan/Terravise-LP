@@ -5,7 +5,7 @@ import { SITE_CONTENT } from "../../data/siteContent"
 import { MOCK_SOIL_LAYERS, MOCK_CPT_TEST_PIPES } from "../../data/mockGeology"
 import { VoxelBoundaryStage } from "../three/VoxelBoundaryStage"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
-import { RefreshCw, Scissors, MapPin, Eye } from "lucide-react"
+import { RefreshCw, MapPin } from "lucide-react"
 
 export function SubsurfaceVoxelSection() {
   const { voxel } = SITE_CONTENT
@@ -107,18 +107,14 @@ export function SubsurfaceVoxelSection() {
 
           {/* Right 4 Columns: Cross-Section Boundary Slicer & 5 CPT Standpipe Telemetry Dock */}
           <div className="lg:col-span-4 bg-[#271C14] border border-[#EFE7DE]/15 p-5 sm:p-6 space-y-6 font-mono">
-            {/* Camera View & Reset Header */}
+            {/* Perspective View & Reset Header */}
             <div className="space-y-3 border-b border-[#EFE7DE]/15 pb-4">
-              <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-[#FAD9BA]">
-                <span className="flex items-center gap-1.5 font-bold">
-                  <Eye className="w-3.5 h-3.5 text-[#10B981]" />
-                  Camera &amp; Slicer Controls
-                </span>
+              <div className="flex items-center justify-end">
                 <button
                   type="button"
                   onClick={resetSlicing}
                   aria-label="Reset slicing cutters to 100%"
-                  className="text-[#EFE7DE]/70 hover:text-[#FAD9BA] flex items-center gap-1 cursor-pointer focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] px-1 py-0.5"
+                  className="text-[#EFE7DE]/70 hover:text-[#FAD9BA] flex items-center gap-1 cursor-pointer focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[#FAD9BA] text-[10px] uppercase font-mono px-1 py-0.5"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>Reset Cut</span>
@@ -155,11 +151,6 @@ export function SubsurfaceVoxelSection() {
 
             {/* Interactive Dual Parametric Slicers */}
             <div className="space-y-4 border-b border-[#EFE7DE]/15 pb-5">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#EFE7DE] uppercase">
-                <Scissors className="w-3.5 h-3.5 text-[#7A421D]" />
-                <span>Orthogonal Slicing Cutters</span>
-              </div>
-
               <Slider
                 label="Easting Cutter (X Axis)"
                 value={[sliceX]}

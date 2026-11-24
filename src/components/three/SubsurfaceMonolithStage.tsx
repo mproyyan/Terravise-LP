@@ -3,46 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useSubsurface3D, type MonolithStage } from "../../context/Subsurface3DContext"
 import { SubsurfaceMonolithCanvas } from "./SubsurfaceMonolithCanvas"
 import { MOCK_CPT_TEST_PIPES } from "../../data/mockGeology"
-import { Rotate3d, X, MapPin, Layers, ArrowDownToLine } from "lucide-react"
-
-interface StageCaptionMeta {
-  code: string
-  caption: string
-  isDarkSection: boolean
-}
-
-const STAGE_CAPTION_MAP: Record<MonolithStage, StageCaptionMeta> = {
-  hero: {
-    code: "FIG 00",
-    caption: "ARCHITECTURAL TOWER & 25.0M SUBSURFACE MONOLITH",
-    isDarkSection: false,
-  },
-  problem: {
-    code: "FIG 01",
-    caption: "PANORAMIC 3-ZONE GEOLOGICAL TRENCH: OVER-DRILLING · SOFT CLAY LENS · BUDGET CUTOFF",
-    isDarkSection: false,
-  },
-  dqn: {
-    code: "FIG 02",
-    caption: "3D NEURAL PATHFINDING ARCS & 144-NODE GEODETIC RADAR TABLE",
-    isDarkSection: true,
-  },
-  voxel: {
-    code: "FIG 03",
-    caption: "SMOOTH 3D BOUNDARY VOLUME & 5 CPT TEST PIPES (CLICK ANY PIPE FOR SOIL LOG)",
-    isDarkSection: true,
-  },
-  stratum: {
-    code: "FIG 04",
-    caption: "3D TOP-OF-BEARING DEPTH HEATMAP (zb) & 8 STRUCTURAL PILE PROBES",
-    isDarkSection: false,
-  },
-  workflow: {
-    code: "FIG 05",
-    caption: "FIELD TELEMETRY HANDOFF",
-    isDarkSection: true,
-  },
-}
+import { X, MapPin, Layers, ArrowDownToLine } from "lucide-react"
 
 const DOCKED_STAGES: MonolithStage[] = ["hero", "problem", "dqn", "voxel", "stratum"]
 
@@ -63,7 +24,6 @@ export function SubsurfaceMonolithStage() {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const hudBoxRef = useRef<HTMLDivElement>(null)
 
-  const meta = STAGE_CAPTION_MAP[activeStage] || STAGE_CAPTION_MAP.hero
   const selectedPipe = MOCK_CPT_TEST_PIPES.find((p) => p.id === selectedPipeId) || null
   const showPipePopover = activeStage === "voxel" && selectedPipe !== null
 
@@ -290,23 +250,7 @@ export function SubsurfaceMonolithStage() {
           )}
         </AnimatePresence>
 
-        {/* Minimalist Floating Architectural Figure Tag */}
-        <div className="relative z-10 pb-1 flex items-center justify-center pointer-events-none select-none">
-          <div
-            className={`px-3 py-1 backdrop-blur-xs border font-mono text-[9px] tracking-[0.14em] uppercase flex items-center gap-2.5 transition-colors duration-300 ${
-              meta.isDarkSection
-                ? "bg-[#1C130D]/75 border-[#EFE7DE]/15 text-[#EFE7DE]/80"
-                : "bg-[#FBF7F2]/80 border-[#1C130D]/15 text-[#1C130D]/80"
-            }`}
-          >
-            <span className="font-bold text-[#7A421D]">{meta.code}</span>
-            <span className="truncate max-w-[460px]">{meta.caption}</span>
-            <span className="inline-flex items-center gap-1 opacity-65 pl-1.5 border-l border-current/20">
-              <Rotate3d className="w-3 h-3" />
-              Drag 3D
-            </span>
-          </div>
-        </div>
+
       </div>
     </div>
   )

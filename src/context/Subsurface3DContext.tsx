@@ -76,8 +76,8 @@ const Subsurface3DContext = createContext<Subsurface3DContextValue | null>(null)
 
 export function Subsurface3DProvider({ children }: { children: React.ReactNode }) {
   const [activeStage, setActiveStage] = useState<MonolithStage>("hero")
-  const [sliceX, setSliceX] = useState<number>(65)
-  const [sliceY, setSliceY] = useState<number>(60)
+  const [sliceX, setSliceX] = useState<number>(100)
+  const [sliceY, setSliceY] = useState<number>(100)
   const [bearingCriteria, setBearingCriteria] = useState<BearingCriteria>(DEFAULT_BEARING_CRITERIA)
   const [hoveredLayerId, setHoveredLayerId] = useState<string | null>(null)
   const [hoveredProblemZone, setHoveredProblemZone] = useState<number | null>(null)
@@ -113,8 +113,8 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
       height: 540,
       opacity: 1,
     },
-    sliceX: 65,
-    sliceY: 60,
+    sliceX: 100,
+    sliceY: 100,
     minQc: DEFAULT_BEARING_CRITERIA.minQc,
     maxIc: DEFAULT_BEARING_CRITERIA.maxIc,
     minThickness: DEFAULT_BEARING_CRITERIA.minThickness,
@@ -210,8 +210,8 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   }, [])
 
   const resetSlicing = () => {
-    setSliceX(65)
-    setSliceY(60)
+    setSliceX(100)
+    setSliceY(100)
     setCameraView("iso")
   }
 

@@ -17,7 +17,6 @@ import {
   FileCheck2,
   Globe2,
   Lock,
-  ShieldCheck,
   FileText,
 } from "lucide-react"
 
@@ -299,16 +298,8 @@ export function TechnicalTrustSection() {
                 </p>
               </div>
 
-              <div className="w-full lg:w-72 bg-[#EFE7DE] border border-[#1C130D]/15 p-3 font-mono text-xs shrink-0 select-none">
-                <div className="flex items-center justify-between text-[10px] mb-1.5">
-                  <span className="text-[#7A421D] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#5A3008]" />
-                    Auto-inspecting spec
-                  </span>
-                  <span className="text-[#1C130D] font-bold tabular-nums">
-                    SPEC 0{activePillar + 1} / 04
-                  </span>
-                </div>
+              {/* Scroll Indicator */}
+              <div className="w-full lg:w-72 bg-[#EFE7DE] border border-[#1C130D]/15 p-2 shrink-0 select-none">
                 <div className="w-full h-1.5 bg-[#E3D7C8] overflow-hidden">
                   <motion.div
                     style={{

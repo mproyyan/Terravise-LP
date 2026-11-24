@@ -5,14 +5,14 @@ import { MOCK_SOIL_LAYERS } from "../../data/mockGeology"
 import { RefreshCw } from "lucide-react"
 
 export function SlicedVoxelViewport() {
-  const [sliceX, setSliceX] = useState<number>(55) // Easting slice percentage
-  const [sliceY, setSliceY] = useState<number>(45) // Northing slice percentage
+  const [sliceX, setSliceX] = useState<number>(100) // Easting slice percentage
+  const [sliceY, setSliceY] = useState<number>(100) // Northing slice percentage
   const [hoveredLayer, setHoveredLayer] = useState<string | null>(null)
   const [perspectiveView, setPerspectiveView] = useState<"iso" | "front">("iso")
 
   const handleReset = () => {
-    setSliceX(55)
-    setSliceY(45)
+    setSliceX(100)
+    setSliceY(100)
   }
 
   return (

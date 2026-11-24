@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react"
 import * as THREE from "three"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { smoothstep } from "./geology3DUtils"
-import { Rotate3d } from "lucide-react"
 
 interface BearingPileVisual {
   id: string
@@ -412,15 +411,6 @@ export function BearingHeatmapStage() {
 
   return (
     <div className="relative w-full h-[380px] sm:h-[410px] bg-[#FAF5EE] border border-[#1C130D]/15 overflow-hidden select-none">
-      {/* Top Drafting Status Header inside Stage */}
-      <div className="absolute top-2.5 left-3.5 right-3.5 z-10 flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/55 pointer-events-none">
-        <span>+ FIG 04 · 3D TOP-OF-BEARING DEPTH HEATMAP (zb) &amp; 8 PILES</span>
-        <span className="flex items-center gap-1.5 text-[#7A421D]">
-          <Rotate3d className="w-3.5 h-3.5" />
-          Drag 3D relief · Reacts live to sliders
-        </span>
-      </div>
-
       {/* Dedicated In-Section 3D Canvas */}
       <div
         ref={containerRef}

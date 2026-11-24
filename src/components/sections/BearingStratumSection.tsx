@@ -4,19 +4,12 @@ import { BearingComparisonTable } from "../interactive/BearingComparisonTable"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { BearingHeatmapStage } from "../three/BearingHeatmapStage"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
-import { SlidersHorizontal, ShieldCheck } from "lucide-react"
+import { SlidersHorizontal } from "lucide-react"
 
 export function BearingStratumSection() {
   const { bearing } = SITE_CONTENT
   const { bearingCriteria, setBearingCriteria } = useSubsurface3D()
   const { minQc, maxIc, minThickness } = bearingCriteria
-
-  const qcFactor = Math.max(0, 100 - Math.max(0, minQc - 14.0) * 6.5)
-  const icFactor = Math.max(0, 100 - Math.max(0, 1.85 - maxIc) * 45)
-  const thickFactor = Math.max(0, 100 - Math.max(0, minThickness - 2.0) * 14)
-  const verifiedFootprintPct = Math.round(
-    Math.max(12, Math.min(98, (qcFactor + icFactor + thickFactor) / 3))
-  )
 
   return (
     <section
@@ -33,29 +26,14 @@ export function BearingStratumSection() {
           tone="light"
         />
 
-        {/* Top Editorial Row + Live Footprint Sufficiency Readout */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
-          <div className="max-w-3xl space-y-2">
-            <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
-              {bearing.heading}
-            </h2>
-            <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed text-pretty">
-              {bearing.subheading}
-            </p>
-          </div>
-
-          {/* Live Footprint Sufficiency Counter Card */}
-          <div className="bg-[#1C130D] text-[#EFE7DE] px-5 py-3 border border-[#1C130D] flex items-center gap-4 font-mono shrink-0">
-            <ShieldCheck className="w-6 h-6 text-[#10B981] shrink-0" />
-            <div>
-              <div className="text-[9px] uppercase tracking-widest text-[#FAD9BA]">
-                Bearing footprint coverage
-              </div>
-              <div className="text-xl font-bold text-[#10B981] tabular-nums">
-                {verifiedFootprintPct}% Verified Area
-              </div>
-            </div>
-          </div>
+        {/* Top Editorial Row */}
+        <div className="max-w-3xl space-y-2 mb-8">
+          <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92] text-balance">
+            {bearing.heading}
+          </h2>
+          <p className="font-sans text-[#63554B] text-sm sm:text-base leading-relaxed text-pretty">
+            {bearing.subheading}
+          </p>
         </div>
 
         {/* Top Row (5:7 Interactive Engineering Workbench): Left 5 Cols Parametric Sliders | Right 7 Cols Live 3D Bearing Heatmap */}

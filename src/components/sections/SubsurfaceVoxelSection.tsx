@@ -187,7 +187,6 @@ export function SubsurfaceVoxelSection() {
               <div className="space-y-1.5">
                 {MOCK_CPT_TEST_PIPES.map((pipe) => {
                   const isSelected = selectedPipeId === pipe.id
-                  const isCoreProbe = pipe.id === "cpt-03"
                   return (
                     <div
                       key={pipe.id}
@@ -213,17 +212,6 @@ export function SubsurfaceVoxelSection() {
                           }`}
                         />
                         <span className="font-bold">{pipe.code}</span>
-                        {isCoreProbe && (
-                          <span
-                            className={`text-[9px] px-1 py-0.5 uppercase tracking-wider transition-colors ${
-                              isSelected
-                                ? "bg-[#10B981]/25 text-[#10B981]"
-                                : "bg-[#EFE7DE]/10 text-[#EFE7DE]/60"
-                            }`}
-                          >
-                            Core Probe
-                          </span>
-                        )}
                       </div>
                       <span className="text-[10px] text-[#EFE7DE]/60 tabular-nums">
                         0.0m to {pipe.terminationDepthM}m

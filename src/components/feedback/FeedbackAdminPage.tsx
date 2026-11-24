@@ -26,10 +26,12 @@ ALTER TABLE public.feedback
 ADD COLUMN IF NOT EXISTS is_displayed BOOLEAN NOT NULL DEFAULT false;
 
 -- 2. Buka izin baca (SELECT) & ubah flag (UPDATE)
+DROP POLICY IF EXISTS "Allow public select from feedback" ON public.feedback;
 CREATE POLICY "Allow public select from feedback"
   ON public.feedback FOR SELECT
   TO anon, authenticated USING (true);
 
+DROP POLICY IF EXISTS "Allow public update on feedback" ON public.feedback;
 CREATE POLICY "Allow public update on feedback"
   ON public.feedback FOR UPDATE
   TO anon, authenticated USING (true) WITH CHECK (true);`

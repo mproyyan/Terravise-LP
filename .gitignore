@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 # Media
-public/videos/
+# public/videos/
 
 .agents/
 skills-lock.json

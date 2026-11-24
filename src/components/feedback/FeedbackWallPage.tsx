@@ -126,7 +126,7 @@ export function FeedbackWallPage() {
           item: firstItem,
         }
         lastSideRef.current = "left"
-        nextSpawnDistanceRef.current = currentDist + randomBetween(220, 320)
+        nextSpawnDistanceRef.current = currentDist + randomBetween(87, 380)
         setSpawnedCards([firstCard])
         setPulseKey((k) => k + 1)
       }
@@ -152,7 +152,8 @@ export function FeedbackWallPage() {
         const nextItem = pullNextFeedbackItem()
 
         if (nextItem) {
-          const gapToNext = randomBetween(230, 380)
+          // 87px at 58px/s = 1.5 seconds fastest; 380px at 58px/s = ~6.55 seconds slowest
+          const gapToNext = randomBetween(87, 380)
           const nextSide: "left" | "right" =
             lastSideRef.current === "left" ? "right" : "left"
           lastSideRef.current = nextSide

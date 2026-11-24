@@ -28,3 +28,5 @@ public/videos/
 
 .agents/
 skills-lock.json
+
+.env

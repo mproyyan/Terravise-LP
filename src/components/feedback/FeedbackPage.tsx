@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowLeft,
@@ -46,12 +46,32 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [errorMessage, setErrorMessage] = useState<string>("")
   const [isSuccess, setIsSuccess] = useState<boolean>(false)
+  const [countdown, setCountdown] = useState<number>(5)
   const [validationError, setValidationError] = useState<string>("")
+
+  // Countdown timer for auto-redirect when isSuccess is true
+  useEffect(() => {
+    if (!isSuccess) return
+    setCountdown(5)
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          onBackToHome()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [isSuccess, onBackToHome])
 
   // Step 1 Validation: Full Name is Required
   const validateStep1 = () => {
     if (!fullName.trim()) {
-      setValidationError("Nama lengkap wajib diisi sebelum melanjutkan.")
+      setValidationError("Mohon masukkan nama lengkap Anda.")
       return false
     }
     setValidationError("")
@@ -61,11 +81,11 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
   // Step 2 Validation: Role is Required
   const validateStep2 = () => {
     if (!role) {
-      setValidationError("Pilih salah satu latar belakang atau peran Anda.")
+      setValidationError("Silakan pilih salah satu latar belakang atau peran Anda.")
       return false
     }
     if (role === "Lainnya" && !roleOther.trim()) {
-      setValidationError("Tuliskan spesifikasi bidang atau peran Anda.")
+      setValidationError("Silakan tuliskan bidang atau peran Anda.")
       return false
     }
     setValidationError("")
@@ -75,7 +95,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
   // Step 7 Validation: Feedback Notes is Required
   const validateStep7 = () => {
     if (!feedbackNotes.trim()) {
-      setValidationError("Masukan atau catatan akhir wajib diisi sebelum mengirim.")
+      setValidationError("Silakan tuliskan masukan atau catatan Anda sebelum mengirim.")
       return false
     }
     setValidationError("")
@@ -111,16 +131,12 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
     }
   }
 
+  // Multi-select without maximum limit
   const toggleFeature = (featureTitle: string) => {
     if (favoriteFeatures.includes(featureTitle)) {
       setFavoriteFeatures(favoriteFeatures.filter((f) => f !== featureTitle))
     } else {
-      if (favoriteFeatures.length >= 2) {
-        // limit to 2 options max
-        setFavoriteFeatures([favoriteFeatures[1], featureTitle])
-      } else {
-        setFavoriteFeatures([...favoriteFeatures, featureTitle])
-      }
+      setFavoriteFeatures([...favoriteFeatures, featureTitle])
     }
   }
 
@@ -217,7 +233,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 relative z-10">
         {isSuccess ? (
           /* =========================================================================
-              SUCCESS STATE CARD
+              SUCCESS STATE CARD WITH 5-SECOND AUTO-REDIRECT
              ========================================================================= */
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -236,18 +252,26 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 Terima Kasih, {fullName}!
               </h1>
               <p className="font-sans text-[#63554B] text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-                Masukan dan informasi kolaborasi Anda telah tersimpan dengan aman di database Terravise. Insight dari Anda sangat berharga dalam menyempurnakan sistem kecerdasan bawah permukaan ini.
+                Masukan dan informasi kolaborasi Anda telah berhasil kami terima. Terima kasih banyak atas waktu dan insight berharga yang Anda berikan untuk pengembangan Terravise.
               </p>
             </div>
 
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+            {/* 5-Second Countdown Indicator */}
+            <div className="font-mono text-xs text-[#7A421D] flex items-center justify-center gap-2 bg-[#EAE2D5]/70 py-2.5 px-4 border border-[#1C130D]/10 max-w-sm mx-auto">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
+              <span>
+                Kembali ke halaman utama dalam <strong className="text-[#1C130D] font-bold tabular-nums">{countdown}</strong> detik...
+              </span>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={onBackToHome}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1C130D] text-[#FAD9BA] hover:bg-[#5A3008] hover:text-[#EFE7DE] transition-colors font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
               >
                 <Home className="w-4 h-4" />
-                <span>Kembali ke Halaman Utama</span>
+                <span>Kembali Sekarang</span>
               </button>
 
               <button
@@ -280,20 +304,20 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
               ACTIVE STEP CARD / TAB WIZARD
              ========================================================================= */
           <div className="bg-[#FAF5EE] border border-[#1C130D]/15 shadow-xl p-6 sm:p-10 space-y-8 relative">
-            {/* Step Navigation Pill Indicator */}
+            {/* Step Navigation Pill Indicator (No literal 'Wajib' or 'tidak dapat dilewati') */}
             <div className="flex items-center justify-between border-b border-[#1C130D]/15 pb-4">
               <div className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-[#1C130D] text-[#FAD9BA] font-mono text-xs font-bold flex items-center justify-center">
                   {currentStep}
                 </span>
                 <span className="font-mono text-xs uppercase tracking-widest text-[#7A421D] font-bold">
-                  {currentStep === 1 && "Identitas Diri (Wajib)"}
-                  {currentStep === 2 && "Peran & Latar Belakang (Wajib)"}
-                  {currentStep === 3 && "Sektor Industri (Opsional)"}
-                  {currentStep === 4 && "Fitur Terfavorit (Opsional)"}
-                  {currentStep === 5 && "Potensi Terravise (Opsional)"}
-                  {currentStep === 6 && "Peluang Kolaborasi (Opsional)"}
-                  {currentStep === 7 && "Masukan & Catatan (Wajib)"}
+                  {currentStep === 1 && "Identitas Diri"}
+                  {currentStep === 2 && "Peran & Latar Belakang"}
+                  {currentStep === 3 && "Sektor Industri"}
+                  {currentStep === 4 && "Fitur Terfavorit"}
+                  {currentStep === 5 && "Potensi Penerapan"}
+                  {currentStep === 6 && "Peluang Kolaborasi"}
+                  {currentStep === 7 && "Masukan & Catatan Akhir"}
                 </span>
               </div>
 
@@ -331,7 +355,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
 
             {/* Dynamic Step Content */}
             <AnimatePresence mode="wait">
-              {/* STEP 1: Full Name (REQUIRED) */}
+              {/* STEP 1: Full Name */}
               {currentStep === 1 && (
                 <motion.div
                   key="step-1"
@@ -343,7 +367,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 >
                   <div className="space-y-2">
                     <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
-                      Siapa nama lengkap Anda? <span className="text-[#DC2626]">*</span>
+                      Siapa nama lengkap Anda?
                     </h2>
                     <p className="font-sans text-sm text-[#63554B]">
                       Nama Anda akan dicatat bersama masukan untuk keperluan tindak lanjut tim Terravise.
@@ -373,7 +397,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 </motion.div>
               )}
 
-              {/* STEP 2: Role & Background (REQUIRED, NO SKIP, WITH 'Lainnya' text input) */}
+              {/* STEP 2: Role & Background (Clean single choices, no slashes '/') */}
               {currentStep === 2 && (
                 <motion.div
                   key="step-2"
@@ -385,21 +409,21 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 >
                   <div className="space-y-2">
                     <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
-                      Apa latar belakang atau peran Anda saat ini? <span className="text-[#DC2626]">*</span>
+                      Apa latar belakang atau peran Anda saat ini?
                     </h2>
                     <p className="font-sans text-sm text-[#63554B]">
-                      Pilih opsi yang paling mewakili profesi atau aktivitas utama Anda (tidak dapat dilewati).
+                      Pilih opsi yang paling mewakili profesi atau aktivitas utama Anda.
                     </p>
                   </div>
 
                   <div className="space-y-2.5">
                     {[
-                      "Praktisi Geoteknik / Teknik Sipil / Konstruksi",
-                      "Software Engineering / Machine Learning / AI",
-                      "Product Management / UI-UX Design",
-                      "Peneliti / Dosen / Mahasiswa",
-                      "Manajemen / Developer Properti / Bisnis",
-                      "Pengunjung Umum / Tamu Pameran",
+                      "Praktisi Geoteknik",
+                      "Software Engineer",
+                      "Product Designer",
+                      "Akademisi & Peneliti",
+                      "Pengembang Properti & Bisnis",
+                      "Pengunjung Umum",
                       "Lainnya",
                     ].map((item) => (
                       <label
@@ -446,7 +470,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 </motion.div>
               )}
 
-              {/* STEP 3: Industry Sector (OPTIONAL, CAN SKIP) */}
+              {/* STEP 3: Industry Sector (Exact user requested list) */}
               {currentStep === 3 && (
                 <motion.div
                   key="step-3"
@@ -457,27 +481,24 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                   className="space-y-6"
                 >
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
-                        Sektor industri mana yang paling relevan?
-                      </h2>
-                      <span className="font-mono text-[10px] text-[#63554B] bg-[#EAE2D5] px-2 py-0.5 uppercase">
-                        Opsional
-                      </span>
-                    </div>
+                    <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
+                      Sektor industri mana yang paling relevan?
+                    </h2>
                     <p className="font-sans text-sm text-[#63554B]">
-                      Pilih sektor yang paling dekat dengan aktivitas atau ketertarikan Anda.
+                      Pilih sektor industri yang paling dekat dengan peran atau ketertarikan Anda.
                     </p>
                   </div>
 
                   <div className="space-y-2.5">
                     {[
-                      "Konsultan Geoteknik & Investigasi Tanah (Soil Investigation)",
-                      "Kontraktor Fondasi & Konstruksi Sipil (Piling / Foundation)",
-                      "Pengembang Properti, Gedung Tinggi, & Kawasan Industri",
-                      "Infrastruktur Publik (Jalan Tol, Jembatan, Pelabuhan, Bandara)",
-                      "Pertambangan, Geologi, & Energi",
-                      "Perangkat Lunak / Teknologi Digital",
+                      "Konstruksi & Infrastruktur",
+                      "Pertambangan & Energi",
+                      "Transportasi & Logistik",
+                      "Perbankan & Keuangan",
+                      "Properti & Real Estate",
+                      "Manufaktur",
+                      "Teknologi / Telekomunikasi",
+                      "Konsultan / Jasa Profesional",
                       "Lainnya",
                     ].map((item) => (
                       <label
@@ -520,7 +541,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 </motion.div>
               )}
 
-              {/* STEP 4: Favorite Features (MULTI-SELECT, MAX 2) */}
+              {/* STEP 4: Favorite Features (NO MAXIMUM LIMIT) */}
               {currentStep === 4 && (
                 <motion.div
                   key="step-4"
@@ -531,16 +552,11 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                   className="space-y-6"
                 >
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
-                        Fitur apa yang paling menarik perhatian Anda?
-                      </h2>
-                      <span className="font-mono text-[10px] text-[#63554B] bg-[#EAE2D5] px-2 py-0.5 uppercase">
-                        Maks. 2 Pilihan
-                      </span>
-                    </div>
+                    <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
+                      Fitur apa yang paling menarik perhatian Anda?
+                    </h2>
                     <p className="font-sans text-sm text-[#63554B]">
-                      Pilih bagian atau kapabilitas dari demo Terravise yang paling berkesan bagi Anda.
+                      Pilih bagian atau fitur pada demo Terravise yang paling menarik bagi Anda (dapat memilih lebih dari satu).
                     </p>
                   </div>
 
@@ -615,7 +631,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 </motion.div>
               )}
 
-              {/* STEP 5: Potential Rating (SINGLE-SELECT, OPTIONAL) */}
+              {/* STEP 5: Potential Rating */}
               {currentStep === 5 && (
                 <motion.div
                   key="step-5"
@@ -626,14 +642,9 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                   className="space-y-6"
                 >
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
-                        Bagaimana potensi penerapan Terravise?
-                      </h2>
-                      <span className="font-mono text-[10px] text-[#63554B] bg-[#EAE2D5] px-2 py-0.5 uppercase">
-                        Opsional
-                      </span>
-                    </div>
+                    <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
+                      Bagaimana potensi penerapan Terravise?
+                    </h2>
                     <p className="font-sans text-sm text-[#63554B]">
                       Bagaimana Anda melihat prospek penggunaan Terravise untuk kebutuhan investigasi geoteknik nyata ke depan?
                     </p>
@@ -692,7 +703,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 </motion.div>
               )}
 
-              {/* STEP 6: Collaboration & Partnership (DEDICATED SECTION) */}
+              {/* STEP 6: Collaboration & Partnership */}
               {currentStep === 6 && (
                 <motion.div
                   key="step-6"
@@ -703,17 +714,12 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                   className="space-y-6"
                 >
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight flex items-center gap-2">
-                        <Users className="w-6 h-6 text-[#7A421D]" />
-                        <span>Peluang Kolaborasi & Kemitraan</span>
-                      </h2>
-                      <span className="font-mono text-[10px] text-[#63554B] bg-[#EAE2D5] px-2 py-0.5 uppercase">
-                        Opsional
-                      </span>
-                    </div>
+                    <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight flex items-center gap-2">
+                      <Users className="w-6 h-6 text-[#7A421D]" />
+                      <span>Peluang Kolaborasi & Kemitraan</span>
+                    </h2>
                     <p className="font-sans text-sm text-[#63554B]">
-                      Terravise saat ini aktif mencari mitra untuk pengujian lapangan, riset geoteknik, dan pengembangan sistem. Apakah Anda atau kenalan Anda dapat diajak berkolaborasi?
+                      Terravise saat ini terbuka untuk kolaborasi pengujian lapangan, riset geoteknik, dan pengembangan sistem. Apakah Anda atau relasi Anda tertarik berkolaborasi?
                     </p>
                   </div>
 
@@ -745,7 +751,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                     ))}
                   </div>
 
-                  {/* Progressive Disclosure: If interested directly or has contact to introduce */}
+                  {/* Progressive Disclosure */}
                   {(collaborationInterest === "Ya, saya pribadi tertarik berkolaborasi" ||
                     collaborationInterest === "Ya, saya memiliki rekan / kenalan / institusi yang relevan untuk dikenalkan") && (
                     <motion.div
@@ -844,7 +850,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 </motion.div>
               )}
 
-              {/* STEP 7: Feedback Notes (REQUIRED!) */}
+              {/* STEP 7: Feedback Notes */}
               {currentStep === 7 && (
                 <motion.div
                   key="step-7"
@@ -856,10 +862,10 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                 >
                   <div className="space-y-2">
                     <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1C130D] uppercase tracking-tight">
-                      Masukan, kritik, atau saran untuk Terravise <span className="text-[#DC2626]">*</span>
+                      Masukan, kritik, atau saran untuk Terravise
                     </h2>
                     <p className="font-sans text-sm text-[#63554B]">
-                      Tuliskan pendapat, kritik membangun, atau saran fitur apa yang perlu ditingkatkan oleh tim pengembang kami (wajib diisi).
+                      Tuliskan pendapat, kritik membangun, atau saran fitur apa yang perlu ditingkatkan oleh tim pengembang kami.
                     </p>
                   </div>
 

@@ -81,11 +81,8 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   const [bearingCriteria, setBearingCriteria] = useState<BearingCriteria>(DEFAULT_BEARING_CRITERIA)
   const [hoveredLayerId, setHoveredLayerId] = useState<string | null>(null)
   const [hoveredProblemZone, setHoveredProblemZone] = useState<number | null>(null)
-  const [selectedPipeId, setSelectedPipeId] = useState<string | null>("cpt-03")
-  const [pipeScreenCoords, setPipeScreenCoords] = useState<PipeScreenCoords | null>({
-    xPct: 52,
-    yPct: 36,
-  })
+  const [selectedPipeId, setSelectedPipeId] = useState<string | null>(null)
+  const [pipeScreenCoords, setPipeScreenCoords] = useState<PipeScreenCoords | null>(null)
   const [hoveredBearingPointId, setHoveredBearingPointId] = useState<string | null>("spot-2-rec")
   const [activeDqnTab, setActiveDqnTab] = useState<string>("gap")
   const [cameraView, setCameraView] = useState<"iso" | "front">("iso")
@@ -120,7 +117,7 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
     minThickness: DEFAULT_BEARING_CRITERIA.minThickness,
     hoveredLayerId: null,
     hoveredProblemZone: null,
-    selectedPipeId: "cpt-03",
+    selectedPipeId: null,
     hoveredBearingPointId: "spot-2-rec",
     activeDqnTab: "gap",
     cameraView: "iso",
@@ -213,6 +210,8 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
     setSliceX(100)
     setSliceY(100)
     setCameraView("iso")
+    setSelectedPipeId(null)
+    setPipeScreenCoords(null)
   }
 
   return (

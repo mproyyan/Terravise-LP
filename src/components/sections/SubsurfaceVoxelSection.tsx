@@ -208,14 +208,19 @@ export function SubsurfaceVoxelSection() {
                     >
                       <div className="flex items-center gap-2">
                         <span
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            backgroundColor: isCoreProbe ? "#10B981" : "#FAD9BA",
-                          }}
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            isSelected ? "bg-[#10B981] ring-2 ring-[#10B981]/40" : "bg-[#FAD9BA]/70"
+                          }`}
                         />
                         <span className="font-bold">{pipe.code}</span>
                         {isCoreProbe && (
-                          <span className="text-[9px] bg-[#10B981]/20 text-[#10B981] px-1 py-0.5 uppercase tracking-wider">
+                          <span
+                            className={`text-[9px] px-1 py-0.5 uppercase tracking-wider transition-colors ${
+                              isSelected
+                                ? "bg-[#10B981]/25 text-[#10B981]"
+                                : "bg-[#EFE7DE]/10 text-[#EFE7DE]/60"
+                            }`}
+                          >
                             Core Probe
                           </span>
                         )}

@@ -117,7 +117,9 @@ export function VoxelBoundaryStage() {
     const boundaryFrameLineMat = new THREE.LineBasicMaterial({
       color: 0xfad9ba,
       transparent: true,
-      opacity: 0.78,
+      opacity: 0.75,
+      depthTest: true,
+      depthWrite: false,
     })
     const boundaryFrameLines = new THREE.LineSegments(boundaryFrameEdges, boundaryFrameLineMat)
     boundaryFrameLines.position.y = 0.04
@@ -172,8 +174,10 @@ export function VoxelBoundaryStage() {
         roughnessMap: pbrTex.roughnessMap,
         roughness: spec.roughness,
         metalness: spec.metalness,
-        transparent: true,
-        opacity: 0.98,
+        transparent: false,
+        depthWrite: true,
+        depthTest: true,
+        side: THREE.FrontSide,
       })
 
       const sMesh = new THREE.Mesh(sGeo, sMat)
@@ -189,7 +193,9 @@ export function VoxelBoundaryStage() {
       const borderMat = new THREE.LineBasicMaterial({
         color: 0x1c130d,
         transparent: true,
-        opacity: 0.58,
+        opacity: 0.45,
+        depthTest: true,
+        depthWrite: false,
       })
       const borderLines = new THREE.LineSegments(borderGeo, borderMat)
       hGroup.add(borderLines)
@@ -362,11 +368,12 @@ export function VoxelBoundaryStage() {
       const capMat = new THREE.MeshStandardMaterial({
         color: 0xfbf7f2,
         emissive: 0x7a421d,
-        emissiveIntensity: 0.25,
+        emissiveIntensity: 0.22,
         roughness: 0.26,
         metalness: 0.62,
-        transparent: true,
-        opacity: 1,
+        transparent: false,
+        depthWrite: true,
+        depthTest: true,
       })
       const collarMesh = new THREE.Mesh(pipeCollarGeo, capMat)
       collarMesh.position.y = 0.2
@@ -383,10 +390,13 @@ export function VoxelBoundaryStage() {
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.85,
+        depthWrite: false,
+        depthTest: true,
         toneMapped: false,
       })
       const beaconRing = new THREE.Mesh(pipeBeaconRingGeo, beaconMat)
       beaconRing.position.y = 0.42
+      beaconRing.visible = false
       pGroup.add(beaconRing)
 
       // 4 Underground Pipe Core Segments with textured soil core appearance + metallic joints
@@ -399,11 +409,12 @@ export function VoxelBoundaryStage() {
         const segMat = new THREE.MeshStandardMaterial({
           color: new THREE.Color(lData.colorHex),
           emissive: new THREE.Color(lData.colorHex),
-          emissiveIntensity: 0.22,
+          emissiveIntensity: 0.18,
           roughness: 0.32,
           metalness: 0.42,
-          transparent: true,
-          opacity: 1,
+          transparent: false,
+          depthWrite: true,
+          depthTest: true,
         })
         const segMesh = new THREE.Mesh(segGeo, segMat)
         segMesh.position.y = pipeCursorY - segH / 2
@@ -498,7 +509,7 @@ export function VoxelBoundaryStage() {
         const hits = raycaster.intersectObjects(pickablePipeProxies, false)
         if (hits.length > 0) {
           const hitPipeId = hits[0].object.userData.pipeId as string
-          setSelectedPipeId(hitPipeId)
+          setSelectedPipeId(sceneStateRef.current.selectedPipeId === hitPipeId ? null : hitPipeId)
         }
       }
     }
@@ -547,6 +558,7 @@ export function VoxelBoundaryStage() {
       const rawEntry = (vpH - rect.top) / Math.max(1, vpH * 0.68)
       const targetEntryT = smoothstep(rawEntry)
       currentEntryT = THREE.MathUtils.damp(currentEntryT, targetEntryT, 5.5, dt)
+      boundaryRoot.position.y = THREE.MathUtils.lerp(0.18, 0.3, Math.min(1, currentEntryT))
 
       const targetClipX = MIN_X + (state.sliceX / 100) * BLOCK_W
       const targetClipZ = MIN_Z + (state.sliceY / 100) * BLOCK_D
@@ -562,53 +574,42 @@ export function VoxelBoundaryStage() {
         updateSolidHorizonsSlice(currentClipX, currentClipZ)
 
         // Show interior gravel cobbles along or inside the active solid cross-section
+        const isSliced = currentClipX < BLOCK_W / 2 - 0.05 || currentClipZ < BLOCK_D / 2 - 0.05
         for (const item of interiorClasts) {
           item.mesh.visible =
-            item.wx <= currentClipX + 0.04 && item.wz <= currentClipZ + 0.04
+            isSliced && item.wx <= currentClipX + 0.04 && item.wz <= currentClipZ + 0.04
         }
       }
 
-      // Bottom-to-top sequential horizon extrusion
+      // Unified solid horizon layers (never vertically separated or sheared)
       for (let idx = 0; idx < solidHorizonEntries.length; idx++) {
         const sEntry = solidHorizonEntries[idx]
-        const reverseIdx = solidHorizonEntries.length - 1 - idx
-        const layerProgress = THREE.MathUtils.clamp(
-          (currentEntryT - reverseIdx * 0.12) / 0.55,
-          0,
-          1
-        )
-        const easedLayer = smoothstep(layerProgress)
-        sEntry.group.scale.y = Math.max(0.05, easedLayer)
-        sEntry.group.position.y = -(1 - easedLayer) * 1.4
+        sEntry.group.scale.y = 1.0
+        sEntry.group.position.y = 0.0
 
         const isHoveredLayer = state.hoveredLayerId === sEntry.id
         sEntry.material.emissive.setHex(isHoveredLayer ? 0xd97706 : 0x000000)
         sEntry.material.emissiveIntensity = isHoveredLayer ? 0.28 : 0
       }
 
-      // Staggered pile-driving drop from above for the 5 CPT Standpipes
+      // 5 Ground-anchored CPT Standpipes
       for (let pIdx = 0; pIdx < pipeVisualEntries.length; pIdx++) {
         const pEntry = pipeVisualEntries[pIdx]
         const isSelected = state.selectedPipeId === pEntry.id
         const isHovered = hoveredPipeId === pEntry.id
 
-        const pipeProgress = THREE.MathUtils.clamp(
-          (currentEntryT - 0.32 - pIdx * 0.08) / 0.45,
-          0,
-          1
-        )
-        const easedPipe = smoothstep(pipeProgress)
-        pEntry.group.position.y = (1 - easedPipe) * 2.8
+        pEntry.group.position.y = 0
 
-        pEntry.capMat.emissive.setHex(isSelected || isHovered ? 0x10b981 : 0x7a421d)
-        pEntry.capMat.emissiveIntensity = isSelected ? 0.85 : isHovered ? 0.55 : 0.22
+        pEntry.capMat.emissive.setHex(isSelected ? 0x10b981 : isHovered ? 0xfad9ba : 0x7a421d)
+        pEntry.capMat.emissiveIntensity = isSelected ? 0.85 : isHovered ? 0.45 : 0.18
 
-        pEntry.beaconMat.color.setHex(isSelected || isHovered ? 0x10b981 : 0xfad9ba)
-        const bScale = isSelected ? 1.3 + Math.sin(elapsed * 4.2) * 0.2 : 1.0
+        pEntry.beaconMat.color.setHex(isSelected ? 0x10b981 : 0xfad9ba)
+        pEntry.beaconRing.visible = isSelected || isHovered
+        const bScale = isSelected ? 1.25 + Math.sin(elapsed * 4.2) * 0.18 : 1.0
         pEntry.beaconRing.scale.set(bScale, bScale, 1)
 
         for (const sMat of pEntry.shaftMats) {
-          sMat.emissiveIntensity = isSelected ? 0.45 : 0.18
+          sMat.emissiveIntensity = isSelected ? 0.42 : 0.15
         }
 
         if (isSelected) {

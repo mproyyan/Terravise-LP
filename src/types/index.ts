@@ -108,13 +108,23 @@ export interface CptTestPipePoint {
   layers: CptTestPipeLayer[]
 }
 
+export interface WorkflowMetric {
+  label: string
+  value: string
+}
+
 export interface WorkflowStep {
   stepNumber: string
+  depthM: number
+  depthDisplay: string
+  stratumName: string
+  stratumColor: string
   title: string
   subtitle: string
   description: string
   deliverable: string
   badgeText: string
+  metrics: WorkflowMetric[]
 }
 
 export interface LeadFormData {

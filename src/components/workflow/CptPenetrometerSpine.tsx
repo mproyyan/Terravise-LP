@@ -4,17 +4,10 @@ import { useState } from "react"
 
 interface CptPenetrometerSpineProps {
   progress: MotionValue<number>
-  activeStep: number
+  activeStep?: number
 }
 
-const STRATA_STOPS = [
-  { depth: 0, label: "Ground Surface", color: "#D4A373" },
-  { depth: 6.5, label: "Upper Sand & Silt", color: "#588157" },
-  { depth: 14.0, label: "Sensitive Clay", color: "#A0522D" },
-  { depth: 25.0, label: "Dense Bedrock", color: "#E76F51" },
-]
-
-export function CptPenetrometerSpine({ progress, activeStep }: CptPenetrometerSpineProps) {
+export function CptPenetrometerSpine({ progress }: CptPenetrometerSpineProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [currentDepthM, setCurrentDepthM] = useState<number>(0)
 
@@ -27,9 +20,6 @@ export function CptPenetrometerSpine({ progress, activeStep }: CptPenetrometerSp
     const depth = clamped * 25.0
     setCurrentDepthM(depth)
   })
-
-  // Get current strata color based on activeStep
-  const activeStrata = STRATA_STOPS[activeStep] || STRATA_STOPS[0]
 
   return (
     <div
@@ -113,18 +103,10 @@ export function CptPenetrometerSpine({ progress, activeStep }: CptPenetrometerSp
           </defs>
         </svg>
 
-        {/* Dynamic Telemetry HUD Pill (Follows Cone Tip) */}
-        <div className="mt-2 flex items-center gap-1.5 bg-[#150E09]/95 border border-[#FAD9BA]/70 px-2 py-1 shadow-2xl backdrop-blur-xs font-mono text-[9px] whitespace-nowrap">
-          <span
-            className="w-1.5 h-1.5 rounded-full animate-ping"
-            style={{ backgroundColor: activeStrata.color }}
-          />
+        {/* Dynamic Telemetry HUD Pill (Follows Cone Tip - Depth Number Only) */}
+        <div className="mt-1.5 flex items-center bg-[#150E09]/95 border border-[#FAD9BA]/70 px-2 py-0.5 shadow-2xl backdrop-blur-xs font-mono text-[9px] sm:text-[10px] whitespace-nowrap">
           <span className="text-[#FAD9BA] font-bold tabular-nums">
-            -{currentDepthM.toFixed(1)}m
-          </span>
-          <span className="text-[#EFE7DE]/50 hidden sm:inline">·</span>
-          <span className="text-[#EFE7DE]/80 hidden sm:inline font-bold">
-            {activeStrata.label}
+            -{currentDepthM.toFixed(1)} m
           </span>
         </div>
       </motion.div>

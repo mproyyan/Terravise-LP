@@ -3,7 +3,7 @@ import { PlateHeader } from "../ui/PlateHeader"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { STRATA_LAYER_SPECS } from "../three/geology3DUtils"
-import { AlertCircle, Clock, Database, Layers } from "lucide-react"
+import { AlertCircle, Clock, Database } from "lucide-react"
 
 export function ProblemSection() {
   const { problem } = SITE_CONTENT
@@ -57,10 +57,6 @@ export function ProblemSection() {
         {/* Top Editorial Row (Sits cleanly above the 3D cutaway stage, never blocked by 3D) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-6">
           <div className="lg:col-span-7 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EFE7DE] border border-[#1C130D]/15 font-mono text-[10px] uppercase tracking-widest text-[#7A421D]">
-              <Layers className="w-3.5 h-3.5" />
-              <span>Building stripped · 4 L-cutaway horizons separated to expose clay trap</span>
-            </div>
             <h2 className="font-sans font-black text-3xl sm:text-5xl xl:text-[54px] text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.9] text-balance">
               {problem.heading}
             </h2>
@@ -143,7 +139,7 @@ export function ProblemSection() {
               <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
                 <span>+</span>
                 <span className="text-[9px] tracking-[0.2em]">
-                  01 / EXPLODED L-CUTAWAY SUBSURFACE DISSECTION (0.0M TO -25.0M)
+                  EXPLODED L-CUTAWAY SUBSURFACE DISSECTION (0.0M TO -25.0M)
                 </span>
                 <span>+</span>
               </div>

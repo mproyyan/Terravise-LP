@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Button } from "../ui/Button"
-import { Compass, ShieldCheck, Download } from "lucide-react"
+import { Download } from "lucide-react"
 import { SITE_CONTENT } from "../../data/siteContent"
 import logoImg from "../../assets/terravise-logo.png"
 
@@ -45,91 +45,38 @@ export function Navbar({ onOpenAppStore }: NavbarProps) {
         }`}
       >
         <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between">
-          {/* Brand & Coordinate Tag */}
-          <div className="flex items-center gap-3">
-            <a
-              href="#hero"
-              aria-label="Terravise Geotechnical Field System Home"
-              className="flex items-center gap-3 group min-h-[44px] min-w-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008]"
-            >
-              <img
-                src={logoImg}
-                alt="Terravise logo"
-                className="w-8 h-8 object-contain shrink-0 group-hover:scale-105 transition-transform"
-              />
-              <div className="flex flex-col">
-                <span className="font-sans font-black tracking-tighter text-[#1C130D] text-base leading-none uppercase">
-                  TERRAVISE
-                </span>
-                <span className="font-mono text-[9px] text-[#63554B] tracking-[0.16em] uppercase mt-0.5">
-                  GEOTECHNICAL FIELD SYSTEM
-                </span>
-              </div>
-            </a>
-
-            <div className="hidden 2xl:flex items-center ml-4 pl-4 border-l border-[#1C130D]/15 gap-2 text-xs font-mono text-[#63554B] whitespace-nowrap">
-              <Compass className="w-3.5 h-3.5 text-[#7A421D] shrink-0" />
-              <span className="text-[10px] tracking-wider uppercase tabular-nums">
-                UTM 48S · 704,120m E, 9,309,850m N
+          {/* Brand */}
+          <a
+            href="#hero"
+            aria-label="Terravise Geotechnical Field System Home"
+            className="flex items-center gap-3 group min-h-[44px] min-w-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008]"
+          >
+            <img
+              src={logoImg}
+              alt="Terravise logo"
+              className="w-8 h-8 object-contain shrink-0 group-hover:scale-105 transition-transform"
+            />
+            <div className="flex flex-col">
+              <span className="font-sans font-black tracking-tighter text-[#1C130D] text-base leading-none uppercase">
+                TERRAVISE
+              </span>
+              <span className="font-mono text-[9px] text-[#63554B] tracking-[0.16em] uppercase mt-0.5">
+                GEOTECHNICAL FIELD SYSTEM
               </span>
             </div>
-          </div>
+          </a>
 
-          {/* Navigation Anchors */}
-          <nav
-            aria-label="Primary navigation"
-            className="hidden md:flex items-center gap-6 lg:gap-8 font-mono text-[11px] tracking-[0.14em] uppercase text-[#63554B] whitespace-nowrap"
+          {/* Action: App Store Only */}
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={handleCtaClick}
+            aria-label="Download Terravise on App Store"
+            className="font-mono text-xs tracking-wider flex items-center gap-2"
           >
-            <a
-              href="#problem"
-              className="hover:text-[#1C130D] transition-colors py-2 min-h-[44px] flex items-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008] px-1"
-            >
-              01. Limits
-            </a>
-            <a
-              href="#dqn"
-              className="hover:text-[#1C130D] transition-colors py-2 min-h-[44px] flex items-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008] px-1"
-            >
-              02. DQN Policy
-            </a>
-            <a
-              href="#voxel"
-              className="hover:text-[#1C130D] transition-colors py-2 min-h-[44px] flex items-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008] px-1"
-            >
-              03. 3D Volume
-            </a>
-            <a
-              href="#stratum"
-              className="hover:text-[#1C130D] transition-colors py-2 min-h-[44px] flex items-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008] px-1"
-            >
-              04. Bearing Layer
-            </a>
-            <a
-              href="#workflow"
-              className="hover:text-[#1C130D] transition-colors py-2 min-h-[44px] flex items-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5A3008] px-1"
-            >
-              05. App Workflow
-            </a>
-          </nav>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#E3D7C8]/50 border border-[#1C130D]/15 font-mono text-[10px] text-[#63554B]">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#7A421D]" />
-              <span>iPadOS M-Series</span>
-            </div>
-
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={handleCtaClick}
-              aria-label="Download Terravise on App Store"
-              className="font-mono text-xs tracking-wider flex items-center gap-2"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>App Store</span>
-            </Button>
-          </div>
+            <Download className="w-3.5 h-3.5" />
+            <span>App Store</span>
+          </Button>
         </div>
       </header>
     </>

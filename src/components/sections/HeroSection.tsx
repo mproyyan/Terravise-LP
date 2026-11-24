@@ -1,17 +1,15 @@
 import { useEffect, useRef } from "react"
 import { Button } from "../ui/Button"
-import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { HeroProblemGroundCanvas } from "../three/HeroProblemGroundStage"
-import { ArrowRight, Download, CheckCircle, Layers, Rotate3d } from "lucide-react"
+import { ArrowRight, CheckCircle, Rotate3d } from "lucide-react"
 
 interface HeroSectionProps {
   onOpenAppStore: () => void
-  onDownloadTemplate: () => void
 }
 
-export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionProps) {
+export function HeroSection({ onOpenAppStore }: HeroSectionProps) {
   const { hero } = SITE_CONTENT
   const { registerDock } = useSubsurface3D()
   const heroDockRef = useRef<HTMLDivElement>(null)
@@ -30,19 +28,8 @@ export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionP
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
         {/* Main 6:6 Split: Left Monumental Copy | Right Open Borderless 3D Monolith Stage */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-          {/* Left 6 Columns: Headline, Value Proposition & Dual CTAs */}
+          {/* Left 6 Columns: Headline, Value Proposition & App Store CTA */}
           <div className="lg:col-span-6 space-y-8">
-            <div className="inline-flex flex-wrap items-center gap-2">
-              <Badge variant="emerald" className="font-mono text-[10px] py-1 px-2.5">
-                <span className="w-1.5 h-1.5 rounded-none bg-[#5A3008] inline-block mr-1.5" />
-                {hero.badge}
-              </Badge>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#7A421D] bg-[#E3D7C8]/50 px-2.5 py-1 border border-[#1C130D]/10 flex items-center gap-1.5">
-                <Layers className="w-3 h-3" />
-                Scroll to strip building &amp; dissect L-cutaway strata
-              </span>
-            </div>
-
             {/* Monumental Typography with Rapidkert-style asymmetrical indentation */}
             <h1 className="font-sans font-black text-4xl sm:text-6xl xl:text-[68px] uppercase tracking-[-0.04em] leading-[0.88] text-[#1C130D] text-balance">
               <span className="block">{hero.titleLine1}</span>
@@ -53,8 +40,8 @@ export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionP
               {hero.subtitle}
             </p>
 
-            {/* Dual Actions with App Store CTA */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            {/* App Store CTA Only */}
+            <div className="pt-2">
               <Button
                 variant="emerald"
                 size="lg"
@@ -64,17 +51,6 @@ export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionP
               >
                 <span>{hero.primaryCta}</span>
                 <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={onDownloadTemplate}
-                aria-label="Download sample CPT CSV dataset"
-                className="text-[#1C130D]"
-              >
-                <Download className="w-4 h-4 mr-2 text-[#7A421D]" />
-                <span>{hero.secondaryCta}</span>
               </Button>
             </div>
           </div>
@@ -88,7 +64,7 @@ export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionP
               <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-[#1C130D]/30">
                 <span>+</span>
                 <span className="text-[9px] tracking-[0.2em]">
-                  00 / ARCHITECTURAL TOWER &amp; L-CUTAWAY 25M SOIL MONOLITH
+                  ARCHITECTURAL TOWER &amp; L-CUTAWAY SOIL MONOLITH
                 </span>
                 <span>+</span>
               </div>
@@ -96,7 +72,7 @@ export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionP
                 <span>+</span>
                 <span className="text-[9px] tracking-[0.16em] flex items-center gap-1.5 text-[#7A421D]">
                   <Rotate3d className="w-3 h-3" />
-                  DRAG TO ROTATE · SCROLL TO DISSECT SUBSURFACE
+                  DRAG TO ROTATE
                 </span>
                 <span>+</span>
               </div>
@@ -109,7 +85,7 @@ export function HeroSection({ onOpenAppStore, onDownloadTemplate }: HeroSectionP
               </div>
               <div className="flex items-center justify-between font-mono text-[10px] px-2 py-1 border-t border-[#1C130D]/15 text-[#63554B]">
                 <span className="font-bold uppercase tracking-wider">
-                  00 / Tower &amp; L-Cutaway Soil Monolith
+                  Tower &amp; L-Cutaway Soil Monolith
                 </span>
                 <span className="flex items-center gap-1">
                   <Rotate3d className="w-3 h-3" />

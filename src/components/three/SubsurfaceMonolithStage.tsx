@@ -19,22 +19,22 @@ const STAGE_CAPTION_MAP: Record<MonolithStage, StageCaptionMeta> = {
   },
   problem: {
     code: "FIG 01",
-    caption: "ISOLATED SOFT CLAY ANOMALY LENS (-6.5M TO -14.0M) VS. 25M BLIND GRID",
+    caption: "PANORAMIC 3-ZONE GEOLOGICAL TRENCH: OVER-DRILLING · SOFT CLAY LENS · BUDGET CUTOFF",
     isDarkSection: false,
   },
   dqn: {
     code: "FIG 02",
-    caption: "144-NODE GEODETIC CANDIDATE RADAR & SPOT 2 LASER VECTOR",
+    caption: "3D NEURAL PATHFINDING ARCS & 144-NODE GEODETIC RADAR TABLE",
     isDarkSection: true,
   },
   voxel: {
     code: "FIG 03",
-    caption: "SMOOTH 3D BOUNDARY VOLUME & 5 CPT TEST PIPES (CLICK PIPE TO INSPECT)",
+    caption: "SMOOTH 3D BOUNDARY VOLUME & 5 CPT TEST PIPES (CLICK ANY PIPE FOR SOIL LOG)",
     isDarkSection: true,
   },
   stratum: {
     code: "FIG 04",
-    caption: "8 REINFORCED PILES SOCKETED INTO UNDULATING BEARING STRATUM (qc >= 15 MPa)",
+    caption: "3D TOP-OF-BEARING DEPTH HEATMAP (zb) & 8 STRUCTURAL PILE PROBES",
     isDarkSection: false,
   },
   workflow: {
@@ -60,7 +60,8 @@ export function SubsurfaceMonolithStage() {
     setSelectedPipeId,
     pipeScreenCoords,
   } = useSubsurface3D()
-  const stageBoxRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const hudBoxRef = useRef<HTMLDivElement>(null)
 
   const meta = STAGE_CAPTION_MAP[activeStage] || STAGE_CAPTION_MAP.hero
   const selectedPipe = MOCK_CPT_TEST_PIPES.find((p) => p.id === selectedPipeId) || null
@@ -70,8 +71,9 @@ export function SubsurfaceMonolithStage() {
     let rafId = 0
 
     const updatePosition = () => {
-      const box = stageBoxRef.current
-      if (!box) return
+      const wrapper = wrapperRef.current
+      const hudBox = hudBoxRef.current
+      if (!wrapper || !hudBox) return
 
       const docks = DOCKED_STAGES.map((stage) => ({
         stage,
@@ -92,7 +94,6 @@ export function SubsurfaceMonolithStage() {
       let targetWidth = rects[0].rect.width
       let targetHeight = rects[0].rect.height
       let targetOpacity = 1
-      let targetScale = 1
 
       const firstCenterY = rects[0].rect.top + rects[0].rect.height / 2
       const lastIdx = rects.length - 1
@@ -120,7 +121,6 @@ export function SubsurfaceMonolithStage() {
         const fadeEnd = window.innerHeight * 0.12
         const rawFade = (lastCenterY - fadeEnd) / Math.max(1, fadeStart - fadeEnd)
         targetOpacity = smoothstep(rawFade)
-        targetScale = 0.88 + 0.12 * targetOpacity
       } else {
         for (let i = 0; i < rects.length - 1; i++) {
           const curr = rects[i]
@@ -145,11 +145,22 @@ export function SubsurfaceMonolithStage() {
         }
       }
 
-      box.style.transform = `translate3d(${Math.round(targetLeft)}px, ${Math.round(targetTop)}px, 0) scale(${targetScale.toFixed(3)})`
-      box.style.width = `${Math.round(targetWidth)}px`
-      box.style.height = `${Math.round(targetHeight)}px`
-      box.style.opacity = `${targetOpacity.toFixed(3)}`
-      box.style.pointerEvents = targetOpacity < 0.15 ? "none" : "auto"
+      // Pass exact dock center to Three.js full-viewport camera.setViewOffset
+      sceneStateRef.current.stageRect = {
+        centerX: targetLeft + targetWidth / 2,
+        centerY: targetTop + targetHeight / 2,
+        left: targetLeft,
+        top: targetTop,
+        width: targetWidth,
+        height: targetHeight,
+        opacity: targetOpacity,
+      }
+
+      wrapper.style.opacity = `${targetOpacity.toFixed(3)}`
+      hudBox.style.transform = `translate3d(${Math.round(targetLeft)}px, ${Math.round(targetTop)}px, 0)`
+      hudBox.style.width = `${Math.round(targetWidth)}px`
+      hudBox.style.height = `${Math.round(targetHeight)}px`
+      hudBox.style.pointerEvents = targetOpacity < 0.15 ? "none" : "auto"
     }
 
     const onScrollOrResize = () => {
@@ -172,17 +183,21 @@ export function SubsurfaceMonolithStage() {
   }, [dockElementsRef, sceneStateRef])
 
   return (
-    <div className="hidden lg:block fixed inset-0 z-20 pointer-events-none overflow-hidden">
-      <div
-        ref={stageBoxRef}
-        style={{ willChange: "transform, width, height, opacity" }}
-        className="absolute top-0 left-0 flex flex-col justify-end"
-      >
-        {/* Full-Bleed Borderless Three.js Visualizer Canvas */}
-        <div className="absolute inset-0 z-0">
-          <SubsurfaceMonolithCanvas />
-        </div>
+    <div
+      ref={wrapperRef}
+      className="hidden lg:block fixed inset-0 z-20 pointer-events-none overflow-hidden"
+    >
+      {/* Full-Viewport 100vw x 100vh Three.js Canvas (Never clipped by a small box!) */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <SubsurfaceMonolithCanvas />
+      </div>
 
+      {/* Interactive Hit Area & Floating Figure Caption over the Active Stage Zone */}
+      <div
+        ref={hudBoxRef}
+        style={{ willChange: "transform, width, height" }}
+        className="absolute top-0 left-0 flex flex-col justify-end pointer-events-none"
+      >
         {/* Interactive 3D Pipe Click Popover (Anchored to Clicked Test Pipe in Section 03) */}
         <AnimatePresence mode="wait">
           {showPipePopover && selectedPipe && (
@@ -193,12 +208,15 @@ export function SubsurfaceMonolithStage() {
               exit={{ opacity: 0, scale: 0.92, y: 10 }}
               transition={{ type: "spring", stiffness: 280, damping: 24 }}
               style={{
-                left: pipeScreenCoords ? `${Math.min(54, Math.max(4, pipeScreenCoords.xPct))}%` : "48%",
-                top: pipeScreenCoords ? `${Math.min(44, Math.max(4, pipeScreenCoords.yPct - 18))}%` : "12%",
+                left: pipeScreenCoords
+                  ? `${Math.min(68, Math.max(4, pipeScreenCoords.xPct))}%`
+                  : "54%",
+                top: pipeScreenCoords
+                  ? `${Math.min(42, Math.max(4, pipeScreenCoords.yPct - 16))}%`
+                  : "10%",
               }}
               className="absolute z-30 w-72 bg-[#150E09]/95 backdrop-blur-md border border-[#FAD9BA]/50 shadow-2xl p-3.5 font-mono text-xs text-[#EFE7DE] pointer-events-auto select-none"
             >
-              {/* Popover Header */}
               <div className="flex items-start justify-between gap-2 border-b border-[#EFE7DE]/15 pb-2">
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -222,7 +240,6 @@ export function SubsurfaceMonolithStage() {
                 </button>
               </div>
 
-              {/* 4 Soil Layers Recorded at This Pipe */}
               <div className="py-2.5 space-y-1.5">
                 <div className="text-[9px] uppercase tracking-wider text-[#BD8564] flex items-center justify-between">
                   <span className="flex items-center gap-1">
@@ -259,7 +276,6 @@ export function SubsurfaceMonolithStage() {
                 ))}
               </div>
 
-              {/* Popover Footer: Bearing Depth & Termination */}
               <div className="pt-2 border-t border-[#EFE7DE]/15 flex items-center justify-between text-[9px]">
                 <span className="text-[#EFE7DE]/60 flex items-center gap-1">
                   <ArrowDownToLine className="w-3 h-3 text-[#10B981]" />
@@ -275,7 +291,7 @@ export function SubsurfaceMonolithStage() {
         </AnimatePresence>
 
         {/* Minimalist Floating Architectural Figure Tag */}
-        <div className="relative z-10 pb-2 flex items-center justify-center pointer-events-none select-none">
+        <div className="relative z-10 pb-1 flex items-center justify-center pointer-events-none select-none">
           <div
             className={`px-3 py-1 backdrop-blur-xs border font-mono text-[9px] tracking-[0.14em] uppercase flex items-center gap-2.5 transition-colors duration-300 ${
               meta.isDarkSection
@@ -284,7 +300,7 @@ export function SubsurfaceMonolithStage() {
             }`}
           >
             <span className="font-bold text-[#7A421D]">{meta.code}</span>
-            <span className="truncate max-w-[380px]">{meta.caption}</span>
+            <span className="truncate max-w-[460px]">{meta.caption}</span>
             <span className="inline-flex items-center gap-1 opacity-65 pl-1.5 border-l border-current/20">
               <Rotate3d className="w-3 h-3" />
               Drag 3D

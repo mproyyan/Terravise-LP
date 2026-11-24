@@ -9,6 +9,16 @@ export interface PipeScreenCoords {
   yPct: number
 }
 
+export interface StageViewportRect {
+  centerX: number
+  centerY: number
+  left: number
+  top: number
+  width: number
+  height: number
+  opacity: number
+}
+
 export interface MutableSceneState {
   scrollProgress: number
   stageProgress: number
@@ -16,12 +26,14 @@ export interface MutableSceneState {
   transitionFrom: MonolithStage
   transitionTo: MonolithStage
   transitionT: number
+  stageRect: StageViewportRect
   sliceX: number
   sliceY: number
   minQc: number
   maxIc: number
   minThickness: number
   hoveredLayerId: string | null
+  hoveredProblemZone: number | null
   selectedPipeId: string | null
   hoveredBearingPointId: string | null
   activeDqnTab: string
@@ -40,6 +52,8 @@ interface Subsurface3DContextValue {
   setBearingCriteria: React.Dispatch<React.SetStateAction<BearingCriteria>>
   hoveredLayerId: string | null
   setHoveredLayerId: (id: string | null) => void
+  hoveredProblemZone: number | null
+  setHoveredProblemZone: (zone: number | null) => void
   selectedPipeId: string | null
   setSelectedPipeId: (id: string | null) => void
   pipeScreenCoords: PipeScreenCoords | null
@@ -66,6 +80,7 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   const [sliceY, setSliceY] = useState<number>(60)
   const [bearingCriteria, setBearingCriteria] = useState<BearingCriteria>(DEFAULT_BEARING_CRITERIA)
   const [hoveredLayerId, setHoveredLayerId] = useState<string | null>(null)
+  const [hoveredProblemZone, setHoveredProblemZone] = useState<number | null>(null)
   const [selectedPipeId, setSelectedPipeId] = useState<string | null>("cpt-03")
   const [pipeScreenCoords, setPipeScreenCoords] = useState<PipeScreenCoords | null>({
     xPct: 52,
@@ -89,12 +104,22 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
     transitionFrom: "hero",
     transitionTo: "hero",
     transitionT: 0,
+    stageRect: {
+      centerX: typeof window !== "undefined" ? window.innerWidth * 0.72 : 960,
+      centerY: typeof window !== "undefined" ? window.innerHeight * 0.5 : 450,
+      left: 640,
+      top: 160,
+      width: 640,
+      height: 540,
+      opacity: 1,
+    },
     sliceX: 65,
     sliceY: 60,
     minQc: DEFAULT_BEARING_CRITERIA.minQc,
     maxIc: DEFAULT_BEARING_CRITERIA.maxIc,
     minThickness: DEFAULT_BEARING_CRITERIA.minThickness,
     hoveredLayerId: null,
+    hoveredProblemZone: null,
     selectedPipeId: "cpt-03",
     hoveredBearingPointId: "spot-2-rec",
     activeDqnTab: "gap",
@@ -123,6 +148,10 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     sceneStateRef.current.hoveredLayerId = hoveredLayerId
   }, [hoveredLayerId])
+
+  useEffect(() => {
+    sceneStateRef.current.hoveredProblemZone = hoveredProblemZone
+  }, [hoveredProblemZone])
 
   useEffect(() => {
     sceneStateRef.current.selectedPipeId = selectedPipeId
@@ -199,6 +228,8 @@ export function Subsurface3DProvider({ children }: { children: React.ReactNode }
         setBearingCriteria,
         hoveredLayerId,
         setHoveredLayerId,
+        hoveredProblemZone,
+        setHoveredProblemZone,
         selectedPipeId,
         setSelectedPipeId,
         pipeScreenCoords,

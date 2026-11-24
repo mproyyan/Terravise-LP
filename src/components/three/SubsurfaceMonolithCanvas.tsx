@@ -378,13 +378,15 @@ export function SubsurfaceMonolithCanvas() {
     }
 
     // =========================================================================
-    // VISUALIZER 01: PROBLEM SECTION — ORGANIC 3D SOFT CLAY ANOMALY LENS & 4 BLIND GRID RIGS
+    // VISUALIZER 01: PROBLEM SECTION — 3-ZONE PANORAMIC GEOLOGICAL TRENCH
+    // Zone 1 (Left): Over-drilling cluster | Zone 2 (Center): Soft Clay Lens | Zone 3 (Right): Budget Cutoff
     // =========================================================================
     const problemAnomalyGroup = new THREE.Group()
     problemAnomalyGroup.position.set(0, -1.75, 0)
     monolithRoot.add(problemAnomalyGroup)
 
-    const anomalyGeo = new THREE.IcosahedronGeometry(1.05, 3)
+    // Zone 2 (Center): Deformed Organic 3D Soft Clay Hazard Lens
+    const anomalyGeo = new THREE.IcosahedronGeometry(0.95, 3)
     const posAttr = anomalyGeo.attributes.position
     for (let i = 0; i < posAttr.count; i++) {
       const vx = posAttr.getX(i)
@@ -394,7 +396,7 @@ export function SubsurfaceMonolithCanvas() {
         1 +
         0.22 * Math.sin(vx * 3.2 + 0.5) * Math.cos(vz * 2.8) +
         0.15 * Math.cos(vy * 4.0)
-      posAttr.setXYZ(i, vx * 1.35 * wave, vy * 0.42 * wave, vz * 0.95 * wave)
+      posAttr.setXYZ(i, vx * 1.15 * wave, vy * 0.42 * wave, vz * 0.9 * wave)
     }
     anomalyGeo.computeVertexNormals()
 
@@ -408,7 +410,7 @@ export function SubsurfaceMonolithCanvas() {
       opacity: 0,
     })
     const anomalyMesh = new THREE.Mesh(anomalyGeo, anomalyMat)
-    anomalyMesh.position.set(0.15, 0, 0.1)
+    anomalyMesh.position.set(0.0, 0, 0.05)
     problemAnomalyGroup.add(anomalyMesh)
 
     const anomalyWireGeo = new THREE.WireframeGeometry(anomalyGeo)
@@ -420,14 +422,15 @@ export function SubsurfaceMonolithCanvas() {
     const anomalyWire = new THREE.LineSegments(anomalyWireGeo, anomalyWireMat)
     anomalyMesh.add(anomalyWire)
 
-    const blindBoreholeGeo = new THREE.CylinderGeometry(0.055, 0.055, 2.8, 16)
+    // Wide Fixed-Grid Boreholes flanking Zone 2 (Missing the central clay lens)
+    const blindBoreholeGeo = new THREE.CylinderGeometry(0.05, 0.05, 2.8, 16)
     const blindBoreholeMat = new THREE.MeshStandardMaterial({
       color: 0x1c130d,
       roughness: 0.4,
       transparent: true,
       opacity: 0,
     })
-    const blindRingGeo = new THREE.RingGeometry(0.16, 0.22, 24)
+    const blindRingGeo = new THREE.RingGeometry(0.14, 0.2, 24)
     const blindRingMat = new THREE.MeshBasicMaterial({
       color: 0x7a421d,
       side: THREE.DoubleSide,
@@ -436,10 +439,10 @@ export function SubsurfaceMonolithCanvas() {
     })
 
     const blindCorners: Array<[number, number]> = [
-      [-1.7, -1.3],
-      [1.7, -1.3],
-      [-1.7, 1.3],
-      [1.7, 1.3],
+      [-1.05, -0.85],
+      [1.05, -0.85],
+      [-1.05, 0.85],
+      [1.05, 0.85],
     ]
     for (const [bx, bz] of blindCorners) {
       const post = new THREE.Mesh(blindBoreholeGeo, blindBoreholeMat)
@@ -452,8 +455,69 @@ export function SubsurfaceMonolithCanvas() {
       problemAnomalyGroup.add(ring)
     }
 
-    disposableGeometries.push(anomalyGeo, anomalyWireGeo, blindBoreholeGeo, blindRingGeo)
-    disposableMaterials.push(anomalyMat, anomalyWireMat, blindBoreholeMat, blindRingMat)
+    // Zone 1 (Left, x = -2.15): 5 Over-drilled Redundant Boreholes in Uniform Ground
+    const overdrillRodGeo = new THREE.CylinderGeometry(0.042, 0.042, 2.6, 12)
+    const overdrillMat = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      emissive: 0x7a421d,
+      emissiveIntensity: 0.25,
+      transparent: true,
+      opacity: 0,
+    })
+    const overdrillOffsets: Array<[number, number]> = [
+      [-2.35, -0.45],
+      [-1.95, -0.45],
+      [-2.15, 0.0],
+      [-2.35, 0.45],
+      [-1.95, 0.45],
+    ]
+    for (const [ox, oz] of overdrillOffsets) {
+      const oRod = new THREE.Mesh(overdrillRodGeo, overdrillMat)
+      oRod.position.set(ox, 0.15, oz)
+      problemAnomalyGroup.add(oRod)
+    }
+
+    // Zone 3 (Right, x = +2.15): 3 Prematurely Terminated Budget-Cutoff Boreholes (Hanging mid-depth)
+    const cutoffRodGeo = new THREE.CylinderGeometry(0.048, 0.048, 1.15, 12)
+    const cutoffMat = new THREE.MeshStandardMaterial({
+      color: 0x9a3412,
+      emissive: 0xdc2626,
+      emissiveIntensity: 0.35,
+      transparent: true,
+      opacity: 0,
+    })
+    const cutoffOffsets: Array<[number, number]> = [
+      [1.95, -0.4],
+      [2.25, 0.05],
+      [2.05, 0.5],
+    ]
+    for (const [cx, cz] of cutoffOffsets) {
+      const cRod = new THREE.Mesh(cutoffRodGeo, cutoffMat)
+      cRod.position.set(cx, 0.85, cz)
+      problemAnomalyGroup.add(cRod)
+
+      const stopRing = new THREE.Mesh(blindRingGeo, cutoffMat)
+      stopRing.rotation.x = -Math.PI / 2
+      stopRing.position.set(cx, 0.28, cz)
+      problemAnomalyGroup.add(stopRing)
+    }
+
+    disposableGeometries.push(
+      anomalyGeo,
+      anomalyWireGeo,
+      blindBoreholeGeo,
+      blindRingGeo,
+      overdrillRodGeo,
+      cutoffRodGeo
+    )
+    disposableMaterials.push(
+      anomalyMat,
+      anomalyWireMat,
+      blindBoreholeMat,
+      blindRingMat,
+      overdrillMat,
+      cutoffMat
+    )
 
     // =========================================================================
     // VISUALIZER 02: DQN SECTION — 144-NODE TOPOGRAPHIC CANDIDATE RADAR & SPOT 2 LASER
@@ -578,6 +642,56 @@ export function SubsurfaceMonolithCanvas() {
     faultPlane.position.y = 0.45
     dqnRadarGroup.add(faultPlane)
 
+    // 3D Parabolic Neural Search Arcs (Jumping from B-01, B-02, B-03 to Spot 2)
+    const searchArcCurves = [
+      new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(-1.45, 0.1, -1.05),
+        new THREE.Vector3(-0.5, 1.55, -0.4),
+        new THREE.Vector3(SPOT2_X, 0.85, SPOT2_Z)
+      ),
+      new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(1.45, 0.1, 1.05),
+        new THREE.Vector3(0.95, 1.4, 0.65),
+        new THREE.Vector3(SPOT2_X, 0.85, SPOT2_Z)
+      ),
+      new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(1.45, 0.1, -1.05),
+        new THREE.Vector3(0.9, 1.65, -0.35),
+        new THREE.Vector3(SPOT2_X, 0.85, SPOT2_Z)
+      ),
+      new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(-1.35, 0.1, 0.95),
+        new THREE.Vector3(-0.45, 1.3, 0.6),
+        new THREE.Vector3(SPOT2_X, 0.85, SPOT2_Z)
+      ),
+    ]
+
+    const searchArcMat = new THREE.LineBasicMaterial({
+      color: 0x10b981,
+      transparent: true,
+      opacity: 0,
+      toneMapped: false,
+    })
+    const searchPulseGeo = new THREE.SphereGeometry(0.065, 12, 12)
+    const searchPulseMat = new THREE.MeshBasicMaterial({
+      color: 0xfad9ba,
+      transparent: true,
+      opacity: 0,
+      toneMapped: false,
+    })
+    const searchPulseMeshes: THREE.Mesh[] = []
+
+    for (const curve of searchArcCurves) {
+      const arcGeo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(32))
+      const arcLine = new THREE.Line(arcGeo, searchArcMat)
+      dqnRadarGroup.add(arcLine)
+      disposableGeometries.push(arcGeo)
+
+      const pulseSphere = new THREE.Mesh(searchPulseGeo, searchPulseMat)
+      dqnRadarGroup.add(pulseSphere)
+      searchPulseMeshes.push(pulseSphere)
+    }
+
     disposableGeometries.push(
       nodeGeo,
       radarPlateGeo,
@@ -585,7 +699,8 @@ export function SubsurfaceMonolithCanvas() {
       laserBeamGeo,
       gapCylinderGeo,
       targetRingGeo,
-      faultPlaneGeo
+      faultPlaneGeo,
+      searchPulseGeo
     )
     disposableMaterials.push(
       nodeMat,
@@ -594,7 +709,9 @@ export function SubsurfaceMonolithCanvas() {
       laserBeamMat,
       gapCylinderMat,
       targetRingMat,
-      faultPlaneMat
+      faultPlaneMat,
+      searchArcMat,
+      searchPulseMat
     )
 
     // =========================================================================
@@ -1077,14 +1194,35 @@ export function SubsurfaceMonolithCanvas() {
         raycaster.setFromCamera(pointerNdc, camera)
         const hits = raycaster.intersectObjects(pickablePipeProxies, false)
         hoveredPipeId = hits.length > 0 ? (hits[0].object.userData.pipeId as string) : null
-        container.style.cursor = hoveredPipeId ? "pointer" : "grab"
+        document.body.style.cursor = hoveredPipeId ? "pointer" : ""
       } else {
         hoveredPipeId = null
-        container.style.cursor = "grab"
+        if (document.body.style.cursor === "pointer") {
+          document.body.style.cursor = ""
+        }
       }
     }
 
     const handlePointerDown = (e: PointerEvent) => {
+      const sr = sceneStateRef.current.stageRect
+      const isFullScreenDesktop = window.innerWidth >= 1024 && container.clientWidth >= 1024
+      if (isFullScreenDesktop) {
+        const inStage =
+          e.clientX >= sr.left &&
+          e.clientX <= sr.left + sr.width &&
+          e.clientY >= sr.top &&
+          e.clientY <= sr.top + sr.height
+        if (!inStage || sr.opacity < 0.2) return
+      } else {
+        const rect = container.getBoundingClientRect()
+        const inContainer =
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom
+        if (!inContainer) return
+      }
+
       isDragging = true
       dragStartX = e.clientX
       downClientX = e.clientX
@@ -1092,7 +1230,7 @@ export function SubsurfaceMonolithCanvas() {
     }
 
     const handlePointerUp = (e: PointerEvent) => {
-      const wasClick = Math.hypot(e.clientX - downClientX, e.clientY - downClientY) < 7
+      const wasClick = isDragging && Math.hypot(e.clientX - downClientX, e.clientY - downClientY) < 7
       isDragging = false
 
       if (wasClick && sceneStateRef.current.activeStage === "voxel") {
@@ -1110,8 +1248,8 @@ export function SubsurfaceMonolithCanvas() {
       }
     }
 
-    container.addEventListener("pointermove", handlePointerMove, { passive: true })
-    container.addEventListener("pointerdown", handlePointerDown, { passive: true })
+    window.addEventListener("pointermove", handlePointerMove, { passive: true })
+    window.addEventListener("pointerdown", handlePointerDown, { passive: true })
     window.addEventListener("pointerup", handlePointerUp, { passive: true })
 
     // =========================================================================
@@ -1129,24 +1267,28 @@ export function SubsurfaceMonolithCanvas() {
     let currentCamX = 8.6
     let currentCamY = 5.4
     let currentCamZ = 9.6
+    let currentLookX = 0.0
     let currentLookY = -0.85
     let currentRootRotY = -0.32
+    let currentOffsetCenterX = window.innerWidth * 0.72
+    let currentOffsetCenterY = window.innerHeight * 0.5
     let currentClipX = BLOCK_W / 2 + 0.5
     let currentClipZ = BLOCK_D / 2 + 0.5
     let lastProjectedX = -1
     let lastProjectedY = -1
 
     const projectedVec = new THREE.Vector3()
+    const arcPointVec = new THREE.Vector3()
 
     const cameraStageTargets: Record<
       MonolithStage,
       { camPos: [number, number, number]; lookY: number; rotY: number }
     > = {
       hero: { camPos: [8.6, 5.2, 9.5], lookY: -0.75, rotY: -0.32 },
-      problem: { camPos: [7.8, 3.8, 8.2], lookY: -1.65, rotY: 0.35 },
-      dqn: { camPos: [4.6, 8.8, 6.2], lookY: -1.05, rotY: -0.45 },
-      voxel: { camPos: [7.8, 4.9, 8.4], lookY: -1.4, rotY: -0.26 },
-      stratum: { camPos: [7.8, 2.6, 8.6], lookY: -1.35, rotY: 0.3 },
+      problem: { camPos: [0.0, 3.2, 9.2], lookY: -1.65, rotY: 0.06 },
+      dqn: { camPos: [0.0, 8.6, 7.2], lookY: -0.85, rotY: -0.28 },
+      voxel: { camPos: [7.4, 4.8, 8.2], lookY: -1.35, rotY: -0.28 },
+      stratum: { camPos: [6.8, 3.6, 8.2], lookY: -1.25, rotY: 0.26 },
       workflow: { camPos: [8.6, 5.2, 9.5], lookY: -1.0, rotY: -0.32 },
     }
 
@@ -1169,11 +1311,11 @@ export function SubsurfaceMonolithCanvas() {
       wStratum = THREE.MathUtils.damp(wStratum, rawWeights.stratum, dampSpeed, dt)
 
       // -----------------------------------------------------------------------
-      // MODE 00 & 01: BUILDING + 4 STRATA + ISOLATED SOFT CLAY ANOMALY LENS
+      // MODE 00 & 01: BUILDING + 4 STRATA + PANORAMIC 3-ZONE GEOLOGICAL TRENCH
       // -----------------------------------------------------------------------
       const buildingVis = Math.max(0, wHero)
       buildingGroup.visible = buildingVis > 0.01
-      buildingGroup.position.y = (1 - wHero) * 3.8
+      buildingGroup.position.y = (1 - wHero) * 4.2
       buildingGroup.scale.setScalar(0.85 + 0.15 * wHero)
       for (const item of buildingMaterials) {
         item.mat.opacity = item.baseOpacity * buildingVis
@@ -1187,16 +1329,18 @@ export function SubsurfaceMonolithCanvas() {
           const l3Vis = Math.min(1, wHero + wProblem)
           entry.group.visible = l3Vis > 0.01
           entry.group.position.y = entry.baseY + wProblem * 0.05
-          const l3Scale = 1 + wProblem * 0.24
-          entry.group.scale.set(l3Scale, l3Scale, l3Scale)
-          entry.material.opacity = wHero * 1.0 + wProblem * 0.22
+          // In Section 01, Layer 03 stretches wide (1.48x X) into a Panoramic Cross-Section Trench!
+          const l3ScaleX = 1 + wProblem * 0.48
+          const l3ScaleYZ = 1 + wProblem * 0.18
+          entry.group.scale.set(l3ScaleX, l3ScaleYZ, l3ScaleYZ)
+          entry.material.opacity = wHero * 1.0 + wProblem * 0.2
           entry.material.depthWrite = wHero > 0.5
-          entry.edgeMaterial.opacity = wHero * 0.65 + wProblem * 0.9
+          entry.edgeMaterial.opacity = wHero * 0.65 + wProblem * 0.85
         } else {
           const otherVis = wHero
           entry.group.visible = otherVis > 0.01
           const peelDir = i < 2 ? 1 : -1
-          entry.group.position.y = entry.baseY + (1 - wHero) * peelDir * 3.2
+          entry.group.position.y = entry.baseY + (1 - wHero) * peelDir * 3.4
           entry.group.scale.setScalar(0.85 + 0.15 * wHero)
           entry.material.opacity = otherVis
           entry.material.depthWrite = otherVis > 0.5
@@ -1205,28 +1349,45 @@ export function SubsurfaceMonolithCanvas() {
       }
 
       problemAnomalyGroup.visible = wProblem > 0.01
-      problemAnomalyGroup.scale.setScalar(0.75 + 0.45 * wProblem)
+      problemAnomalyGroup.scale.set(0.85 + 0.35 * wProblem, 0.85 + 0.3 * wProblem, 1)
       anomalyMesh.rotation.y = elapsed * 0.25
       const pulseGlow = 0.4 + Math.sin(elapsed * 3.2) * 0.15
-      anomalyMat.opacity = wProblem * 0.92
-      anomalyMat.emissiveIntensity = pulseGlow
-      anomalyWireMat.opacity = wProblem * 0.75
+      anomalyMat.opacity = wProblem * 0.94
+      anomalyMat.emissiveIntensity =
+        state.hoveredProblemZone === 1 ? 0.85 : pulseGlow
+      anomalyWireMat.opacity = wProblem * 0.78
       blindBoreholeMat.opacity = wProblem * 0.85
       blindRingMat.opacity = wProblem * 0.85
+      overdrillMat.opacity = wProblem * 0.9
+      overdrillMat.emissiveIntensity = state.hoveredProblemZone === 0 ? 0.8 : 0.25
+      cutoffMat.opacity = wProblem * 0.92
+      cutoffMat.emissiveIntensity = state.hoveredProblemZone === 2 ? 0.85 : 0.35
 
       // -----------------------------------------------------------------------
-      // MODE 02: DQN 144-NODE GEODETIC RADAR & SPOT 2 LASER RIG
+      // MODE 02: DQN 144-NODE GEODETIC RADAR TABLE & 3D PARABOLIC SEARCH ARCS
       // -----------------------------------------------------------------------
       dqnRadarGroup.visible = wDqn > 0.01
-      dqnRadarGroup.scale.setScalar(0.8 + 0.28 * wDqn)
+      dqnRadarGroup.scale.setScalar(0.85 + 0.32 * wDqn)
       nodeMat.opacity = wDqn * 0.95
       radarPlateMat.opacity = wDqn * 0.85
       radarPlateLineMat.opacity = wDqn * 0.65
       laserBeamMat.opacity = wDqn * 0.95
       targetRingMat.opacity = wDqn * (0.65 + Math.sin(elapsed * 4) * 0.3)
+      searchArcMat.opacity = wDqn * 0.65
+      searchPulseMat.opacity = wDqn * 0.95
 
       const ringPulse = 1 + Math.sin(elapsed * 3.5) * 0.22
       targetRing.scale.set(ringPulse, ringPulse, 1)
+
+      // Animate neural pathfinding spheres jumping along the 4 parabolic arcs into Spot 2
+      if (wDqn > 0.02) {
+        for (let aIdx = 0; aIdx < searchArcCurves.length; aIdx++) {
+          const curve = searchArcCurves[aIdx]
+          const u = (elapsed * 0.55 + aIdx * 0.25) % 1
+          curve.getPoint(u, arcPointVec)
+          searchPulseMeshes[aIdx].position.copy(arcPointVec)
+        }
+      }
 
       const isGapTab = state.activeDqnTab === "gap"
       const isTransitionTab = state.activeDqnTab === "transition"
@@ -1255,13 +1416,15 @@ export function SubsurfaceMonolithCanvas() {
       }
 
       // -----------------------------------------------------------------------
-      // MODE 03: SMOOTH 3D BOUNDARY AREA VOLUME + 5 INTACT CPT TEST PIPES
+      // MODE 03: SMOOTH 3D BOUNDARY VOLUME (Extrudes downward from Section 02 map, peels off into Section 04)
       // -----------------------------------------------------------------------
       voxelBoundaryGroup.visible = wVoxel > 0.01
-      voxelBoundaryGroup.scale.setScalar(0.88 + 0.16 * wVoxel)
+      // Extrude vertically as wVoxel enters, and lift upward like a stage curtain as wStratum enters!
+      const extrudeY = Math.max(0.08, THREE.MathUtils.smoothstep(wVoxel, 0, 1))
+      voxelBoundaryGroup.scale.set(1.08, extrudeY * 1.06, 1.08)
+      voxelBoundaryGroup.position.y = 0.25 + wStratum * 2.2
       boundaryFrameLineMat.opacity = wVoxel * 0.75
 
-      // Smooth GPU Clipping Planes driven by Easting (sliceX) & Northing (sliceY) sliders
       const targetClipX = -BLOCK_W / 2 + (state.sliceX / 100) * BLOCK_W
       const targetClipZ = -BLOCK_D / 2 + (state.sliceY / 100) * BLOCK_D
       currentClipX = THREE.MathUtils.damp(currentClipX, targetClipX, 8, dt)
@@ -1278,11 +1441,13 @@ export function SubsurfaceMonolithCanvas() {
         sEntry.edgeMaterial.opacity = wVoxel * 0.5
       }
 
-      // Update the 5 CPT Test Pipes (Never clipped, highlight selected/hovered pipe, project screen coords)
-      for (const pEntry of pipeVisualEntries) {
+      // 5 CPT Test Pipes drop in from above as wVoxel approaches 1
+      for (let pIdx = 0; pIdx < pipeVisualEntries.length; pIdx++) {
+        const pEntry = pipeVisualEntries[pIdx]
         const isSelected = state.selectedPipeId === pEntry.id
         const isHovered = hoveredPipeId === pEntry.id
 
+        pEntry.group.position.y = (1 - extrudeY) * (1.2 + pIdx * 0.18)
         pEntry.capMat.opacity = wVoxel
         pEntry.capMat.emissive.setHex(isSelected || isHovered ? 0x10b981 : 0x7a421d)
         pEntry.capMat.emissiveIntensity = isSelected ? 0.75 : isHovered ? 0.5 : 0.2
@@ -1297,13 +1462,16 @@ export function SubsurfaceMonolithCanvas() {
           sMat.emissiveIntensity = isSelected ? 0.42 : 0.18
         }
 
-        // Project selected pipe cap 3D position to 2D container percentage for Popover placement
         if (isSelected && wVoxel > 0.4) {
           pEntry.capMesh.getWorldPosition(projectedVec)
           projectedVec.y += 0.25
           projectedVec.project(camera)
-          const xPct = Math.round(((projectedVec.x + 1) / 2) * 1000) / 10
-          const yPct = Math.round(((-projectedVec.y + 1) / 2) * 1000) / 10
+          // Convert full-screen NDC (-1..1) to percentage within the active stageRect
+          const screenPxX = ((projectedVec.x + 1) / 2) * (container?.clientWidth || window.innerWidth)
+          const screenPxY = ((-projectedVec.y + 1) / 2) * (container?.clientHeight || window.innerHeight)
+          const sr = state.stageRect
+          const xPct = Math.round(((screenPxX - sr.left) / Math.max(1, sr.width)) * 1000) / 10
+          const yPct = Math.round(((screenPxY - sr.top) / Math.max(1, sr.height)) * 1000) / 10
 
           if (
             Math.abs(xPct - lastProjectedX) > 0.6 ||
@@ -1312,8 +1480,8 @@ export function SubsurfaceMonolithCanvas() {
             lastProjectedX = xPct
             lastProjectedY = yPct
             setPipeScreenCoords({
-              xPct: THREE.MathUtils.clamp(xPct, 12, 88),
-              yPct: THREE.MathUtils.clamp(yPct, 14, 82),
+              xPct: THREE.MathUtils.clamp(xPct, 8, 86),
+              yPct: THREE.MathUtils.clamp(yPct, 10, 82),
             })
           }
         }
@@ -1323,7 +1491,7 @@ export function SubsurfaceMonolithCanvas() {
       // MODE 04: 3D TOP-OF-BEARING DEPTH HEATMAP & STRUCTURAL PILE PROBES
       // -----------------------------------------------------------------------
       stratumCageGroup.visible = wStratum > 0.01
-      stratumCageGroup.scale.setScalar(0.84 + 0.22 * wStratum)
+      stratumCageGroup.scale.setScalar(0.88 + 0.24 * wStratum)
       pileCapMat.opacity = wStratum * 0.85
       pileCapLineMat.opacity = wStratum * 0.65
       terrainMat.opacity = wStratum * 0.98
@@ -1331,7 +1499,6 @@ export function SubsurfaceMonolithCanvas() {
       datumLaserMat.opacity = wStratum * 0.18
       datumLineMat.opacity = wStratum * 0.75
 
-      // Live vertex heatmap recalculation whenever user adjusts minQc, maxIc, or minThickness sliders
       if (
         Math.abs(state.minQc - lastHmQc) > 0.05 ||
         Math.abs(state.maxIc - lastHmIc) > 0.01 ||
@@ -1349,7 +1516,7 @@ export function SubsurfaceMonolithCanvas() {
 
       for (const bPile of bearingPileVisuals) {
         const isHighlighted = state.hoveredBearingPointId === bPile.id
-        bPile.mesh.position.y = 1.25 - PILE_LEN / 2 - qcShift * 0.45
+        bPile.mesh.position.y = 1.25 - PILE_LEN / 2 - qcShift * 0.45 + (1 - wStratum) * 1.4
         bPile.mat.opacity = wStratum * (isHighlighted ? 1.0 : 0.82)
         bPile.mat.emissive.setHex(isHighlighted ? 0x10b981 : 0x7a421d)
         bPile.mat.emissiveIntensity = isHighlighted ? 0.8 : 0.2
@@ -1361,7 +1528,7 @@ export function SubsurfaceMonolithCanvas() {
       }
 
       // -----------------------------------------------------------------------
-      // CAMERA CHOREOGRAPHY ACROSS SECTIONS
+      // FULL-VIEWPORT CAMERA SPLINE, INTRA-SECTION DOLLY PAN & VIEW OFFSET
       // -----------------------------------------------------------------------
       const fromCam =
         cameraStageTargets[state.transitionFrom] ||
@@ -1373,13 +1540,33 @@ export function SubsurfaceMonolithCanvas() {
         cameraStageTargets.hero
       const t = state.transitionT
 
+      // Curved orbital arc whip during section transitions (adds lateral/vertical arc peak at t = 0.5)
+      const transitionArc = Math.sin(t * Math.PI)
       const isFrontProfile = state.activeStage === "voxel" && state.cameraView === "front"
+
+      // Intra-section horizontal dolly pan in Section 01 (sweeps across Zone 1 -> Zone 2 -> Zone 3)
+      let problemPanX = 0
+      if (wProblem > 0.2) {
+        if (state.hoveredProblemZone === 0) {
+          problemPanX = -1.35 * wProblem
+        } else if (state.hoveredProblemZone === 1) {
+          problemPanX = 0
+        } else if (state.hoveredProblemZone === 2) {
+          problemPanX = 1.35 * wProblem
+        } else {
+          problemPanX = (state.stageProgress - 0.5) * 2.1 * wProblem
+        }
+      }
+
       const targetCamX = isFrontProfile
         ? 0.0
-        : THREE.MathUtils.lerp(fromCam.camPos[0], toCam.camPos[0], t)
+        : THREE.MathUtils.lerp(fromCam.camPos[0], toCam.camPos[0], t) +
+          transitionArc * 1.4 +
+          problemPanX * 0.65
       const targetCamY = isFrontProfile
         ? -1.2
-        : THREE.MathUtils.lerp(fromCam.camPos[1], toCam.camPos[1], t)
+        : THREE.MathUtils.lerp(fromCam.camPos[1], toCam.camPos[1], t) +
+          transitionArc * 1.1
       const targetCamZ = isFrontProfile
         ? 10.4
         : THREE.MathUtils.lerp(fromCam.camPos[2], toCam.camPos[2], t)
@@ -1393,15 +1580,39 @@ export function SubsurfaceMonolithCanvas() {
       currentCamX = THREE.MathUtils.damp(currentCamX, targetCamX, 4.5, dt)
       currentCamY = THREE.MathUtils.damp(currentCamY, targetCamY, 4.5, dt)
       currentCamZ = THREE.MathUtils.damp(currentCamZ, targetCamZ, 4.5, dt)
+      currentLookX = THREE.MathUtils.damp(currentLookX, problemPanX, 5.0, dt)
       currentLookY = THREE.MathUtils.damp(currentLookY, targetLookY, 5.0, dt)
       currentRootRotY = THREE.MathUtils.damp(currentRootRotY, targetRotY, 5.0, dt)
 
+      // Apply camera.setViewOffset on full-viewport desktop canvas so 3D object aligns to target dock without box clipping
+      const vpW = container?.clientWidth || window.innerWidth
+      const vpH = container?.clientHeight || window.innerHeight
+      if (vpW >= 1024) {
+        currentOffsetCenterX = THREE.MathUtils.damp(
+          currentOffsetCenterX,
+          state.stageRect.centerX,
+          8.0,
+          dt
+        )
+        currentOffsetCenterY = THREE.MathUtils.damp(
+          currentOffsetCenterY,
+          state.stageRect.centerY,
+          8.0,
+          dt
+        )
+        const offsetX = vpW / 2 - currentOffsetCenterX
+        const offsetY = vpH / 2 - currentOffsetCenterY
+        camera.setViewOffset(vpW, vpH, offsetX, offsetY, vpW, vpH)
+      } else {
+        camera.clearViewOffset()
+      }
+
       camera.position.set(
-        currentCamX + pointerX * 0.3,
-        currentCamY + pointerY * 0.2,
+        currentCamX + pointerX * 0.25,
+        currentCamY + pointerY * 0.18,
         currentCamZ
       )
-      camera.lookAt(0, currentLookY, 0)
+      camera.lookAt(currentLookX, currentLookY, 0)
       monolithRoot.rotation.y = currentRootRotY
 
       renderer.render(scene, camera)
@@ -1423,8 +1634,8 @@ export function SubsurfaceMonolithCanvas() {
 
     return () => {
       resizeObserver.disconnect()
-      container.removeEventListener("pointermove", handlePointerMove)
-      container.removeEventListener("pointerdown", handlePointerDown)
+      window.removeEventListener("pointermove", handlePointerMove)
+      window.removeEventListener("pointerdown", handlePointerDown)
       window.removeEventListener("pointerup", handlePointerUp)
 
       renderer.setAnimationLoop(null)

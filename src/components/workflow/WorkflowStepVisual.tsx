@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Share2,
   TrendingDown,
-  Activity,
   Layers,
 } from "lucide-react"
 
@@ -115,68 +114,86 @@ export function WorkflowStepVisual({ stepIndex, isActive }: WorkflowStepVisualPr
   }
 
   if (stepIndex === 1) {
-    // Step 02: Soil Strata Log & Real-Time CPT Resistance Curve
+    // Step 02: Ingest CPT Sounding Files (.xlsx or .csv) & Header Auto-Mapping
     return (
       <div className="relative w-full h-full min-h-[220px] sm:min-h-[250px] bg-[#120B07] border border-[#EFE7DE]/15 p-4 flex flex-col justify-between overflow-hidden">
         <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2 text-[10px] font-mono">
           <span className="text-[#FAD9BA] font-bold flex items-center gap-1.5">
-            <FileSpreadsheet className="w-3.5 h-3.5 text-[#BD8564]" />
-            ON-RIG SOUNDING READOUT
+            <FileSpreadsheet className="w-3.5 h-3.5 text-[#10B981]" />
+            CPT SPREADSHEET INGESTION
           </span>
-          <span className="text-[#10B981] font-bold">CPT-01 RECORDED</span>
+          <span className="text-[#10B981] font-bold">.XLSX / .CSV AUTO-MAPPED</span>
         </div>
 
-        <div className="my-auto py-2 flex items-center gap-3">
-          {/* Depth Axis Bar */}
-          <div className="flex flex-col justify-between h-28 text-[8px] font-mono text-[#EFE7DE]/50 border-r border-[#EFE7DE]/15 pr-2 tabular-nums">
-            <span>0.0m</span>
-            <span>-5.0m</span>
-            <span>-12.0m</span>
-            <span className="text-[#FAD9BA] font-bold">-25.0m</span>
-          </div>
-
-          {/* Soil Classification Bands + Penetration Curve */}
-          <div className="flex-1 relative h-28 bg-[#1C130D] border border-[#EFE7DE]/15 overflow-hidden">
-            {/* Strata Color Bands */}
-            <div className="absolute inset-0 flex flex-col">
-              <div className="h-[22%] bg-[#D4A373]/20 border-b border-[#D4A373]/30 px-2 py-0.5 text-[8px] font-mono text-[#FAD9BA]">
-                Clean Sand (qc 6.8)
-              </div>
-              <div className="h-[28%] bg-[#588157]/20 border-b border-[#588157]/30 px-2 py-0.5 text-[8px] font-mono text-[#A8D5BA]">
-                Sandy Silt (qc 4.2)
-              </div>
-              <div className="h-[28%] bg-[#A0522D]/20 border-b border-[#A0522D]/30 px-2 py-0.5 text-[8px] font-mono text-[#E8A598]">
-                Sensitive Clay (qc 1.1)
-              </div>
-              <div className="flex-1 bg-[#E76F51]/25 px-2 py-0.5 text-[8px] font-mono text-[#FAD9BA] font-bold">
-                Dense Stratum (qc 18.6)
+        <div className="my-auto py-2 space-y-2.5">
+          {/* Imported File Info Chip */}
+          <div className="bg-[#1C130D] border border-[#10B981]/40 p-2 flex items-center justify-between text-[10px] font-mono">
+            <div className="flex items-center gap-2">
+              <span className="p-1 bg-[#10B981]/15 text-[#10B981] rounded-xs">
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+              </span>
+              <div>
+                <span className="font-bold text-[#EFE7DE]">CPT_Sounding_01.xlsx</span>
+                <span className="text-[9px] text-[#EFE7DE]/50 block">48.6 KB · Electrical CPT</span>
               </div>
             </div>
+            <span className="text-[9px] text-[#10B981] bg-[#10B981]/15 px-1.5 py-0.5 font-bold uppercase">
+              Parsed &lt; 15 ms
+            </span>
+          </div>
 
-            {/* Simulated Live Resistance Curve (qc MPa) */}
-            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 200 100">
-              <motion.path
-                d="M 35 0 L 48 12 L 40 22 L 25 36 L 28 50 L 12 62 L 10 78 L 22 84 L 145 92 L 180 100"
-                fill="none"
-                stroke="#FAD9BA"
-                strokeWidth="2"
-                initial={{ pathLength: 0.4 }}
-                animate={{ pathLength: isActive ? 1 : 0.6 }}
-                transition={{ duration: 0.9, ease: "easeOut" }}
-              />
-            </svg>
+          {/* Auto-Mapped Column Headers Strip */}
+          <div className="grid grid-cols-3 gap-1.5 text-[8px] font-mono">
+            <div className="bg-[#271C14] border border-[#EFE7DE]/10 p-1.5">
+              <span className="text-[#EFE7DE]/40 block">COL 1</span>
+              <span className="text-[#FAD9BA] font-bold">depth_(m)</span>
+            </div>
+            <div className="bg-[#271C14] border border-[#EFE7DE]/10 p-1.5">
+              <span className="text-[#EFE7DE]/40 block">COL 2</span>
+              <span className="text-[#FAD9BA] font-bold">qc_(MPa)</span>
+            </div>
+            <div className="bg-[#271C14] border border-[#EFE7DE]/10 p-1.5">
+              <span className="text-[#EFE7DE]/40 block">COL 3</span>
+              <span className="text-[#FAD9BA] font-bold">fs_(kPa)</span>
+            </div>
+          </div>
 
-            {/* Legend Tag */}
-            <div className="absolute top-1 right-2 bg-[#1C130D]/90 border border-[#EFE7DE]/20 px-1.5 py-0.5 text-[8px] font-mono text-[#FAD9BA] flex items-center gap-1">
-              <Activity className="w-2.5 h-2.5 text-[#10B981]" />
-              <span>qc curve (MPa)</span>
+          {/* Reconstructed Strata Log & Cone Resistance Curve Preview */}
+          <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-col justify-between h-14 text-[8px] font-mono text-[#EFE7DE]/50 border-r border-[#EFE7DE]/15 pr-1.5 tabular-nums">
+              <span>0m</span>
+              <span>-12m</span>
+              <span className="text-[#FAD9BA] font-bold">-25m</span>
+            </div>
+
+            <div className="flex-1 relative h-14 bg-[#1C130D] border border-[#EFE7DE]/15 overflow-hidden flex flex-col justify-between p-1">
+              {/* Strata Color Bands */}
+              <div className="flex items-center gap-1 text-[8px] font-mono">
+                <span className="px-1 bg-[#D4A373]/30 text-[#FAD9BA]">Sand</span>
+                <span className="px-1 bg-[#588157]/30 text-[#A8D5BA]">Silt</span>
+                <span className="px-1 bg-[#A0522D]/30 text-[#E8A598]">Clay</span>
+                <span className="px-1 bg-[#E76F51]/30 text-[#FAD9BA] font-bold">Dense Bearing</span>
+              </div>
+
+              {/* Dynamic Resistance Curve SVG */}
+              <svg className="w-full h-6" preserveAspectRatio="none" viewBox="0 0 200 40">
+                <motion.path
+                  d="M 10 35 L 35 30 L 60 22 L 95 32 L 130 18 L 165 8 L 195 2"
+                  fill="none"
+                  stroke="#FAD9BA"
+                  strokeWidth="2"
+                  initial={{ pathLength: 0.3 }}
+                  animate={{ pathLength: isActive ? 1 : 0.6 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                />
+              </svg>
             </div>
           </div>
         </div>
 
         <div className="pt-2 border-t border-[#EFE7DE]/15 flex items-center justify-between text-[10px] font-mono">
-          <span className="text-[#EFE7DE]/70">Robertson 9-Zone classification</span>
-          <span className="text-[#FAD9BA] font-bold">&lt; 15 ms parse</span>
+          <span className="text-[#EFE7DE]/70">Electrical CPT · CPTm Bicone · CPTu</span>
+          <span className="text-[#10B981] font-bold">Robertson 9-Zone</span>
         </div>
       </div>
     )

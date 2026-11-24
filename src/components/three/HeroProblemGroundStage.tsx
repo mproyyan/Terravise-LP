@@ -3,8 +3,11 @@ import * as THREE from "three"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import {
   STRATA_LAYER_SPECS,
-  createProceduralStrataTexture,
+  createRealisticStrataPBRTextures,
+  createConcretePBRTextures,
   createLCutawayStrataGeometry,
+  applyBoxProjectedUVs,
+  getGeologicalWave,
   smoothstep,
 } from "./geology3DUtils"
 
@@ -48,15 +51,17 @@ export function HeroProblemGroundCanvas() {
     camera.position.set(8.4, 5.2, 9.4)
     camera.lookAt(0, -0.75, 0)
 
-    // Studio Architectural Lighting
-    const ambientLight = new THREE.AmbientLight(0xfbf7f2, 0.95)
+    // Studio Architectural & Geological Cutaway Lighting
+    const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8)
+
+    const ambientLight = new THREE.AmbientLight(0xfbf7f2, 1.05)
     scene.add(ambientLight)
 
-    const hemiLight = new THREE.HemisphereLight(0xfad9ba, 0x381800, 0.65)
+    const hemiLight = new THREE.HemisphereLight(0xfff3e6, 0x381800, 0.78)
     scene.add(hemiLight)
 
-    const keyLight = new THREE.DirectionalLight(0xfff5eb, 2.5)
-    keyLight.position.set(8, 14, 9)
+    const keyLight = new THREE.DirectionalLight(0xfff7ed, 2.8)
+    keyLight.position.set(8, 14, 10)
     keyLight.castShadow = true
     keyLight.shadow.mapSize.set(1024, 1024)
     keyLight.shadow.camera.left = -6
@@ -69,11 +74,16 @@ export function HeroProblemGroundCanvas() {
     keyLight.shadow.bias = -0.0002
     scene.add(keyLight)
 
-    const rimLight = new THREE.DirectionalLight(0xfad9ba, 1.25)
+    // Dedicated cutaway interior fill light to bring out bump relief on L-cutout inner walls
+    const cutawayFillLight = new THREE.DirectionalLight(0xffe8d1, 1.45)
+    cutawayFillLight.position.set(6, 2, 8)
+    scene.add(cutawayFillLight)
+
+    const rimLight = new THREE.DirectionalLight(0xfad9ba, 1.35)
     rimLight.position.set(-8, 6, -6)
     scene.add(rimLight)
 
-    const bottomFill = new THREE.DirectionalLight(0xe76f51, 0.65)
+    const bottomFill = new THREE.DirectionalLight(0xe76f51, 0.75)
     bottomFill.position.set(0, -9, 5)
     scene.add(bottomFill)
 
@@ -102,10 +112,21 @@ export function HeroProblemGroundCanvas() {
       return mat
     }
 
+    // Concrete PBR textures for building podium and structural slabs
+    const concreteTexSet = createConcretePBRTextures("#EFE7DE", maxAnisotropy)
+    disposableTextures.push(concreteTexSet.map, concreteTexSet.bumpMap)
+
     // L-shaped Podium matching the L-cutaway soil block
     const podiumGeo = createLCutawayStrataGeometry(BLOCK_W + 0.14, 0.14, BLOCK_D + 0.14, 0, 1)
     const podiumMat = registerBuildingMat(
-      new THREE.MeshStandardMaterial({ color: 0xefe7de, roughness: 0.68, metalness: 0.06 }),
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: concreteTexSet.map,
+        bumpMap: concreteTexSet.bumpMap,
+        bumpScale: 0.018,
+        roughness: 0.65,
+        metalness: 0.06,
+      }),
       1
     )
     const podiumMesh = new THREE.Mesh(podiumGeo, podiumMat)
@@ -130,7 +151,7 @@ export function HeroProblemGroundCanvas() {
 
     const towerCoreGeo = new THREE.BoxGeometry(towerW, towerH, towerD)
     const towerCoreMat = registerBuildingMat(
-      new THREE.MeshStandardMaterial({ color: 0x2b211a, roughness: 0.25, metalness: 0.45 }),
+      new THREE.MeshStandardMaterial({ color: 0x2b211a, roughness: 0.22, metalness: 0.52 }),
       1
     )
     const towerCore = new THREE.Mesh(towerCoreGeo, towerCoreMat)
@@ -140,7 +161,14 @@ export function HeroProblemGroundCanvas() {
     disposableGeometries.push(towerCoreGeo)
 
     const slabMat = registerBuildingMat(
-      new THREE.MeshStandardMaterial({ color: 0xfbf7f2, roughness: 0.55, metalness: 0.1 }),
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: concreteTexSet.map,
+        bumpMap: concreteTexSet.bumpMap,
+        bumpScale: 0.012,
+        roughness: 0.52,
+        metalness: 0.1,
+      }),
       1
     )
     const slabEdgeMat = registerBuildingMat(
@@ -206,6 +234,10 @@ export function HeroProblemGroundCanvas() {
     const layerEntries: LayerVisualEntry[] = []
     let cursorY = 0
 
+    // Shared pebble/clast geometry for realistic internal soil inclusions along cutaway faces
+    const clastBaseGeo = new THREE.DodecahedronGeometry(0.055, 1)
+    disposableGeometries.push(clastBaseGeo)
+
     for (let idx = 0; idx < STRATA_LAYER_SPECS.length; idx++) {
       const spec = STRATA_LAYER_SPECS[idx]
       const layerGroup = new THREE.Group()
@@ -213,8 +245,8 @@ export function HeroProblemGroundCanvas() {
       cursorY = baseY
       layerGroup.position.y = baseY
 
-      const tex = createProceduralStrataTexture(spec.colorHex, spec.pattern)
-      disposableTextures.push(tex)
+      const pbrTex = createRealisticStrataPBRTextures(spec.colorHex, spec.pattern, maxAnisotropy)
+      disposableTextures.push(pbrTex.map, pbrTex.bumpMap, pbrTex.roughnessMap)
 
       const geo = createLCutawayStrataGeometry(
         BLOCK_W,
@@ -224,10 +256,13 @@ export function HeroProblemGroundCanvas() {
         STRATA_LAYER_SPECS.length
       )
       const mat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(spec.colorHex),
-        map: tex,
-        roughness: 0.72,
-        metalness: 0.06,
+        color: 0xffffff,
+        map: pbrTex.map,
+        bumpMap: pbrTex.bumpMap,
+        bumpScale: spec.bumpScale,
+        roughnessMap: pbrTex.roughnessMap,
+        roughness: spec.roughness,
+        metalness: spec.metalness,
         transparent: true,
         opacity: 1,
         depthWrite: true,
@@ -238,11 +273,47 @@ export function HeroProblemGroundCanvas() {
       mesh.receiveShadow = true
       layerGroup.add(mesh)
 
-      const edgeGeo = new THREE.EdgesGeometry(geo, 22)
+      // Add realistic embedded 3D gravel cobbles & sedimentary nodules on the L-cutaway interior walls & top surface
+      if (spec.pattern === "bearing" || spec.pattern === "sand" || spec.pattern === "silt") {
+        const clastCount = spec.pattern === "bearing" ? 26 : spec.pattern === "sand" ? 12 : 8
+        const clastMat = new THREE.MeshStandardMaterial({
+          color: spec.pattern === "bearing" ? 0xc87a51 : spec.pattern === "sand" ? 0xe6c299 : 0x466345,
+          bumpMap: pbrTex.bumpMap,
+          bumpScale: 0.025,
+          roughness: 0.72,
+          metalness: 0.08,
+        })
+        disposableMaterials.push(clastMat)
+
+        for (let c = 0; c < clastCount; c++) {
+          const clastMesh = new THREE.Mesh(clastBaseGeo, clastMat)
+          const onXWall = c % 2 === 0
+          // Place clasts along the two interior L-cutaway walls (x = 0.22, z in [-0.08, 1.55] and z = -0.08, x in [0.22, 1.95])
+          const frac = (c + 0.5) / clastCount
+          const cy = (0.15 + ((c * 37) % 70) / 100) * spec.height
+          if (onXWall) {
+            const cz = -0.04 + frac * (BLOCK_D / 2 - 0.06)
+            const waveY = getGeologicalWave(0.22, cz, idx * 1.6) * 0.5
+            clastMesh.position.set(0.225, cy + waveY, cz)
+          } else {
+            const cx = 0.26 + frac * (BLOCK_W / 2 - 0.34)
+            const waveY = getGeologicalWave(cx, -0.08, idx * 1.6) * 0.5
+            clastMesh.position.set(cx, cy + waveY, -0.075)
+          }
+          const s = spec.pattern === "bearing" ? 0.7 + (c % 4) * 0.32 : 0.42 + (c % 3) * 0.2
+          clastMesh.scale.set(s * 1.25, s * 0.65, s * 0.95)
+          clastMesh.rotation.set(c * 0.7, c * 1.3, c * 0.4)
+          clastMesh.castShadow = true
+          clastMesh.receiveShadow = true
+          layerGroup.add(clastMesh)
+        }
+      }
+
+      const edgeGeo = new THREE.EdgesGeometry(geo, 24)
       const edgeMat = new THREE.LineBasicMaterial({
         color: 0x1c130d,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.42,
       })
       const edgeLines = new THREE.LineSegments(edgeGeo, edgeMat)
       layerGroup.add(edgeLines)
@@ -270,7 +341,7 @@ export function HeroProblemGroundCanvas() {
     monolithRoot.add(problemAnomalyGroup)
 
     // Center Zone: Undetected Soft Marine Clay Hazard Pocket nestled in the L-cutaway corner
-    const anomalyGeo = new THREE.IcosahedronGeometry(0.85, 3)
+    const anomalyGeo = new THREE.IcosahedronGeometry(0.85, 4)
     const posAttr = anomalyGeo.attributes.position
     for (let i = 0; i < posAttr.count; i++) {
       const vx = posAttr.getX(i)
@@ -279,22 +350,35 @@ export function HeroProblemGroundCanvas() {
       const wave =
         1 +
         0.22 * Math.sin(vx * 3.2 + 0.5) * Math.cos(vz * 2.8) +
-        0.15 * Math.cos(vy * 4.0)
-      posAttr.setXYZ(i, vx * 1.15 * wave, vy * 0.42 * wave, vz * 0.88 * wave)
+        0.15 * Math.cos(vy * 4.0) +
+        0.06 * Math.sin(vx * 6.5 - vz * 5.8)
+      // Pinch edges horizontally to resemble a natural sedimentary clay lens
+      const radialDist = Math.hypot(vx, vz)
+      const lensPinch = Math.max(0.28, 1 - radialDist * 0.35)
+      posAttr.setXYZ(i, vx * 1.18 * wave, vy * 0.44 * wave * lensPinch, vz * 0.9 * wave)
     }
-    anomalyGeo.computeVertexNormals()
+    applyBoxProjectedUVs(anomalyGeo, 0.65, 0.95)
+
+    const clayLensTex = createRealisticStrataPBRTextures("#C85A32", "clay", maxAnisotropy)
+    disposableTextures.push(clayLensTex.map, clayLensTex.bumpMap, clayLensTex.roughnessMap)
 
     const anomalyMat = new THREE.MeshStandardMaterial({
-      color: 0xe76f51,
+      color: 0xffffff,
+      map: clayLensTex.map,
+      bumpMap: clayLensTex.bumpMap,
+      bumpScale: 0.032,
+      roughnessMap: clayLensTex.roughnessMap,
       emissive: 0xd97706,
-      emissiveIntensity: 0.5,
-      roughness: 0.32,
-      metalness: 0.1,
+      emissiveIntensity: 0.38,
+      roughness: 0.38,
+      metalness: 0.08,
       transparent: true,
       opacity: 0,
     })
     const anomalyMesh = new THREE.Mesh(anomalyGeo, anomalyMat)
     anomalyMesh.position.set(0.55, -0.15, 0.48)
+    anomalyMesh.castShadow = true
+    anomalyMesh.receiveShadow = true
     problemAnomalyGroup.add(anomalyMesh)
 
     const anomalyWireGeo = new THREE.WireframeGeometry(anomalyGeo)
@@ -305,11 +389,14 @@ export function HeroProblemGroundCanvas() {
     })
     anomalyMesh.add(new THREE.LineSegments(anomalyWireGeo, anomalyWireMat))
 
-    // Wide Fixed-Grid Boreholes that miss the L-cutaway clay lens
+    // Wide Fixed-Grid Boreholes with 60-degree Steel CPT Cone Tips that miss the L-cutaway clay lens
     const blindBoreholeGeo = new THREE.CylinderGeometry(0.048, 0.048, 3.8, 16)
+    const cptConeTipGeo = new THREE.ConeGeometry(0.064, 0.16, 16)
+    cptConeTipGeo.rotateX(Math.PI) // Point straight down
     const blindBoreholeMat = new THREE.MeshStandardMaterial({
-      color: 0x1c130d,
-      roughness: 0.4,
+      color: 0x3b2f26,
+      roughness: 0.28,
+      metalness: 0.68,
       transparent: true,
       opacity: 0,
     })
@@ -329,6 +416,9 @@ export function HeroProblemGroundCanvas() {
     for (const [bx, bz] of blindCorners) {
       const post = new THREE.Mesh(blindBoreholeGeo, blindBoreholeMat)
       post.position.set(bx, 0.1, bz)
+      const coneTip = new THREE.Mesh(cptConeTipGeo, blindBoreholeMat)
+      coneTip.position.y = -1.95
+      post.add(coneTip)
       problemAnomalyGroup.add(post)
 
       const ring = new THREE.Mesh(blindRingGeo, blindRingMat)
@@ -338,11 +428,13 @@ export function HeroProblemGroundCanvas() {
     }
 
     // West Zone: 5 Redundant Over-drilled Boreholes in uniform strata
-    const overdrillRodGeo = new THREE.CylinderGeometry(0.04, 0.04, 3.6, 12)
+    const overdrillRodGeo = new THREE.CylinderGeometry(0.042, 0.042, 3.6, 14)
     const overdrillMat = new THREE.MeshStandardMaterial({
       color: 0xd97706,
       emissive: 0x7a421d,
       emissiveIntensity: 0.3,
+      roughness: 0.3,
+      metalness: 0.55,
       transparent: true,
       opacity: 0,
     })
@@ -356,15 +448,20 @@ export function HeroProblemGroundCanvas() {
     for (const [ox, oz] of overdrillOffsets) {
       const oRod = new THREE.Mesh(overdrillRodGeo, overdrillMat)
       oRod.position.set(ox, 0.15, oz)
+      const oTip = new THREE.Mesh(cptConeTipGeo, overdrillMat)
+      oTip.position.y = -1.85
+      oRod.add(oTip)
       problemAnomalyGroup.add(oRod)
     }
 
     // East Zone: 3 Prematurely Terminated Budget-Cutoff Soundings (Hanging mid-depth)
-    const cutoffRodGeo = new THREE.CylinderGeometry(0.048, 0.048, 1.5, 12)
+    const cutoffRodGeo = new THREE.CylinderGeometry(0.048, 0.048, 1.5, 14)
     const cutoffMat = new THREE.MeshStandardMaterial({
       color: 0x9a3412,
       emissive: 0xdc2626,
       emissiveIntensity: 0.4,
+      roughness: 0.32,
+      metalness: 0.5,
       transparent: true,
       opacity: 0,
     })
@@ -376,6 +473,9 @@ export function HeroProblemGroundCanvas() {
     for (const [cx, cz] of cutoffOffsets) {
       const cRod = new THREE.Mesh(cutoffRodGeo, cutoffMat)
       cRod.position.set(cx, 1.15, cz)
+      const cTip = new THREE.Mesh(cptConeTipGeo, cutoffMat)
+      cTip.position.y = -0.8
+      cRod.add(cTip)
       problemAnomalyGroup.add(cRod)
 
       const stopRing = new THREE.Mesh(blindRingGeo, cutoffMat)
@@ -388,6 +488,7 @@ export function HeroProblemGroundCanvas() {
       anomalyGeo,
       anomalyWireGeo,
       blindBoreholeGeo,
+      cptConeTipGeo,
       blindRingGeo,
       overdrillRodGeo,
       cutoffRodGeo

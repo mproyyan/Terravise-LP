@@ -9,7 +9,7 @@ export const SITE_CONTENT = {
       "Terravise directs CPT rig exploration in real time. On-device SchemaGAN generative models and reinforcement learning agents replace rigid borehole grids with data-guided sounding locations.",
     primaryCta: "Download on App Store",
     secondaryCta: "Download sample CPT file",
-    appStoreUrl: "https://apps.apple.com/app/terravise",
+    appStoreUrl: "https://apps.apple.com/id/app/terravise/id6822973405",
     specPoints: [
       { label: "Rig hours saved", value: "35% to 45%" },
       { label: "On-device latency", value: "82 ms" },

@@ -177,7 +177,7 @@ export function VoxelBoundaryStage() {
         transparent: false,
         depthWrite: true,
         depthTest: true,
-        side: THREE.FrontSide,
+        side: THREE.DoubleSide,
       })
 
       const sMesh = new THREE.Mesh(sGeo, sMat)

@@ -214,15 +214,8 @@ export function FeedbackWallPage() {
         <div className="flex items-center gap-4">
           {/* Narrative Invitation Copy */}
           <div className="flex-1 space-y-1.5">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#FAD9BA] font-bold">
-                Suara Anda
-              </span>
-            </div>
-
             <h2 className="font-sans font-black text-sm sm:text-base text-[#EFE7DE] uppercase tracking-tight leading-snug">
-              Bagikan Masukan untuk Terravise
+              Feedback untuk Terravise
             </h2>
 
             <p className="font-sans text-[11px] sm:text-xs text-[#EFE7DE]/80 leading-relaxed">

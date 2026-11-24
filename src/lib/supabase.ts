@@ -28,12 +28,16 @@ import type { FeedbackSubmission } from "../types"
  *   feedback_notes TEXT NOT NULL
  * );
  *
- * -- Enable Row Level Security (RLS) and allow public insert
+ * -- Enable Row Level Security (RLS) and allow public insert & select
  * ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
  * CREATE POLICY "Allow public insert to feedback"
  *   ON feedback FOR INSERT
  *   TO anon, authenticated
  *   WITH CHECK (true);
+ * CREATE POLICY "Allow public select from feedback"
+ *   ON feedback FOR SELECT
+ *   TO anon, authenticated
+ *   USING (true);
  * ```
  */
 
@@ -102,3 +106,83 @@ export async function submitFeedback(payload: FeedbackSubmission): Promise<{ suc
     return { success: false, error: message }
   }
 }
+
+export interface FeedbackDisplayItem {
+  id: string
+  full_name?: string
+  role: string
+  feedback_notes: string
+  created_at?: string
+}
+
+function getLocalFeedbacks(): FeedbackDisplayItem[] {
+  try {
+    const raw = localStorage.getItem("terravise_feedback_local")
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed
+      .filter((item) => item && typeof item.feedback_notes === "string" && item.feedback_notes.trim().length > 0)
+      .map((item, idx) => ({
+        id: String(item.id || `local-${idx}`),
+        full_name: item.full_name ? String(item.full_name).trim() : undefined,
+        role: cleanRoleText(item.role, item.role_other),
+        feedback_notes: String(item.feedback_notes).trim(),
+        created_at: item.created_at,
+      }))
+      .reverse()
+  } catch {
+    return []
+  }
+}
+
+export function cleanRoleText(role?: string, roleOther?: string): string {
+  if (!role) return "Pengunjung"
+  if (role === "Lainnya" && roleOther) return roleOther.trim()
+  if (role.startsWith("Lainnya:")) {
+    const extracted = role.replace(/^Lainnya:\s*/i, "").trim()
+    return extracted || "Pengunjung"
+  }
+  return role.trim()
+}
+
+export async function fetchFeedbacks(): Promise<FeedbackDisplayItem[]> {
+  const localItems = getLocalFeedbacks()
+
+  if (!supabase || !isSupabaseConfigured) {
+    return localItems
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("feedback")
+      .select("id, created_at, full_name, role, role_other, feedback_notes")
+      .order("created_at", { ascending: false })
+      .limit(100)
+
+    if (error) {
+      console.error("Error fetching feedbacks from Supabase:", error)
+      return localItems
+    }
+
+    if (!data || data.length === 0) {
+      return localItems
+    }
+
+    const remoteItems: FeedbackDisplayItem[] = data
+      .filter((row) => row && typeof row.feedback_notes === "string" && row.feedback_notes.trim().length > 0)
+      .map((row) => ({
+        id: String(row.id),
+        full_name: row.full_name ? String(row.full_name).trim() : undefined,
+        role: cleanRoleText(row.role, row.role_other),
+        feedback_notes: String(row.feedback_notes).trim(),
+        created_at: row.created_at,
+      }))
+
+    return remoteItems
+  } catch (err) {
+    console.error("Unexpected error fetching feedbacks:", err)
+    return localItems
+  }
+}
+

@@ -14,6 +14,7 @@ import { TechnicalFaqSection } from "./components/sections/TechnicalFaqSection"
 import { TeamSection } from "./components/sections/TeamSection"
 import { FinalCtaSection } from "./components/sections/FinalCtaSection"
 import { FeedbackPage } from "./components/feedback/FeedbackPage"
+import { FeedbackWallPage } from "./components/feedback/FeedbackWallPage"
 import { Subsurface3DProvider } from "./context/Subsurface3DContext"
 import { HeroProblemGroundWrapper } from "./components/three/HeroProblemGroundStage"
 import { SITE_CONTENT } from "./data/siteContent"
@@ -41,8 +42,21 @@ export function App() {
     window.open(SITE_CONTENT.hero.appStoreUrl, "_blank", "noopener,noreferrer")
   }
 
-  // Dedicated /feedback page route
-  if (currentPath === "/feedback" || currentPath.startsWith("/feedback")) {
+  const normalizedPath = currentPath.replace(/\/+$/, "") || "/"
+
+  // Direct URL route for CPT Drilling Feedback Display Wall (no navigation button required)
+  if (
+    normalizedPath === "/feedbacks" ||
+    normalizedPath === "/feedback-wall" ||
+    normalizedPath === "/feedback/wall" ||
+    normalizedPath === "/feedback/live" ||
+    normalizedPath === "/feedback/display"
+  ) {
+    return <FeedbackWallPage />
+  }
+
+  // Dedicated /feedback submission form page route
+  if (normalizedPath === "/feedback") {
     return <FeedbackPage onBackToHome={() => navigateTo("/")} />
   }
 

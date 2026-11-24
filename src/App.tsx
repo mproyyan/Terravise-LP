@@ -15,6 +15,7 @@ import { TeamSection } from "./components/sections/TeamSection"
 import { FinalCtaSection } from "./components/sections/FinalCtaSection"
 import { FeedbackPage } from "./components/feedback/FeedbackPage"
 import { FeedbackWallPage } from "./components/feedback/FeedbackWallPage"
+import { FeedbackAdminPage } from "./components/feedback/FeedbackAdminPage"
 import { Subsurface3DProvider } from "./context/Subsurface3DContext"
 import { HeroProblemGroundWrapper } from "./components/three/HeroProblemGroundStage"
 import { SITE_CONTENT } from "./data/siteContent"
@@ -43,6 +44,16 @@ export function App() {
   }
 
   const normalizedPath = currentPath.replace(/\/+$/, "") || "/"
+
+  // Admin moderation page for toggling which feedbacks appear on the feedback wall
+  if (
+    normalizedPath === "/feedback/admin" ||
+    normalizedPath === "/feedback-admin" ||
+    normalizedPath === "/feedbacks/admin" ||
+    normalizedPath === "/admin/feedback"
+  ) {
+    return <FeedbackAdminPage />
+  }
 
   // Direct URL route for CPT Drilling Feedback Display Wall (no navigation button required)
   if (

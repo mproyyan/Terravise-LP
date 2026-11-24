@@ -3,7 +3,6 @@ import {
   fetchFeedbacks,
   supabase,
   isSupabaseConfigured,
-  cleanRoleText,
   type FeedbackDisplayItem,
 } from "../../lib/supabase"
 
@@ -73,36 +72,10 @@ export function FeedbackWallPage() {
             .channel("public:feedback:infinite-wall")
             .on(
               "postgres_changes",
-              { event: "INSERT", schema: "public", table: "feedback" },
-              (payload) => {
-                const newRow = payload.new as Record<string, unknown>
-                if (
-                  newRow &&
-                  typeof newRow.feedback_notes === "string" &&
-                  newRow.feedback_notes.trim()
-                ) {
-                  const addedItem: FeedbackDisplayItem = {
-                    id: String(newRow.id || Date.now()),
-                    full_name: newRow.full_name
-                      ? String(newRow.full_name).trim()
-                      : undefined,
-                    role: cleanRoleText(
-                      typeof newRow.role === "string" ? newRow.role : undefined,
-                      typeof newRow.role_other === "string"
-                        ? newRow.role_other
-                        : undefined
-                    ),
-                    feedback_notes: String(newRow.feedback_notes).trim(),
-                    created_at:
-                      typeof newRow.created_at === "string"
-                        ? newRow.created_at
-                        : undefined,
-                  }
-                  setFeedbacks((prev) => {
-                    if (prev.some((item) => item.id === addedItem.id)) return prev
-                    return [addedItem, ...prev]
-                  })
-                }
+              { event: "*", schema: "public", table: "feedback" },
+              () => {
+                // Reload displayed feedbacks whenever admin toggles is_displayed or new row arrives
+                loadData()
               }
             )
             .subscribe()
@@ -126,11 +99,20 @@ export function FeedbackWallPage() {
     return pool[idx]
   }
 
-  // Sync poolRef and seed initial visible cards as soon as DB data arrives
+  // Sync poolRef and seed initial visible cards as soon as DB data arrives,
+  // and immediately remove any card on screen that was un-flagged by admin
   useEffect(() => {
     poolRef.current = feedbacks
+    const allowedIds = new Set(feedbacks.map((f) => f.id))
 
-    if (feedbacks.length > 0 && !seededOnceRef.current) {
+    setSpawnedCards((prev) => prev.filter((c) => allowedIds.has(c.item.id)))
+
+    if (feedbacks.length === 0) {
+      seededOnceRef.current = false
+      return
+    }
+
+    if (!seededOnceRef.current) {
       seededOnceRef.current = true
       const currentDist = distanceRef.current
       const firstItem = pullNextFeedbackItem()

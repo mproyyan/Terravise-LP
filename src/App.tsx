@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { Navbar } from "./components/layout/Navbar"
 import { DepthSidebarTracker } from "./components/layout/DepthSidebarTracker"
 import { Footer } from "./components/layout/Footer"
@@ -12,13 +13,37 @@ import { AppDemoSection } from "./components/sections/AppDemoSection"
 import { TechnicalFaqSection } from "./components/sections/TechnicalFaqSection"
 import { TeamSection } from "./components/sections/TeamSection"
 import { FinalCtaSection } from "./components/sections/FinalCtaSection"
+import { FeedbackPage } from "./components/feedback/FeedbackPage"
 import { Subsurface3DProvider } from "./context/Subsurface3DContext"
 import { HeroProblemGroundWrapper } from "./components/three/HeroProblemGroundStage"
 import { SITE_CONTENT } from "./data/siteContent"
 
 export function App() {
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    return typeof window !== "undefined" ? window.location.pathname : "/"
+  })
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname)
+    }
+    window.addEventListener("popstate", handlePopState)
+    return () => window.removeEventListener("popstate", handlePopState)
+  }, [])
+
+  const navigateTo = (path: string) => {
+    window.history.pushState(null, "", path)
+    setCurrentPath(path)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   const handleOpenAppStore = () => {
     window.open(SITE_CONTENT.hero.appStoreUrl, "_blank", "noopener,noreferrer")
+  }
+
+  // Dedicated /feedback page route
+  if (currentPath === "/feedback" || currentPath.startsWith("/feedback")) {
+    return <FeedbackPage onBackToHome={() => navigateTo("/")} />
   }
 
   return (
@@ -27,8 +52,11 @@ export function App() {
         {/* Dynamic Subsurface Depth Meter (Fixed Sidebar) */}
         <DepthSidebarTracker />
 
-        {/* Minimal Architectural Navbar (Brand + App Store CTA only) */}
-        <Navbar onOpenAppStore={handleOpenAppStore} />
+        {/* Minimal Architectural Navbar (Brand + App Store CTA + Feedback) */}
+        <Navbar
+          onOpenAppStore={handleOpenAppStore}
+          onNavigateToFeedback={() => navigateTo("/feedback")}
+        />
 
         {/* Main Landing Sections Flow with semantic id for skip links */}
         <main id="main-content" className="relative z-10 focus:outline-hidden">
@@ -51,7 +79,7 @@ export function App() {
         </main>
 
         {/* Engineering Footer */}
-        <Footer />
+        <Footer onNavigateToFeedback={() => navigateTo("/feedback")} />
       </div>
     </Subsurface3DProvider>
   )

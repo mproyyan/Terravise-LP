@@ -1,7 +1,11 @@
 import { Compass, HardHat, FileText, ExternalLink } from "lucide-react"
 import logoImg from "../../assets/terravise-logo.png"
 
-export function Footer() {
+interface FooterProps {
+  onNavigateToFeedback?: () => void
+}
+
+export function Footer({ onNavigateToFeedback }: FooterProps) {
   return (
     <footer className="bg-[#1C130D] text-[#EFE7DE] border-t border-[#EFE7DE]/15 pt-16 pb-12 select-none">
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
@@ -78,6 +82,17 @@ export function Footer() {
                   05. iPadOS App Workflow
                 </a>
               </li>
+              {onNavigateToFeedback && (
+                <li className="pt-2 border-t border-[#EFE7DE]/10">
+                  <button
+                    type="button"
+                    onClick={onNavigateToFeedback}
+                    className="hover:text-[#FAD9BA] text-[#BD8564] transition-colors py-1 block font-bold cursor-pointer text-left"
+                  >
+                    → Beri Feedback & Kolaborasi
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 

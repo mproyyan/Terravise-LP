@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react"
 import { Button } from "../ui/Button"
-import { Download } from "lucide-react"
+import { Download, MessageSquare } from "lucide-react"
 import { SITE_CONTENT } from "../../data/siteContent"
 import logoImg from "../../assets/terravise-logo.png"
 
 interface NavbarProps {
   onOpenAppStore?: () => void
+  onNavigateToFeedback?: () => void
 }
 
-export function Navbar({ onOpenAppStore }: NavbarProps) {
+export function Navbar({ onOpenAppStore, onNavigateToFeedback }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -66,17 +67,31 @@ export function Navbar({ onOpenAppStore }: NavbarProps) {
             </div>
           </a>
 
-          {/* Action: App Store Only */}
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={handleCtaClick}
-            aria-label="Download Terravise on App Store"
-            className="font-mono text-xs tracking-wider flex items-center gap-2"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>App Store</span>
-          </Button>
+          {/* Actions: Feedback & App Store */}
+          <div className="flex items-center gap-2.5">
+            {onNavigateToFeedback && (
+              <button
+                type="button"
+                onClick={onNavigateToFeedback}
+                aria-label="Buka halaman formulir feedback"
+                className="font-mono text-xs tracking-wider flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF5EE] border border-[#1C130D]/20 hover:border-[#7A421D] text-[#1C130D] transition-colors cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-[#7A421D]" />
+                <span className="hidden sm:inline">Feedback</span>
+              </button>
+            )}
+
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={handleCtaClick}
+              aria-label="Download Terravise on App Store"
+              className="font-mono text-xs tracking-wider flex items-center gap-2"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>App Store</span>
+            </Button>
+          </div>
         </div>
       </header>
     </>

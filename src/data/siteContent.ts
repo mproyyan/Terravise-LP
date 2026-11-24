@@ -180,7 +180,7 @@ export const SITE_CONTENT = {
     },
   ] as WorkflowStep[],
   trust: {
-    tag: "05 / Standards and data privacy",
+    tag: "06 / Standards and data privacy",
     heading: "Statutory standards. Offline on-device computation.",
     subheading:
       "Built for geotechnical field workflows. All neural calculations run on local Apple silicon neural engines with zero network transmission.",
@@ -201,6 +201,50 @@ export const SITE_CONTENT = {
         title: "ASTM D5778 & SNI 8460",
         desc: "Follows ASTM D5778 standard test methods for electronic friction cone testing and Indonesian SNI 8460:2017 foundation requirements.",
       },
+    ],
+  },
+  appDemo: {
+    tag: "07 / Application live walkthrough",
+    heading: "See Terravise in action on the rig",
+    subheading:
+      "Watch the on-device iPadOS system guide an active CPT campaign in real time: from satellite footprint definition to autonomous DQN coordinate routing and continuous 3D stratigraphy inspection.",
+    chapters: [
+      {
+        time: "00:00",
+        seconds: 0,
+        title: "Site Boundary Lock",
+        desc: "Trace building footprint on satellite imagery with geodetic UTM locking.",
+      },
+      {
+        time: "01:15",
+        seconds: 75,
+        title: "CPT Ingestion",
+        desc: "Automated spreadsheet (.xlsx / .csv) column mapping parsed in under 15 ms.",
+      },
+      {
+        time: "02:10",
+        seconds: 130,
+        title: "Autonomous Routing",
+        desc: "On-device DQN agent recommends Spot 2 target with 3 transparent criteria.",
+      },
+      {
+        time: "03:15",
+        seconds: 195,
+        title: "3D Stratigraphy",
+        desc: "RealityKit continuous voxel volume slicing with dual Easting/Northing cutters.",
+      },
+      {
+        time: "04:05",
+        seconds: 245,
+        title: "Bearing Layer Heatmap",
+        desc: "Filter competent bearing depth (qc ≥ 15 MPa) and compare building columns.",
+      },
+    ],
+    takeaways: [
+      "100% Offline Apple Silicon Neural Engine",
+      "Compatible with Electrical, Bicone & Piezocone CPT",
+      "Instant Column Depth Comparisons",
+      "ASTM D5778 & SNI 8460 Geotechnical Compliance",
     ],
   },
   faq: [

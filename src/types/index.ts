@@ -134,6 +134,21 @@ export interface WorkflowStep {
   rationales?: WorkflowRationale[]
 }
 
+export interface AppDemoChapter {
+  time: string
+  seconds: number
+  title: string
+  desc: string
+}
+
+export interface AppDemoContent {
+  tag: string
+  heading: string
+  subheading: string
+  chapters: AppDemoChapter[]
+  takeaways: string[]
+}
+
 export interface LeadFormData {
   fullName: string
   email: string

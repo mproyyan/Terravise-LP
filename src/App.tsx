@@ -8,6 +8,8 @@ import { SubsurfaceVoxelSection } from "./components/sections/SubsurfaceVoxelSec
 import { BearingStratumSection } from "./components/sections/BearingStratumSection"
 import { WorkflowSection } from "./components/sections/WorkflowSection"
 import { TechnicalTrustSection } from "./components/sections/TechnicalTrustSection"
+import { AppDemoSection } from "./components/sections/AppDemoSection"
+import { TechnicalFaqSection } from "./components/sections/TechnicalFaqSection"
 import { FinalCtaSection } from "./components/sections/FinalCtaSection"
 import { Subsurface3DProvider } from "./context/Subsurface3DContext"
 import { HeroProblemGroundWrapper } from "./components/three/HeroProblemGroundStage"
@@ -41,6 +43,8 @@ export function App() {
           <BearingStratumSection />
           <WorkflowSection />
           <TechnicalTrustSection />
+          <AppDemoSection />
+          <TechnicalFaqSection />
           <FinalCtaSection onOpenAppStore={handleOpenAppStore} />
         </main>
 

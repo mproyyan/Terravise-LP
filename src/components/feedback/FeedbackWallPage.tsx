@@ -26,6 +26,18 @@ function randomBetween(min: number, max: number): number {
   return min + Math.random() * (max - min)
 }
 
+/**
+ * Returns the vertical pixel gap to the next feedback card:
+ * - 70% chance: between 1.5s (87px) and 4.0s (232px)
+ * - 30% chance: above 4.0s (232px) up to ~6.55s (380px)
+ */
+function getWeightedSpawnGapPx(): number {
+  if (Math.random() < 0.7) {
+    return randomBetween(87, 232)
+  }
+  return randomBetween(232, 380)
+}
+
 export function FeedbackWallPage() {
   const [feedbacks, setFeedbacks] = useState<FeedbackDisplayItem[]>([])
   const [viewportH, setViewportH] = useState<number>(() =>
@@ -126,7 +138,7 @@ export function FeedbackWallPage() {
           item: firstItem,
         }
         lastSideRef.current = "left"
-        nextSpawnDistanceRef.current = currentDist + randomBetween(87, 380)
+        nextSpawnDistanceRef.current = currentDist + getWeightedSpawnGapPx()
         setSpawnedCards([firstCard])
         setPulseKey((k) => k + 1)
       }
@@ -152,8 +164,7 @@ export function FeedbackWallPage() {
         const nextItem = pullNextFeedbackItem()
 
         if (nextItem) {
-          // 87px at 58px/s = 1.5 seconds fastest; 380px at 58px/s = ~6.55 seconds slowest
-          const gapToNext = randomBetween(87, 380)
+          const gapToNext = getWeightedSpawnGapPx()
           const nextSide: "left" | "right" =
             lastSideRef.current === "left" ? "right" : "left"
           lastSideRef.current = nextSide

@@ -177,3 +177,21 @@ export interface TeamSectionContent {
   subheading: string
   members: TeamMember[]
 }
+
+export interface FeedbackSubmission {
+  id?: string
+  created_at?: string
+  full_name: string
+  role: string
+  role_other?: string
+  industry?: string
+  industry_other?: string
+  favorite_features: string[]
+  potential_rating?: string
+  collaboration_interest?: string
+  collaboration_types?: string[]
+  collaboration_contact_name?: string
+  collaboration_contact_org?: string
+  collaboration_contact_info?: string
+  feedback_notes: string
+}

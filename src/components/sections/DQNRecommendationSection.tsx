@@ -2,7 +2,7 @@ import { PlateHeader } from "../ui/PlateHeader"
 import { Badge } from "../ui/Badge"
 import { SITE_CONTENT } from "../../data/siteContent"
 import { MOCK_RECOMMENDED_POINT } from "../../data/mockGeology"
-import { Section3DAnchorDock } from "../three/Section3DAnchorDock"
+import { DqnRadarStage } from "../three/DqnRadarStage"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { Crosshair, Compass, Navigation, Cpu, Activity } from "lucide-react"
 
@@ -46,19 +46,19 @@ export function DQNRecommendationSection() {
   return (
     <section
       id="dqn"
-      className="py-24 bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12"
+      className="py-24 bg-[#1C130D] text-[#EFE7DE] border-b border-[#EFE7DE]/15 scroll-mt-12 relative z-10"
     >
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Plate Header */}
         <PlateHeader
           number="02"
           title="Next sounding selection"
-          metaRight="Spatial mission control & 3D neural pathfinding"
+          metaRight="Panoramic 3D geodetic radar table & neural trajectory arcs"
           tone="dark"
         />
 
         {/* Top Cockpit Bar: Left Floating Target Telemetry | Center Heading | Right Neural Gain HUD */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8">
           {/* Left Floating HUD Pill (3 Cols) */}
           <div className="lg:col-span-3 bg-[#271C14]/90 border border-[#EFE7DE]/15 p-3.5 font-mono text-xs space-y-1.5">
             <div className="flex items-center justify-between text-[10px] text-[#10B981]">
@@ -109,20 +109,13 @@ export function DQNRecommendationSection() {
           </div>
         </div>
 
-        {/* Center Full-Width 3D Holographic Geodetic Radar & Parabolic Search Arcs Stage */}
-        <div className="relative w-full my-2">
-          <Section3DAnchorDock
-            stage="dqn"
-            tone="dark"
-            title="02 / 3D Neural Search Arcs & 144-Node Geodetic Candidate Matrix"
-            subtitle="Parabolic Trajectories Converging on Spot 2"
-            renderMobileCanvas={false}
-            heightClass="h-[390px] xl:h-[440px]"
-          />
+        {/* Dedicated In-Flow Panoramic 3D Geodetic Radar Table (Rises & unfolds from below section on scroll) */}
+        <div className="relative w-full my-4 z-0">
+          <DqnRadarStage />
         </div>
 
         {/* Bottom 3-Column Horizontal Cockpit Rationale Console Dock ("Why this point? Spot 2") */}
-        <div className="mt-4 relative z-30">
+        <div className="mt-6 relative z-10">
           <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-[#BD8564] mb-3 px-1">
             <span className="flex items-center gap-1.5 font-bold">
               <Activity className="w-3.5 h-3.5 text-[#10B981]" />

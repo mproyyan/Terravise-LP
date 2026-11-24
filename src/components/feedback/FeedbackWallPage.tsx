@@ -7,34 +7,6 @@ import {
   type FeedbackDisplayItem,
 } from "../../lib/supabase"
 
-/**
- * Fallback showcase items used ONLY when no feedback entries exist yet
- * in Supabase or localStorage so the infinite CPT drilling display works out of the box.
- */
-const FALLBACK_FEEDBACKS: FeedbackDisplayItem[] = [
-  {
-    id: "sample-1",
-    full_name: "Ir. Hendra Wijaya, M.T.",
-    role: "Praktisi Geoteknik",
-    feedback_notes:
-      "Visualisasi 3D soil interpolation dan penentuan bearing layer sangat membantu tim lapangan mengambil keputusan cepat tanpa harus menunggu pengolahan data berhari-hari di kantor.",
-  },
-  {
-    id: "sample-2",
-    full_name: "Nadia Kusuma",
-    role: "Product Designer",
-    feedback_notes:
-      "Alur interaksi di iPad terasa sangat intuitif. Penyajian data sondir yang biasanya penuh angka tabel berhasil diubah menjadi visual spasial yang mudah dipahami berbagai pihak.",
-  },
-  {
-    id: "sample-3",
-    full_name: "Dr. Eng. R. Prasetyo",
-    role: "Akademisi & Peneliti",
-    feedback_notes:
-      "Pendekatan reinforcement learning untuk merekomendasikan titik sondir berikutnya sangat relevan untuk efisiensi investigasi tanah pada area dengan variasi stratigrafi yang kompleks.",
-  },
-]
-
 interface ActiveSpawnedCard {
   uid: string
   spawnDistancePx: number
@@ -66,17 +38,13 @@ export function FeedbackWallPage() {
   const [pulseKey, setPulseKey] = useState<number>(0)
 
   // Refs for the 60fps animation loop to avoid stale closures
-  const poolRef = useRef<FeedbackDisplayItem[]>(FALLBACK_FEEDBACKS)
+  const poolRef = useRef<FeedbackDisplayItem[]>([])
   const nextPoolIndexRef = useRef<number>(0)
-  const nextSpawnDistanceRef = useRef<number>(0)
+  const nextSpawnDistanceRef = useRef<number>(420)
   const lastSideRef = useRef<"left" | "right">("right")
   const uidCounterRef = useRef<number>(1)
-  const initializedRef = useRef<boolean>(false)
-
-  // Sync poolRef whenever feedbacks update
-  useEffect(() => {
-    poolRef.current = feedbacks.length > 0 ? feedbacks : FALLBACK_FEEDBACKS
-  }, [feedbacks])
+  const distanceRef = useRef<number>(420)
+  const seededOnceRef = useRef<boolean>(false)
 
   // Track viewport resize
   useEffect(() => {
@@ -85,19 +53,19 @@ export function FeedbackWallPage() {
     return () => window.removeEventListener("resize", onResize)
   }, [])
 
-  // Load feedbacks from Supabase / localStorage + Realtime listener + Polling
+  // Load real feedbacks from Supabase + Realtime listener + Polling every 5s
   useEffect(() => {
     let isMounted = true
 
     const loadData = async () => {
       const items = await fetchFeedbacks()
-      if (isMounted && items.length > 0) {
+      if (isMounted) {
         setFeedbacks(items)
       }
     }
 
     loadData()
-    const pollInterval = setInterval(loadData, 15000)
+    const pollInterval = setInterval(loadData, 5000)
 
     const channel =
       supabase && isSupabaseConfigured
@@ -149,59 +117,41 @@ export function FeedbackWallPage() {
     }
   }, [])
 
-  // Helper to pull the next feedback item in an infinite circular loop
-  const pullNextFeedbackItem = (): FeedbackDisplayItem => {
-    const pool = poolRef.current.length > 0 ? poolRef.current : FALLBACK_FEEDBACKS
+  // Helper to pull the next feedback item from the DB pool in an infinite circular loop
+  const pullNextFeedbackItem = (): FeedbackDisplayItem | null => {
+    const pool = poolRef.current
+    if (pool.length === 0) return null
     const idx = nextPoolIndexRef.current % pool.length
     nextPoolIndexRef.current = (idx + 1) % pool.length
     return pool[idx]
   }
 
-  // Replace fallback cards immediately once real feedbacks finish loading
+  // Sync poolRef and seed initial visible cards as soon as DB data arrives
   useEffect(() => {
-    if (feedbacks.length === 0) return
     poolRef.current = feedbacks
-    nextPoolIndexRef.current = 0
-    setSpawnedCards((prev) =>
-      prev.map((card, i) => ({
-        ...card,
-        item: feedbacks[i % feedbacks.length],
-      }))
-    )
-    nextPoolIndexRef.current = 2 % feedbacks.length
+
+    if (feedbacks.length > 0 && !seededOnceRef.current) {
+      seededOnceRef.current = true
+      const currentDist = distanceRef.current
+      const firstItem = pullNextFeedbackItem()
+      if (firstItem) {
+        const firstCard: ActiveSpawnedCard = {
+          uid: `seed-${uidCounterRef.current++}`,
+          spawnDistancePx: currentDist - 30,
+          side: "left",
+          offsetPct: 1.5,
+          item: firstItem,
+        }
+        lastSideRef.current = "left"
+        nextSpawnDistanceRef.current = currentDist + randomBetween(220, 320)
+        setSpawnedCards([firstCard])
+        setPulseKey((k) => k + 1)
+      }
+    }
   }, [feedbacks])
 
   // Infinite 60fps CPT Drilling & Upward Earth Scroll Loop
   useEffect(() => {
-    let dist = 420
-
-    // Seed 2 initial cards on mount so the screen starts active immediately
-    if (!initializedRef.current) {
-      initializedRef.current = true
-      const item1 = pullNextFeedbackItem()
-      const item2 = pullNextFeedbackItem()
-      const initialCards: ActiveSpawnedCard[] = [
-        {
-          uid: `seed-${uidCounterRef.current++}`,
-          spawnDistancePx: 140,
-          side: "left",
-          offsetPct: 1.5,
-          item: item1,
-        },
-        {
-          uid: `seed-${uidCounterRef.current++}`,
-          spawnDistancePx: 390,
-          side: "right",
-          offsetPct: 2.2,
-          item: item2,
-        },
-      ]
-      lastSideRef.current = "right"
-      // Random depth gap until the next feedback is struck by the cone tip
-      nextSpawnDistanceRef.current = 390 + randomBetween(230, 360)
-      setSpawnedCards(initialCards)
-    }
-
     let lastTime = performance.now()
     let rafId: number
 
@@ -209,38 +159,41 @@ export function FeedbackWallPage() {
       const dtSec = Math.min(0.1, (now - lastTime) / 1000)
       lastTime = now
 
-      dist += dtSec * DIG_SPEED_PX_PER_SEC
+      const dist = distanceRef.current + dtSec * DIG_SPEED_PX_PER_SEC
+      distanceRef.current = dist
       setDistanceDrilledPx(dist)
 
-      // Check if the CPT cone tip has reached the next random feedback depth pocket
-      if (dist >= nextSpawnDistanceRef.current) {
+      // Only spawn cards when there is real data in poolRef
+      if (poolRef.current.length > 0 && dist >= nextSpawnDistanceRef.current) {
         const spawnAt = nextSpawnDistanceRef.current
         const nextItem = pullNextFeedbackItem()
 
-        // Alternate side most of the time, with occasional random variation when gap is large
-        const gapToNext = randomBetween(230, 390)
-        const nextSide: "left" | "right" =
-          lastSideRef.current === "left" ? "right" : "left"
-        lastSideRef.current = nextSide
+        if (nextItem) {
+          const gapToNext = randomBetween(230, 380)
+          const nextSide: "left" | "right" =
+            lastSideRef.current === "left" ? "right" : "left"
+          lastSideRef.current = nextSide
 
-        const newCard: ActiveSpawnedCard = {
-          uid: `card-${uidCounterRef.current++}-${Date.now()}`,
-          spawnDistancePx: spawnAt,
-          side: nextSide,
-          offsetPct: randomBetween(0, 3.5),
-          item: nextItem,
+          const newCard: ActiveSpawnedCard = {
+            uid: `card-${uidCounterRef.current++}-${Date.now()}`,
+            spawnDistancePx: spawnAt,
+            side: nextSide,
+            offsetPct: randomBetween(0, 3.5),
+            item: nextItem,
+          }
+
+          nextSpawnDistanceRef.current = spawnAt + gapToNext
+          setPulseKey((k) => k + 1)
+
+          const maxRetentionDistance =
+            window.innerHeight * CONE_TIP_Y_RATIO + 420
+          setSpawnedCards((prev) => {
+            const kept = prev.filter(
+              (c) => dist - c.spawnDistancePx < maxRetentionDistance
+            )
+            return [...kept, newCard]
+          })
         }
-
-        nextSpawnDistanceRef.current = spawnAt + gapToNext
-        setPulseKey((k) => k + 1)
-
-        const maxRetentionDistance = window.innerHeight * CONE_TIP_Y_RATIO + 420
-        setSpawnedCards((prev) => {
-          const kept = prev.filter(
-            (c) => dist - c.spawnDistancePx < maxRetentionDistance
-          )
-          return [...kept, newCard]
-        })
       }
 
       rafId = requestAnimationFrame(step)
@@ -253,7 +206,6 @@ export function FeedbackWallPage() {
   const coneTipY = viewportH * CONE_TIP_Y_RATIO
   const tileOffsetY = -(distanceDrilledPx % SOIL_TILE_HEIGHT_PX)
   const parallaxGrainOffsetY = -((distanceDrilledPx * 1.15) % 480)
-  // Subtle mechanical hydraulic ram micro-vibration on the cone
   const coneVibrationY = Math.sin(distanceDrilledPx * 0.18) * 1.8
 
   return (
@@ -276,14 +228,19 @@ export function FeedbackWallPage() {
               className="w-full relative overflow-hidden"
               style={{ height: `${SOIL_TILE_HEIGHT_PX}px` }}
             >
-              {/* Layered earthen sediment gradients & organic strata wave bands */}
               <svg
                 className="w-full h-full"
                 viewBox="0 0 1440 960"
                 preserveAspectRatio="none"
               >
                 <defs>
-                  <linearGradient id={`soilBase-${tileIdx}`} x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id={`soilBase-${tileIdx}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="0%" stopColor="#1A110A" />
                     <stop offset="25%" stopColor="#23160E" />
                     <stop offset="50%" stopColor="#170F09" />
@@ -292,31 +249,30 @@ export function FeedbackWallPage() {
                   </linearGradient>
                 </defs>
 
-                {/* Base Soil Fill */}
-                <rect width="1440" height="960" fill={`url(#soilBase-${tileIdx})`} />
+                <rect
+                  width="1440"
+                  height="960"
+                  fill={`url(#soilBase-${tileIdx})`}
+                />
 
-                {/* Undulating Geological Soil Horizon Band 1 */}
                 <path
                   d="M0,120 C360,95 720,145 1080,115 C1260,100 1350,110 1440,120 L1440,290 C1080,315 720,265 360,295 C180,310 90,300 0,290 Z"
                   fill="#2B1B11"
                   fillOpacity="0.55"
                 />
 
-                {/* Undulating Geological Soil Horizon Band 2 */}
                 <path
                   d="M0,430 C420,465 840,400 1220,440 C1330,450 1390,440 1440,430 L1440,610 C1020,580 620,640 240,605 C120,595 60,605 0,610 Z"
                   fill="#120B06"
                   fillOpacity="0.65"
                 />
 
-                {/* Undulating Geological Soil Horizon Band 3 */}
                 <path
                   d="M0,740 C380,710 790,770 1160,735 C1300,722 1380,730 1440,740 L1440,890 C1060,920 680,860 310,895 C150,910 70,900 0,890 Z"
                   fill="#291A10"
                   fillOpacity="0.5"
                 />
 
-                {/* Stratigraphic Contour Lines */}
                 <path
                   d="M0,120 C360,95 720,145 1080,115 C1260,100 1350,110 1440,120"
                   stroke="#BD8564"
@@ -384,8 +340,6 @@ export function FeedbackWallPage() {
 
       {/* =====================================================================
           2. EXCAVATED BOREHOLE CAVITY & INFINITE DRILLING CPT CONE
-             - Centered on Desktop (lg:left-1/2)
-             - Left-aligned on Mobile/Tablet (left-10 sm:left-14)
          ===================================================================== */}
       <div className="relative z-10 w-full h-full max-w-[1600px] mx-auto">
         <div className="absolute top-0 bottom-0 left-10 sm:left-14 lg:left-1/2 -translate-x-1/2 w-24 flex justify-center pointer-events-none z-20">
@@ -394,7 +348,6 @@ export function FeedbackWallPage() {
             className="absolute top-0 w-7 sm:w-8 bg-[#0B0604] border-x border-[#BD8564]/35 shadow-[inset_0_0_16px_rgba(0,0,0,0.95)] overflow-hidden"
             style={{ height: `${coneTipY}px` }}
           >
-            {/* Borehole wall soil scratch marks moving upward as the cone digs */}
             <div
               className="w-full will-change-transform opacity-40"
               style={{
@@ -432,15 +385,14 @@ export function FeedbackWallPage() {
             {/* Tapered Rod-to-Sleeve Coupling Ring */}
             <div className="w-4 sm:w-5 h-2 bg-gradient-to-r from-[#381800] via-[#FAD9BA] to-[#381800] border-x border-t border-[#FAD9BA]/80" />
 
-            {/* Friction Sleeve Collar (Selimut Gesek) */}
+            {/* Friction Sleeve Collar */}
             <div className="w-5 sm:w-6 h-7 bg-gradient-to-r from-[#271C14] via-[#D8A47F] to-[#1C130D] border border-[#FAD9BA]/85 flex flex-col items-center justify-between py-1 shadow-lg">
               <div className="w-full h-[1px] bg-[#FAD9BA]/50" />
               <div className="w-full h-[1px] bg-[#FAD9BA]/30" />
-              {/* Piezocone u2 Pore Pressure Filter Element */}
               <div className="w-full h-1.5 bg-[#10B981] shadow-[0_0_10px_#10B981]" />
             </div>
 
-            {/* 60-Degree Conical Penetrometer Point (Konus 60°) */}
+            {/* 60-Degree Conical Penetrometer Point */}
             <div className="relative flex flex-col items-center">
               <svg
                 className="w-7 sm:w-8 h-7 drop-shadow-[0_8px_20px_rgba(250,217,186,0.65)]"
@@ -453,13 +405,11 @@ export function FeedbackWallPage() {
                   stroke="#FAD9BA"
                   strokeWidth="1.6"
                 />
-                {/* Metallic Bevel Highlight */}
                 <polygon
                   points="16,1 30,1 16,26"
                   fill="#FFFFFF"
                   fillOpacity="0.22"
                 />
-                {/* Cone Apex Tip Sensor */}
                 <circle cx="16" cy="24" r="2" fill="#10B981" />
                 <defs>
                   <linearGradient
@@ -500,11 +450,16 @@ export function FeedbackWallPage() {
               ))}
 
               {/* Extra Sonar Burst when a Feedback Pocket is Struck */}
-              <span
-                key={`burst-${pulseKey}`}
-                className="absolute -top-2 w-24 h-24 rounded-full border-2 border-[#10B981]/70 animate-ping pointer-events-none"
-                style={{ animationDuration: "0.9s", animationIterationCount: 1 }}
-              />
+              {pulseKey > 0 && (
+                <span
+                  key={`burst-${pulseKey}`}
+                  className="absolute -top-2 w-24 h-24 rounded-full border-2 border-[#10B981]/70 animate-ping pointer-events-none"
+                  style={{
+                    animationDuration: "0.9s",
+                    animationIterationCount: 1,
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -514,15 +469,15 @@ export function FeedbackWallPage() {
            ===================================================================== */}
         <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
           {spawnedCards.map((card) => {
-            // Distance the cone has drilled past this feedback card's depth pocket
             const drilledPastPx = distanceDrilledPx - card.spawnDistancePx
-            // Card Y coordinate moves upward at the exact same speed as the soil background
             const cardY = coneTipY - drilledPastPx
 
-            // Smooth entrance scale/opacity right as the cone uncovers it at coneTipY
-            const entranceProgress = Math.max(0, Math.min(1, drilledPastPx / 55))
-            // Smooth fade-out near the very top edge as it exits the screen
-            const exitProgress = cardY < 60 ? Math.max(0, Math.min(1, (cardY + 120) / 180)) : 1
+            const entranceProgress = Math.max(
+              0,
+              Math.min(1, drilledPastPx / 55)
+            )
+            const exitProgress =
+              cardY < 60 ? Math.max(0, Math.min(1, (cardY + 120) / 180)) : 1
             const opacity = entranceProgress * exitProgress
             const scale = 0.92 + 0.08 * entranceProgress
 

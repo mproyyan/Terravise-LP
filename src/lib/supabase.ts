@@ -147,10 +147,15 @@ export function cleanRoleText(role?: string, roleOther?: string): string {
 }
 
 export async function fetchFeedbacks(): Promise<FeedbackDisplayItem[]> {
-  const localItems = getLocalFeedbacks()
-
   if (!supabase || !isSupabaseConfigured) {
-    return localItems
+    return getLocalFeedbacks()
+  }
+
+  // Clear any old localStorage dev cache once Supabase is configured
+  try {
+    localStorage.removeItem("terravise_feedback_local")
+  } catch {
+    // ignore storage errors
   }
 
   try {
@@ -162,11 +167,11 @@ export async function fetchFeedbacks(): Promise<FeedbackDisplayItem[]> {
 
     if (error) {
       console.error("Error fetching feedbacks from Supabase:", error)
-      return localItems
+      return []
     }
 
     if (!data || data.length === 0) {
-      return localItems
+      return []
     }
 
     const remoteItems: FeedbackDisplayItem[] = data
@@ -182,7 +187,7 @@ export async function fetchFeedbacks(): Promise<FeedbackDisplayItem[]> {
     return remoteItems
   } catch (err) {
     console.error("Unexpected error fetching feedbacks:", err)
-    return localItems
+    return []
   }
 }
 

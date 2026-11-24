@@ -11,7 +11,7 @@ import { WorkflowSection } from "./components/sections/WorkflowSection"
 import { TechnicalTrustSection } from "./components/sections/TechnicalTrustSection"
 import { FinalCtaSection } from "./components/sections/FinalCtaSection"
 import { Subsurface3DProvider } from "./context/Subsurface3DContext"
-import { SubsurfaceMonolithStage } from "./components/three/SubsurfaceMonolithStage"
+import { HeroProblemGroundWrapper } from "./components/three/HeroProblemGroundStage"
 import { SITE_CONTENT } from "./data/siteContent"
 import { Check } from "lucide-react"
 
@@ -50,22 +50,24 @@ export function App() {
   return (
     <Subsurface3DProvider>
       <div className="min-h-screen bg-[#FBF7F2] text-[#1C130D] font-sans antialiased selection:bg-[#FAD9BA] selection:text-[#381800] relative">
-        {/* Persistent Scrollytelling 3D Building & Soil Monolith Stage (Rapidkert-style) */}
-        <SubsurfaceMonolithStage />
-
         {/* Dynamic Subsurface Depth Meter (Fixed Sidebar) */}
         <DepthSidebarTracker />
 
         {/* Sticky Architectural Navbar */}
         <Navbar onOpenAppStore={handleOpenAppStore} />
 
-        {/* Main Landing Sections Flow */}
+        {/* Main Landing Sections Flow (No Global Fixed z-20 3D Overlay Blocking Content!) */}
         <main className="relative z-10">
-          <HeroSection
-            onOpenAppStore={handleOpenAppStore}
-            onDownloadTemplate={handleDownloadTemplate}
-          />
-          <ProblemSection />
+          {/* Rapidkert-style Pinned Ground Sequence for Section 00 (Hero) -> Section 01 (Problem) */}
+          <HeroProblemGroundWrapper>
+            <HeroSection
+              onOpenAppStore={handleOpenAppStore}
+              onDownloadTemplate={handleDownloadTemplate}
+            />
+            <ProblemSection />
+          </HeroProblemGroundWrapper>
+
+          {/* Section 02..07 with Dedicated Section-Scoped 3D Visualizers & Scroll Tracks */}
           <DQNRecommendationSection />
           <SubsurfaceVoxelSection />
           <BearingStratumSection />

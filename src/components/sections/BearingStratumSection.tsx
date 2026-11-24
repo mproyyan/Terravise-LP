@@ -2,7 +2,7 @@ import { PlateHeader } from "../ui/PlateHeader"
 import { Slider } from "../ui/Slider"
 import { BearingComparisonTable } from "../interactive/BearingComparisonTable"
 import { SITE_CONTENT } from "../../data/siteContent"
-import { Section3DAnchorDock } from "../three/Section3DAnchorDock"
+import { BearingHeatmapStage } from "../three/BearingHeatmapStage"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
 import { SlidersHorizontal, ShieldCheck } from "lucide-react"
 
@@ -21,19 +21,19 @@ export function BearingStratumSection() {
   return (
     <section
       id="stratum"
-      className="py-24 bg-[#FBF7F2] border-b border-[#1C130D]/15 scroll-mt-12"
+      className="py-24 bg-[#FBF7F2] border-b border-[#1C130D]/15 scroll-mt-12 relative z-10"
     >
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12">
         {/* Plate Header */}
         <PlateHeader
           number="04"
           title="Bearing layer verification"
-          metaRight="Bento foundation workbench & 3D top-of-bearing depth heatmap"
+          metaRight="Interactive 3D top-of-bearing depth heatmap workbench"
           tone="light"
         />
 
         {/* Top Editorial Row + Live Footprint Sufficiency Readout */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
           <div className="max-w-3xl space-y-2">
             <h2 className="font-sans font-black text-3xl sm:text-5xl text-[#1C130D] uppercase tracking-[-0.035em] leading-[0.92]">
               {bearing.heading}
@@ -57,53 +57,19 @@ export function BearingStratumSection() {
           </div>
         </div>
 
-        {/* Top Panoramic 12-Column 3D Top-of-Bearing Depth Heatmap Stage */}
-        <div className="relative w-full mb-4">
-          <Section3DAnchorDock
-            stage="stratum"
-            tone="light"
-            title="04 / Panoramic 3D Top-of-Bearing Depth Heatmap (zb) & 8 Structural Piles"
-            subtitle="Curtain Peel-Off Reveals Competent Horizon Contours"
-            renderMobileCanvas={false}
-            heightClass="h-[380px] xl:h-[430px]"
-          />
-
-          {/* Floating Continuous Depth Heatmap Colorbar Scale Overlay */}
-          <div className="mt-2 bg-[#FAF5EE] border border-[#1C130D]/15 px-4 py-2.5 font-mono text-[10px] flex flex-wrap items-center justify-between gap-4 relative z-30">
-            <span className="font-bold text-[#1C130D] uppercase tracking-wider shrink-0">
-              3D Bearing Top Depth (zb) Heatmap Scale:
-            </span>
-
-            <div className="flex items-center gap-3 flex-1 min-w-[260px] max-w-xl">
-              <span className="text-[#10B981] font-bold shrink-0">-13.6m Shallow</span>
-              <div
-                className="h-2.5 flex-1 border border-[#1C130D]/20"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #10B981 0%, #EAB308 38%, #E76F51 72%, #9A3412 100%)",
-                }}
-              />
-              <span className="text-[#9A3412] font-bold shrink-0">-18.5m+ Deep</span>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="w-2.5 h-2.5 bg-[#231710] inline-block border border-[#1C130D]/20" />
-              <span className="text-[#63554B]">Unverified (&lt; {minQc.toFixed(1)} MPa)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Asymmetric 4:8 Bento Workbench: Left 4 Cols Parametric Sliders | Right 8 Cols Wide Pile Schedule Table */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch relative z-30 mt-6">
-          {/* Left Bento (4 Columns): Parametric 3D Heatmap Criteria Controls */}
-          <div className="lg:col-span-4 bg-[#FAF5EE] border border-[#1C130D]/15 p-6 flex flex-col justify-between shadow-xs">
-            <div className="space-y-5">
+        {/* Top Row (5:7 Interactive Engineering Workbench): Left 5 Cols Parametric Sliders | Right 7 Cols Live 3D Bearing Heatmap */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-8">
+          {/* Left 5 Columns: Parametric 3D Heatmap Criteria Controls */}
+          <div className="lg:col-span-5 bg-[#FAF5EE] border border-[#1C130D]/15 p-6 flex flex-col justify-between shadow-xs">
+            <div className="space-y-6">
               <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider text-[#1C130D] font-bold border-b border-[#1C130D]/10 pb-3">
                 <span className="flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4 text-[#7A421D]" />
                   3D Heatmap Criteria
                 </span>
-                <span className="text-[10px] text-[#7A421D] font-normal">Live GPU morph</span>
+                <span className="text-[10px] text-[#7A421D] font-normal">
+                  Drag sliders to morph 3D relief →
+                </span>
               </div>
 
               <div className="space-y-5">
@@ -154,10 +120,39 @@ export function BearingStratumSection() {
             </div>
           </div>
 
-          {/* Right Bento (8 Columns): Full-Width Foundation Comparison Table */}
-          <div className="lg:col-span-8 flex flex-col">
-            <BearingComparisonTable />
+          {/* Right 7 Columns: Live 3D Top-of-Bearing Depth Heatmap Stage + Colorbar Scale */}
+          <div className="lg:col-span-7 flex flex-col justify-between space-y-2.5">
+            <BearingHeatmapStage />
+
+            {/* Continuous Depth Heatmap Colorbar Scale */}
+            <div className="bg-[#FAF5EE] border border-[#1C130D]/15 px-4 py-2.5 font-mono text-[10px] flex flex-wrap items-center justify-between gap-3">
+              <span className="font-bold text-[#1C130D] uppercase tracking-wider shrink-0">
+                Bearing Top Depth (zb) Scale:
+              </span>
+
+              <div className="flex items-center gap-2.5 flex-1 min-w-[220px]">
+                <span className="text-[#10B981] font-bold shrink-0">-13.6m Shallow</span>
+                <div
+                  className="h-2.5 flex-1 border border-[#1C130D]/20"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #10B981 0%, #EAB308 38%, #E76F51 72%, #9A3412 100%)",
+                  }}
+                />
+                <span className="text-[#9A3412] font-bold shrink-0">-18.5m+ Deep</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="w-2.5 h-2.5 bg-[#231710] inline-block border border-[#1C130D]/20" />
+                <span className="text-[#63554B]">Unverified (&lt; {minQc.toFixed(1)} MPa)</span>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Bottom Row (Full 12 Columns): Full-Width Foundation Bearing Comparison Table */}
+        <div className="w-full">
+          <BearingComparisonTable />
         </div>
       </div>
     </section>

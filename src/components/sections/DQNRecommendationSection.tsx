@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { TopographicStrataCanvas } from "../motion/TopographicStrataCanvas"
-import { Compass, Sparkles, AlertTriangle, ArrowRight } from "lucide-react"
+import { FullWidthTopographicBackground } from "../motion/FullWidthTopographicBackground"
+import { ArrowRight, Compass, Sparkles, AlertTriangle } from "lucide-react"
 
 interface StepContent {
   id: string
   code: string
   stepNumber: string
-  title: string
+  titleLine1: string
+  titleLine2: string
   category: string
-  metricLabel: string
-  metricValue: string
+  metricText: string
   description: string
-  badgeTone: "amber" | "clay" | "emerald"
 }
 
 const STEPS_DATA: StepContent[] = [
@@ -20,37 +19,34 @@ const STEPS_DATA: StepContent[] = [
     id: "gap",
     code: "01 / 03",
     stepNumber: "01",
-    title: "16.2M EXPLORATION VOID",
+    titleLine1: "SPATIAL",
+    titleLine2: "EXPLORATION VOID",
     category: "DISTANCE VORONOI · UNEXPLORED BLIND ZONE",
-    metricLabel: "Nearest sounding distance",
-    metricValue: "16.2m · ZERO WITHIN 4.0M",
+    metricText: "16.2M VOID · ZERO SOUNDINGS WITHIN 4.0M →",
     description:
-      "Prior fixed-grid boreholes left an uninvestigated 16.2-meter radius void in the site center. Standard engineering layouts blindly assume uniform stratigraphy across this gap, risking catastrophic foundation differential settlement.",
-    badgeTone: "amber",
+      "Prior fixed-grid boreholes left an uninvestigated 16.2-meter radius void in the site center. Standard grids blindly assume uniform stratigraphy across this blind zone, risking major foundation settlement.",
   },
   {
     id: "transition",
     code: "02 / 03",
     stepNumber: "02",
-    title: "FAULT BOUNDARY DIP",
+    titleLine1: "FAULT",
+    titleLine2: "BOUNDARY DIP",
     category: "SHEAR INTERFACE · SOFT CLAY BASIN TRAP",
-    metricLabel: "Predicted layer boundary",
-    metricValue: "CLEAN SAND → SOFT CLAY (-8.5M)",
+    metricText: "PREDICTED BOUNDARY: CLEAN SAND → SOFT CLAY (-8.5M) →",
     description:
-      "Subsurface kriging models a steep dipping shear boundary plunging from competent sand into an undetected soft clay trap at -8.5m. Linear spacing fails to capture sloping interfaces, leaving high-risk blind zones undetected.",
-    badgeTone: "clay",
+      "Subsurface kriging models a steep dipping shear boundary plunging from competent sand into an undetected soft clay trap at -8.5m. Linear spacing fails to capture sloping interfaces, leaving high-risk blind zones.",
   },
   {
     id: "anomaly",
     code: "03 / 03",
     stepNumber: "03",
-    title: "SPOT 2 RECOMMENDED",
+    titleLine1: "SPOT 2",
+    titleLine2: "RECOMMENDED",
     category: "DQN V4.6-A CORE ML · MAXIMUM ENTROPY REDUCTION",
-    metricLabel: "Optimal sounding telemetry",
-    metricValue: "X=68.4M Y=44.1M · GAIN +14.2% · 94.2% CONF",
+    metricText: "COORDINATES: X=68.4M Y=44.1M · GAIN +14.2% →",
     description:
-      "Deep Q-Network optimizes the Markov Decision Process, locking Spot 2 as the single highest-value sounding. It resolves maximum geological variance in a single probe, eliminating 4 redundant holes and saving up to $14,000 in field budget.",
-    badgeTone: "emerald",
+      "Deep Q-Network optimizes the Markov Decision Process, locking Spot 2 as the single optimal probe to eliminate maximum variance with zero redundant boreholes, saving up to $14,000 in drilling costs.",
   },
 ]
 
@@ -70,12 +66,11 @@ export function DQNRecommendationSection() {
       const totalDist = rect.height - window.innerHeight
       if (totalDist <= 0) return
 
-      // Normalized progress (0.0 to 1.0) through the 280vh track
+      // Normalized progress (0.0 to 1.0) through the 300vh track
       const rawProg = -rect.top / totalDist
       const prog = Math.max(0, Math.min(1, rawProg))
       setScrollProgress(prog)
 
-      // 3 Discrete Steps: 0%..33%, 33%..66%, 66%..100%
       let step = 0
       if (prog >= 0.64) {
         step = 2
@@ -107,27 +102,29 @@ export function DQNRecommendationSection() {
     <section
       id="dqn"
       ref={trackRef}
-      className="relative bg-[#150E09] text-[#EFE7DE] border-b border-[#EFE7DE]/15 h-[280vh]"
+      className="relative bg-[#150E09] text-[#EFE7DE] border-b border-[#EFE7DE]/15 h-[300vh]"
     >
-      {/* Sticky Full-Viewport Stage (100% Scroll-Driven ala Rapidkert Section 09) */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden p-6 sm:p-10 lg:p-14 z-10 select-none">
-        {/* Top Header Plate & Counter */}
-        <div className="w-full border-b border-[#EFE7DE]/15 pb-4">
+      {/* Pinned Sticky Viewport (100% Scroll-Driven ala Rapidkert Section 09) */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between p-6 sm:p-10 lg:p-16 z-10 select-none">
+        {/* Full-Width Dynamic Motion Graphic Background (NOT split 50/50!) */}
+        <FullWidthTopographicBackground
+          scrollProgress={scrollProgress}
+          activeStep={activeStep}
+        />
+
+        {/* Top Header Bar with Hairline Rule (Rapidkert style) */}
+        <header className="relative z-10 w-full border-b border-[#EFE7DE]/15 pb-4">
           <div className="flex items-center justify-between font-mono text-xs sm:text-sm">
             <div className="flex items-center gap-3">
               <span className="font-bold text-[#FAD9BA]">02</span>
-              <span className="uppercase tracking-[0.16em] text-[#EFE7DE]/80">
-                NEXT SOUNDING SELECTION
-              </span>
-              <span className="hidden md:inline-block w-px h-3 bg-[#EFE7DE]/20" />
-              <span className="hidden md:inline-block text-[10px] uppercase tracking-wider text-[#BD8564]">
-                100% Scroll-Driven Geodetic Intelligence
-              </span>
+              <h2 className="text-xs sm:text-sm uppercase tracking-[0.16em] text-[#EFE7DE]/85 font-sans font-bold">
+                NEXT SOUNDING SELECTION.
+              </h2>
             </div>
 
-            {/* Rapidkert-style Fractional Counter (01 / 03 -> 02 / 03 -> 03 / 03) */}
+            {/* Counter: 01 / 03 -> 02 / 03 -> 03 / 03 */}
             <div className="flex items-center gap-3">
-              <div className="w-20 sm:w-28 h-1 bg-[#271C14] border border-[#EFE7DE]/20 overflow-hidden">
+              <div className="w-16 sm:w-24 h-1 bg-[#271C14] border border-[#EFE7DE]/20 overflow-hidden">
                 <div
                   className="h-full bg-[#10B981] transition-all duration-150"
                   style={{ width: `${Math.round(scrollProgress * 100)}%` }}
@@ -138,96 +135,83 @@ export function DQNRecommendationSection() {
               </span>
             </div>
           </div>
+        </header>
+
+        {/* Main Editorial Content (Directly Overlaid on the Topographic Motion Graphic!) */}
+        <div className="relative z-10 max-w-2xl sm:max-w-3xl space-y-6 my-auto pt-6 pb-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="space-y-6"
+            >
+              {/* Step Number Tag */}
+              <div className="font-mono text-xs font-bold tracking-[0.2em] text-[#BD8564] flex items-center gap-2">
+                <span>{currentStep.stepNumber}</span>
+              </div>
+
+              {/* Monumental Condensed Headline spanning boldly over the strata */}
+              <h3 className="font-sans font-black text-5xl sm:text-7xl xl:text-[84px] uppercase tracking-[-0.04em] leading-[0.88] text-[#EFE7DE]">
+                <span className="block">{currentStep.titleLine1}</span>
+                <span className="block text-[#FAD9BA]">{currentStep.titleLine2}</span>
+              </h3>
+
+              {/* Architectural Category Tag */}
+              <div className="font-mono text-xs uppercase tracking-widest text-[#BD8564] pt-1">
+                {currentStep.category}
+              </div>
+
+              {/* Concise Editorial Copy */}
+              <p className="font-sans text-[#EFE7DE]/75 text-sm sm:text-base leading-relaxed max-w-xl">
+                {currentStep.description}
+              </p>
+
+              {/* Action / Key Metric Badge Link */}
+              <div className="pt-2">
+                <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#FAD9BA] border-b border-[#FAD9BA]/40 pb-1">
+                  <span>{currentStep.metricText}</span>
+                  {activeStep === 0 && <AlertTriangle className="w-3.5 h-3.5 text-[#E76F51]" />}
+                  {activeStep === 1 && <Compass className="w-3.5 h-3.5 text-[#FAD9BA]" />}
+                  {activeStep === 2 && <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />}
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* Main 5:7 Split: Left Monumental Editorial | Right Top-Down Topographic Motion Graphic */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center flex-1 my-4 min-h-0">
-          {/* Left 5 Columns: Monumental Editorial Stage with Smooth Transition */}
-          <div className="lg:col-span-5 flex flex-col justify-center min-h-[360px] relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep.id}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -18 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                className="space-y-6"
-              >
-                {/* Large Index Number */}
-                <div className="font-mono text-xs sm:text-sm font-bold tracking-[0.2em] text-[#BD8564] flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-none bg-[#10B981] inline-block" />
-                  <span>STEP {currentStep.stepNumber}</span>
-                  <span className="text-[#EFE7DE]/30">/</span>
-                  <span className="text-[#EFE7DE]/60 uppercase tracking-widest text-[10px]">
-                    {currentStep.category}
+        {/* Bottom Horizontal Timeline Stepper Indicator (Rapidkert style) */}
+        <footer className="relative z-10 w-full pt-4 border-t border-[#EFE7DE]/15 flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] sm:text-xs">
+          <div className="flex items-center gap-6 sm:gap-10">
+            {STEPS_DATA.map((step, idx) => {
+              const isActive = activeStep === idx
+              return (
+                <div
+                  key={step.id}
+                  className={`flex items-center gap-2 transition-colors duration-200 ${
+                    isActive ? "text-[#FAD9BA] font-bold" : "text-[#EFE7DE]/35"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 ${
+                      isActive ? "bg-[#10B981]" : "bg-[#EFE7DE]/20"
+                    }`}
+                  />
+                  <span>
+                    {step.stepNumber} · {step.titleLine1} {step.titleLine2}
                   </span>
                 </div>
-
-                {/* Monumental Headline */}
-                <h2 className="font-sans font-black text-4xl sm:text-5xl xl:text-6xl text-[#EFE7DE] uppercase tracking-[-0.04em] leading-[0.9]">
-                  {currentStep.title}
-                </h2>
-
-                {/* Technical Description */}
-                <p className="font-sans text-[#EFE7DE]/75 text-sm sm:text-base leading-relaxed max-w-xl">
-                  {currentStep.description}
-                </p>
-
-                {/* Metric Telemetry Card */}
-                <div className="bg-[#271C14]/90 border border-[#EFE7DE]/15 p-4 font-mono text-xs space-y-1">
-                  <div className="text-[10px] uppercase tracking-wider text-[#BD8564] flex items-center justify-between">
-                    <span>{currentStep.metricLabel}</span>
-                    {activeStep === 0 && <AlertTriangle className="w-3.5 h-3.5 text-[#E76F51]" />}
-                    {activeStep === 1 && <Compass className="w-3.5 h-3.5 text-[#FAD9BA]" />}
-                    {activeStep === 2 && <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />}
-                  </div>
-                  <div className="font-bold text-sm sm:text-base text-[#FAD9BA] tabular-nums">
-                    {currentStep.metricValue}
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+              )
+            })}
           </div>
 
-          {/* Right 7 Columns: Top-Down Topographic Motion Graphic (No 3D object, pure 2D architectural map) */}
-          <div className="lg:col-span-7 h-[380px] sm:h-[440px] xl:h-[500px] border border-[#EFE7DE]/15 relative overflow-hidden bg-[#150E09] shadow-2xl">
-            {/* Top-Right Drafting Tag */}
-            <div className="absolute top-2.5 right-3.5 z-20 font-mono text-[9px] tracking-widest uppercase text-[#FAD9BA] bg-[#271C14]/90 px-2.5 py-1 border border-[#EFE7DE]/15 flex items-center gap-1.5 pointer-events-none">
-              <span className="w-1.5 h-1.5 bg-[#10B981] inline-block animate-pulse" />
-              <span>OVERHEAD TOPOGRAPHY &amp; SPOTLIGHT</span>
-            </div>
-
-            <TopographicStrataCanvas
-              scrollProgress={scrollProgress}
-              activeStep={activeStep}
-            />
+          <div className="flex items-center gap-2 text-[#EFE7DE]/40 text-[10px]">
+            <span>SCROLL TO ADVANCE</span>
+            <ArrowRight className="w-3 h-3 text-[#10B981]" />
           </div>
-        </div>
-
-        {/* Bottom Horizontal Timeline Stepper Indicator */}
-        <div className="w-full pt-4 border-t border-[#EFE7DE]/15 grid grid-cols-3 gap-4 font-mono text-[10px] sm:text-xs">
-          {STEPS_DATA.map((step, idx) => {
-            const isActive = activeStep === idx
-            return (
-              <div
-                key={step.id}
-                className={`flex items-center gap-2.5 transition-colors duration-200 ${
-                  isActive ? "text-[#FAD9BA] font-bold" : "text-[#EFE7DE]/40"
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 ${
-                    isActive ? "bg-[#10B981]" : "bg-[#EFE7DE]/20"
-                  }`}
-                />
-                <span className="truncate">
-                  {step.stepNumber} · {step.title}
-                </span>
-                {isActive && <ArrowRight className="w-3 h-3 text-[#10B981] shrink-0" />}
-              </div>
-            )
-          })}
-        </div>
+        </footer>
       </div>
     </section>
   )

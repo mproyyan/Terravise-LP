@@ -6,6 +6,7 @@ import {
   Share2,
   Crosshair,
   Layers,
+  Box,
 } from "lucide-react"
 
 interface WorkflowStepVisualProps {
@@ -289,60 +290,101 @@ export function WorkflowStepVisual({ stepIndex, isActive }: WorkflowStepVisualPr
     )
   }
 
-  // Step 04: Practical STOP Verification & Foundation Pile Schedule Handoff
+  // Step 04: 3D Soil Interpolation & Foundation Bearing Layer Handoff
   return (
-    <div className="relative w-full h-full min-h-[220px] sm:min-h-[250px] bg-[#120B07] border border-[#EFE7DE]/15 p-4 flex flex-col justify-between overflow-hidden">
+    <div className="relative w-full h-full min-h-[220px] sm:min-h-[260px] bg-[#120B07] border border-[#EFE7DE]/15 p-4 flex flex-col justify-between overflow-hidden">
+      {/* Top Header: Result Analysis View Dual Modes */}
       <div className="flex items-center justify-between border-b border-[#EFE7DE]/15 pb-2 text-[10px] font-mono">
-        <span className="text-[#FAD9BA] font-bold flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5 text-[#BD8564]" />
-          STOP VERIFICATION & HANDOFF
-        </span>
-        <span className="text-[#10B981] font-bold">84% COVERAGE (SUFFICIENT)</span>
+        <div className="flex items-center gap-1.5">
+          <span className="px-2 py-0.5 bg-[#5A3008] text-[#FAD9BA] font-bold border border-[#FAD9BA]/40 text-[9px] flex items-center gap-1">
+            <Box className="w-3 h-3 text-[#FAD9BA]" />
+            SOIL INTERPOLATION
+          </span>
+          <span className="px-2 py-0.5 bg-[#1C130D] text-[#EFE7DE]/70 border border-[#EFE7DE]/15 text-[9px] flex items-center gap-1">
+            <Layers className="w-3 h-3 text-[#BD8564]" />
+            BEARING LAYER
+          </span>
+        </div>
+        <span className="text-[#10B981] font-bold text-[9px]">FOUNDATION HANDOFF READY</span>
       </div>
 
-      <div className="my-auto py-2 space-y-2">
-        {/* Verification Success Strip */}
-        <div className="bg-[#10B981]/15 border border-[#10B981]/40 p-2 flex items-center justify-between text-xs font-mono">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
-            <span className="font-bold text-[#EFE7DE]">Practical STOP Condition Met</span>
-          </div>
-          <span className="text-[10px] text-[#10B981] font-bold">Drilling complete</span>
-        </div>
+      <div className="my-auto py-2.5 space-y-2.5 font-mono">
+        {/* Dual Mode Subsurface Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[9px]">
+          {/* Card A: 3D Continuous Soil Stratigraphy */}
+          <div className="bg-[#1C130D] border border-[#EFE7DE]/15 p-2.5 space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-[#FAD9BA] font-bold pb-1 border-b border-[#EFE7DE]/10">
+                <span className="flex items-center gap-1">
+                  <Box className="w-3 h-3 text-[#BD8564]" />
+                  3D Stratigraphy Volume
+                </span>
+                <span className="text-[#BD8564] text-[8px]">SchemaGAN V4.2</span>
+              </div>
+              <p className="text-[#EFE7DE]/70 text-[8.5px] font-sans pt-1 leading-relaxed">
+                Continuous 3D voxel synthesis with dual Easting & Northing slicing down to -25.0 m.
+              </p>
+            </div>
 
-        {/* Foundation Pile Toe mini-table */}
-        <div className="bg-[#1C130D] border border-[#EFE7DE]/15 text-[9px] font-mono overflow-hidden">
-          <div className="grid grid-cols-3 bg-[#271C14] px-2 py-1 text-[#EFE7DE]/50 uppercase tracking-wider font-bold">
-            <span>Location</span>
-            <span>Bearing Depth</span>
-            <span>Pile Toe Level</span>
+            {/* Stratigraphy Layer Stack Mini-Bar */}
+            <div className="space-y-1 pt-1">
+              <div className="flex items-center justify-between text-[7.5px] text-[#EFE7DE]/50">
+                <span>0m Surface</span>
+                <span className="text-[#E76F51] font-bold">-25m Bedrock</span>
+              </div>
+              <div className="grid grid-cols-4 h-3 gap-0.5 overflow-hidden">
+                <div className="bg-[#D4A373] flex items-center justify-center text-[7px] text-[#1C130D] font-bold">Sand</div>
+                <div className="bg-[#588157] flex items-center justify-center text-[7px] text-[#EFE7DE] font-bold">Silt</div>
+                <div className="bg-[#A0522D] flex items-center justify-center text-[7px] text-[#EFE7DE] font-bold">Clay</div>
+                <div className="bg-[#E76F51] flex items-center justify-center text-[7px] text-[#1C130D] font-bold">Bearing</div>
+              </div>
+            </div>
           </div>
-          <div className="divide-y divide-[#EFE7DE]/10 text-[#EFE7DE]">
-            <div className="grid grid-cols-3 px-2 py-1">
-              <span className="text-[#FAD9BA]">CPT B-01</span>
-              <span>-14.8 m</span>
-              <span className="text-[#10B981] font-bold">-16.0 m</span>
+
+          {/* Card B: Competent Bearing Layer & Pile Toe Schedule */}
+          <div className="bg-[#1C130D] border border-[#10B981]/30 p-2.5 space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-[#10B981] font-bold pb-1 border-b border-[#EFE7DE]/10">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-[#10B981]" />
+                  Competent Bearing Strata
+                </span>
+                <span className="text-[8px] bg-[#10B981]/15 px-1 py-0.5">qc ≥ 15 MPa</span>
+              </div>
+              <p className="text-[#EFE7DE]/70 text-[8.5px] font-sans pt-1 leading-relaxed">
+                6-neighbor connected clusters with contiguous vertical thickness ≥ 2.0 m.
+              </p>
             </div>
-            <div className="grid grid-cols-3 px-2 py-1">
-              <span className="text-[#FAD9BA]">CPT B-02</span>
-              <span>-16.2 m</span>
-              <span className="text-[#10B981] font-bold">-17.5 m</span>
-            </div>
-            <div className="grid grid-cols-3 px-2 py-1">
-              <span className="text-[#FAD9BA]">Spot 2</span>
-              <span>-15.0 m</span>
-              <span className="text-[#10B981] font-bold">-16.4 m</span>
+
+            {/* Pile Toe Schedule Mini-List */}
+            <div className="bg-[#140D08] border border-[#EFE7DE]/10 p-1.5 space-y-0.5 text-[8px]">
+              <div className="flex items-center justify-between text-[#EFE7DE]/50 border-b border-[#EFE7DE]/10 pb-0.5">
+                <span>Column ID</span>
+                <span>Top zb</span>
+                <span className="text-[#10B981] font-bold">Pile Toe</span>
+              </div>
+              <div className="flex items-center justify-between text-[#EFE7DE]/80">
+                <span className="text-[#FAD9BA]">Col C-01</span>
+                <span>-14.8m</span>
+                <span className="text-[#10B981] font-bold">-16.0m</span>
+              </div>
+              <div className="flex items-center justify-between text-[#EFE7DE]/80">
+                <span className="text-[#FAD9BA]">Col C-02</span>
+                <span>-16.2m</span>
+                <span className="text-[#10B981] font-bold">-17.5m</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Footer: Export Formats & Structural Handoff */}
       <div className="pt-2 border-t border-[#EFE7DE]/15 flex items-center justify-between text-[10px] font-mono">
         <span className="text-[#EFE7DE]/70 flex items-center gap-1">
           <Share2 className="w-3 h-3 text-[#BD8564]" />
-          Direct structural handoff
+          Structural Designer Handoff
         </span>
-        <span className="text-[#10B981] font-bold">CSV · CAD · LandXML</span>
+        <span className="text-[#10B981] font-bold">LandXML · Bentley gINT · CSV</span>
       </div>
     </div>
   )

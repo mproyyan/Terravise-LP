@@ -5,6 +5,31 @@ interface FullWidthTopographicBackgroundProps {
   activeStep: number // 0, 1, or 2
 }
 
+// Marching Squares Grid Dimensions
+const NX = 72
+const NY = 46
+
+interface Point2D {
+  x: number
+  y: number
+}
+
+interface SoundingMarker {
+  id: string
+  label: string
+  normX: number
+  normY: number
+  depthM: number
+  isSpot2?: boolean
+}
+
+const SOUNDING_MARKERS: SoundingMarker[] = [
+  { id: "b-01", label: "B-01 (NW)", normX: 0.38, normY: 0.28, depthM: 24.5 },
+  { id: "b-03", label: "B-03 (NE)", normX: 0.86, normY: 0.26, depthM: 22.8 },
+  { id: "b-02", label: "B-02 (SE)", normX: 0.82, normY: 0.74, depthM: 25.0 },
+  { id: "spot-2", label: "SPOT 2 (DQN)", normX: 0.68, normY: 0.44, depthM: 25.2, isSpot2: true },
+]
+
 export function FullWidthTopographicBackground({
   scrollProgress,
   activeStep,
@@ -26,6 +51,14 @@ export function FullWidthTopographicBackground({
     const startTime = performance.now()
     let currentProg = scrollProgress
 
+    // Preallocated scalar grid for 60 FPS zero-GC evaluation
+    const grid = new Float32Array(NX * NY)
+
+    // Smooth lerped spotlight coordinates
+    let currentSpotX = 0.52
+    let currentSpotY = 0.48
+    let currentSpotRadius = 0.38
+
     const handleResize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
       const rect = canvas.getBoundingClientRect()
@@ -41,7 +74,8 @@ export function FullWidthTopographicBackground({
       const elapsed = (now - startTime) * 0.001
       const { scrollProgress: targetProg, activeStep: step } = stateRef.current
 
-      currentProg += (targetProg - currentProg) * 0.08
+      // Continuous 60 FPS lerp for flawless fluid transition across any scroll speed
+      currentProg += (targetProg - currentProg) * 0.075
 
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
       const w = canvas.width
@@ -52,333 +86,454 @@ export function FullWidthTopographicBackground({
       const logicalW = w / dpr
       const logicalH = h / dpr
 
-      // 1. Ambient Background Atmosphere Transition (Rapidkert style)
-      // Step 0: Warm architectural earth tone (#1F1813)
-      // Step 1: Rich subterranean charcoal (#18110C)
-      // Step 2: Deep geodetic umber (#120B07)
-      let bgR = 31
-      let bgG = 24
-      let bgB = 19
-      if (currentProg > 0.33 && currentProg <= 0.66) {
-        const t = (currentProg - 0.33) / 0.33
-        bgR = Math.round(31 + (24 - 31) * t)
-        bgG = Math.round(24 + (17 - 24) * t)
-        bgB = Math.round(19 + (12 - 19) * t)
-      } else if (currentProg > 0.66) {
-        const t = (currentProg - 0.66) / 0.34
-        bgR = Math.round(24 + (18 - 24) * t)
-        bgG = Math.round(17 + (11 - 17) * t)
-        bgB = Math.round(12 + (7 - 12) * t)
+      // 1. Fluid Ambient Background Tone Transition
+      // Step 0: Warm architectural deep slate (#1A130E)
+      // Step 1: Rich subterranean clay charcoal (#150E0A)
+      // Step 2: Deep geodetic umber (#0F0906)
+      let bgR = 26
+      let bgG = 19
+      let bgB = 14
+      if (currentProg > 0.31 && currentProg <= 0.65) {
+        const t = (currentProg - 0.31) / 0.34
+        bgR = Math.round(26 + (21 - 26) * t)
+        bgG = Math.round(19 + (14 - 19) * t)
+        bgB = Math.round(14 + (10 - 14) * t)
+      } else if (currentProg > 0.65) {
+        const t = (currentProg - 0.65) / 0.35
+        bgR = Math.round(21 + (15 - 21) * t)
+        bgG = Math.round(14 + (9 - 14) * t)
+        bgB = Math.round(10 + (6 - 10) * t)
       }
 
       ctx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`
       ctx.fillRect(0, 0, logicalW, logicalH)
 
-      // Subtle atmospheric overhead vignette spotlight
-      const spotGrad = ctx.createRadialGradient(
-        logicalW * (step === 2 ? 0.72 : 0.55),
-        logicalH * (step === 1 ? 0.42 : 0.5),
-        20,
-        logicalW * 0.55,
-        logicalH * 0.5,
-        logicalW * 0.65
+      // 2. Smooth Overhead Spotlight Target Tracking ("disorot dari atas")
+      let targetSpotNormX: number
+      let targetSpotNormY: number
+      let targetSpotNormRadius: number
+
+      if (currentProg < 0.33) {
+        // Stage 1: Spotlight centered on the 16.2m exploration void
+        targetSpotNormX = 0.58
+        targetSpotNormY = 0.48
+        targetSpotNormRadius = 0.36
+      } else if (currentProg < 0.66) {
+        // Stage 2: Spotlight sweeps along the steep fault shear gradient
+        const t2 = (currentProg - 0.33) / 0.33
+        targetSpotNormX = 0.58 + t2 * 0.08
+        targetSpotNormY = 0.48 + t2 * 0.04
+        targetSpotNormRadius = 0.42
+      } else {
+        // Stage 3: Spotlight narrows and locks directly on Spot 2 (0.68, 0.44)
+        targetSpotNormX = 0.68
+        targetSpotNormY = 0.44
+        targetSpotNormRadius = 0.28
+      }
+
+      currentSpotX += (targetSpotNormX - currentSpotX) * 0.075
+      currentSpotY += (targetSpotNormY - currentSpotY) * 0.075
+      currentSpotRadius += (targetSpotNormRadius - currentSpotRadius) * 0.075
+
+      const spotCenterPxX = currentSpotX * logicalW
+      const spotCenterPxY = currentSpotY * logicalH
+      const spotRadiusPx = currentSpotRadius * Math.min(logicalW, logicalH)
+
+      // Ambient radial spotlight gradient illuminating the contours from above
+      const ambientSpot = ctx.createRadialGradient(
+        spotCenterPxX,
+        spotCenterPxY,
+        15,
+        spotCenterPxX,
+        spotCenterPxY,
+        spotRadiusPx * 1.5
       )
-      spotGrad.addColorStop(0, "rgba(250, 217, 186, 0.08)")
-      spotGrad.addColorStop(0.6, "rgba(90, 48, 8, 0.04)")
-      spotGrad.addColorStop(1, "rgba(0, 0, 0, 0)")
-      ctx.fillStyle = spotGrad
+      if (step === 2) {
+        ambientSpot.addColorStop(0, "rgba(16, 185, 129, 0.16)")
+        ambientSpot.addColorStop(0.5, "rgba(250, 217, 186, 0.08)")
+        ambientSpot.addColorStop(1, "rgba(0, 0, 0, 0)")
+      } else if (step === 1) {
+        ambientSpot.addColorStop(0, "rgba(231, 111, 81, 0.15)")
+        ambientSpot.addColorStop(0.55, "rgba(250, 217, 186, 0.07)")
+        ambientSpot.addColorStop(1, "rgba(0, 0, 0, 0)")
+      } else {
+        ambientSpot.addColorStop(0, "rgba(250, 217, 186, 0.13)")
+        ambientSpot.addColorStop(0.6, "rgba(90, 48, 8, 0.06)")
+        ambientSpot.addColorStop(1, "rgba(0, 0, 0, 0)")
+      }
+      ctx.fillStyle = ambientSpot
       ctx.fillRect(0, 0, logicalW, logicalH)
 
-      // 2. Continuous Full-Width Subsurface Strata Horizons (Spanning 0 to 100vw across bottom half!)
-      // As shown in Rapidkert Image 1 & 2: Undulating soil layers across the bottom half of the screen
-      const strataLayers = [
-        { name: "Topsoil / Fill", color: "#36271D", strokeColor: "rgba(250, 217, 186, 0.25)", baseYRatio: 0.62 },
-        { name: "Firm Silty Sand", color: "#2B1E15", strokeColor: "rgba(239, 231, 222, 0.18)", baseYRatio: 0.71 },
-        { name: "Soft Marine Clay", color: "#221710", strokeColor: "rgba(231, 111, 81, 0.35)", baseYRatio: 0.81 },
-        { name: "Dense Bearing Sand", color: "#19100A", strokeColor: "rgba(16, 185, 129, 0.4)", baseYRatio: 0.91 },
+      // 3. Evaluate the Continuous 2D Topographic Elevation Field Z(x, y, currentProg)
+      // Base organic landscape harmonic waves (produces winding, organic contours matching user image)
+      const tProg = currentProg
+
+      // Weights for the 3 geological stages:
+      const wVoid = Math.max(0, 1 - tProg * 2.2)
+      // Hermite smooth bell-curve for Stage 2 fault compression
+      const faultPhase = Math.sin(Math.min(1, Math.max(0, (tProg - 0.18) / 0.65)) * Math.PI)
+      const wFault = faultPhase * faultPhase
+      // Smooth sigmoid for Stage 3 Spot 2 bullseye
+      const wSpot = Math.max(0, Math.min(1, (tProg - 0.5) / 0.45))
+      const spotEased = wSpot * wSpot * (3 - 2 * wSpot)
+
+      for (let ix = 0; ix < NX; ix++) {
+        const fx = ix / (NX - 1)
+        for (let iy = 0; iy < NY; iy++) {
+          const fy = iy / (NY - 1)
+
+          // Mathematical terrain harmonic waves (hills, saddles, valleys)
+          const z =
+            Math.sin(fx * 4.6 + 0.4) * Math.cos(fy * 4.1 - 0.3) * 0.38 +
+            Math.cos(fx * 7.4 - fy * 5.2 + 0.9) * 0.22 +
+            Math.sin((fx + fy) * 3.4 + elapsed * 0.06) * 0.16 +
+            Math.cos(fx * 2.2 - 0.5) * 0.18
+
+          // Geological Stage 1: Central Unexplored Void (caldera / depression saddle)
+          const distVoid = Math.hypot(fx - 0.58, fy - 0.48)
+          const voidHole = -Math.exp(-(distVoid * distVoid) / 0.038) * 0.65 * wVoid
+
+          // Known boreholes elevation domes (B-01, B-02, B-03)
+          const distB1 = Math.hypot(fx - 0.38, fy - 0.28)
+          const b1Dome = Math.exp(-(distB1 * distB1) / 0.02) * 0.35 * (1 - spotEased * 0.7)
+          const distB2 = Math.hypot(fx - 0.82, fy - 0.74)
+          const b2Dome = Math.exp(-(distB2 * distB2) / 0.02) * 0.38 * (1 - spotEased * 0.7)
+          const distB3 = Math.hypot(fx - 0.86, fy - 0.26)
+          const b3Dome = Math.exp(-(distB3 * distB3) / 0.02) * 0.32 * (1 - spotEased * 0.7)
+
+          // Geological Stage 2: Fault Boundary Shear Dip (Contour gradient compression)
+          // Causes contours to pack tightly along a diagonal strike axis
+          const faultCoord = fx * 0.75 + fy * 0.65 - 0.72
+          const faultSlope = Math.tanh(faultCoord * 6.8) * 0.72 * wFault
+
+          // Geological Stage 3: Spot 2 High-Precision Peak (Bullseye concentric contour rings)
+          const distSpot = Math.hypot(fx - 0.68, fy - 0.44)
+          const spotPeak = Math.exp(-(distSpot * distSpot) / 0.022) * 1.15 * spotEased
+
+          grid[ix * NY + iy] =
+            z + voidHole + b1Dome + b2Dome + b3Dome + faultSlope + spotPeak
+        }
+      }
+
+      // 4. Marching Squares: Render Genuine Topographic Contour Isolines
+      // We evaluate 22 contour levels between -0.80 and +0.95
+      const CONTOUR_LEVELS = [
+        -0.78, -0.68, -0.58, -0.48, -0.38, -0.28, -0.18, -0.08, 0.02, 0.12,
+        0.22, 0.32, 0.42, 0.52, 0.62, 0.72, 0.82, 0.92, 1.02, 1.12,
       ]
 
-      for (let lIdx = 0; lIdx < strataLayers.length; lIdx++) {
-        const layer = strataLayers[lIdx]
-        const baseY = logicalH * layer.baseYRatio
+      const cellW = logicalW / (NX - 1)
+      const cellH = logicalH / (NY - 1)
+
+      for (let cIdx = 0; cIdx < CONTOUR_LEVELS.length; cIdx++) {
+        const L = CONTOUR_LEVELS[cIdx]
+        const isIndexContour = cIdx % 4 === 0 // Index contour (thicker line like cartography)
 
         ctx.beginPath()
-        ctx.moveTo(0, logicalH)
 
-        const segs = 60
-        for (let i = 0; i <= segs; i++) {
-          const fx = i / segs
-          const x = fx * logicalW
+        for (let ix = 0; ix < NX - 1; ix++) {
+          const x0 = ix * cellW
+          const x1 = (ix + 1) * cellW
 
-          // Morph wave based on step:
-          // Step 0: Gentle rolling landscape wave
-          // Step 1: Steep fault dip downward from left to right (fault shear zone)
-          // Step 2: Smooth basin depression centered at Spot 2 (x ~ 0.7 * logicalW)
-          let wave = Math.sin(fx * Math.PI * 2.2 + lIdx * 0.7 + elapsed * 0.2) * 14
-          wave += Math.cos(fx * Math.PI * 4.0 - lIdx * 0.4) * 6
+          for (let iy = 0; iy < NY - 1; iy++) {
+            const y0 = iy * cellH
+            const y1 = (iy + 1) * cellH
 
-          if (step === 1) {
-            // Fault dip: layers plunge 48px deeper toward the right
-            const faultDip = (fx * 48) + Math.sin(fx * Math.PI * 3.5) * 16
-            wave += faultDip
-          } else if (step === 2) {
-            // Basin depression under Spot 2 (fx ~ 0.72)
-            const distSpot = Math.abs(fx - 0.72)
-            const basinDrop = Math.exp(-((distSpot * distSpot) / 0.04)) * 32
-            wave += basinDrop * (lIdx >= 2 ? 1.2 : 0.6)
+            const v0 = grid[ix * NY + iy]
+            const v1 = grid[(ix + 1) * NY + iy]
+            const v2 = grid[(ix + 1) * NY + (iy + 1)]
+            const v3 = grid[ix * NY + (iy + 1)]
+
+            let caseIdx = 0
+            if (v0 >= L) caseIdx |= 8
+            if (v1 >= L) caseIdx |= 4
+            if (v2 >= L) caseIdx |= 2
+            if (v3 >= L) caseIdx |= 1
+
+            if (caseIdx === 0 || caseIdx === 15) continue
+
+            // Linear interpolation helper on cell edges
+            const pTop: Point2D = {
+              x: x0 + ((L - v0) / (v1 - v0 || 0.0001)) * (x1 - x0),
+              y: y0,
+            }
+            const pRight: Point2D = {
+              x: x1,
+              y: y0 + ((L - v1) / (v2 - v1 || 0.0001)) * (y1 - y0),
+            }
+            const pBot: Point2D = {
+              x: x0 + ((L - v3) / (v2 - v3 || 0.0001)) * (x1 - x0),
+              y: y1,
+            }
+            const pLeft: Point2D = {
+              x: x0,
+              y: y0 + ((L - v0) / (v3 - v0 || 0.0001)) * (y1 - y0),
+            }
+
+            // Draw line segments for the 14 non-trivial Marching Squares cases
+            switch (caseIdx) {
+              case 1:
+              case 14:
+                ctx.moveTo(pBot.x, pBot.y)
+                ctx.lineTo(pLeft.x, pLeft.y)
+                break
+              case 2:
+              case 13:
+                ctx.moveTo(pRight.x, pRight.y)
+                ctx.lineTo(pBot.x, pBot.y)
+                break
+              case 3:
+              case 12:
+                ctx.moveTo(pRight.x, pRight.y)
+                ctx.lineTo(pLeft.x, pLeft.y)
+                break
+              case 4:
+              case 11:
+                ctx.moveTo(pTop.x, pTop.y)
+                ctx.lineTo(pRight.x, pRight.y)
+                break
+              case 5:
+                ctx.moveTo(pTop.x, pTop.y)
+                ctx.lineTo(pLeft.x, pLeft.y)
+                ctx.moveTo(pRight.x, pRight.y)
+                ctx.lineTo(pBot.x, pBot.y)
+                break
+              case 6:
+              case 9:
+                ctx.moveTo(pTop.x, pTop.y)
+                ctx.lineTo(pBot.x, pBot.y)
+                break
+              case 7:
+              case 8:
+                ctx.moveTo(pTop.x, pTop.y)
+                ctx.lineTo(pLeft.x, pLeft.y)
+                break
+              case 10:
+                ctx.moveTo(pTop.x, pTop.y)
+                ctx.lineTo(pRight.x, pRight.y)
+                ctx.moveTo(pBot.x, pBot.y)
+                ctx.lineTo(pLeft.x, pLeft.y)
+                break
+            }
           }
-
-          const y = baseY + wave
-          if (i === 0) ctx.lineTo(0, y)
-          else ctx.lineTo(x, y)
         }
 
-        ctx.lineTo(logicalW, logicalH)
-        ctx.closePath()
+        // Contour Line Styling:
+        // Inside the spotlight beam, lines glow warmly/emerald; outside, they recede into subtle charcoal
+        const strokeGrad = ctx.createRadialGradient(
+          spotCenterPxX,
+          spotCenterPxY,
+          20,
+          spotCenterPxX,
+          spotCenterPxY,
+          spotRadiusPx * 1.3
+        )
 
-        ctx.fillStyle = layer.color
-        ctx.fill()
+        if (step === 2) {
+          strokeGrad.addColorStop(0, isIndexContour ? "rgba(16, 185, 129, 0.95)" : "rgba(16, 185, 129, 0.75)")
+          strokeGrad.addColorStop(0.45, isIndexContour ? "rgba(250, 217, 186, 0.75)" : "rgba(250, 217, 186, 0.5)")
+          strokeGrad.addColorStop(1, isIndexContour ? "rgba(239, 231, 222, 0.22)" : "rgba(239, 231, 222, 0.12)")
+        } else if (step === 1) {
+          strokeGrad.addColorStop(0, isIndexContour ? "rgba(231, 111, 81, 0.92)" : "rgba(231, 111, 81, 0.68)")
+          strokeGrad.addColorStop(0.5, isIndexContour ? "rgba(250, 217, 186, 0.65)" : "rgba(250, 217, 186, 0.4)")
+          strokeGrad.addColorStop(1, isIndexContour ? "rgba(239, 231, 222, 0.2)" : "rgba(239, 231, 222, 0.1)")
+        } else {
+          strokeGrad.addColorStop(0, isIndexContour ? "rgba(250, 217, 186, 0.85)" : "rgba(250, 217, 186, 0.55)")
+          strokeGrad.addColorStop(0.55, isIndexContour ? "rgba(212, 163, 115, 0.5)" : "rgba(212, 163, 115, 0.3)")
+          strokeGrad.addColorStop(1, isIndexContour ? "rgba(239, 231, 222, 0.18)" : "rgba(239, 231, 222, 0.09)")
+        }
 
-        ctx.strokeStyle = layer.strokeColor
-        ctx.lineWidth = 1.2
+        ctx.strokeStyle = strokeGrad
+        ctx.lineWidth = isIndexContour ? 1.6 : 1.05
         ctx.stroke()
       }
 
-      // Vertical architectural elevation ticks (as seen in Rapidkert Image 1 with ↑ / ↓ marks)
-      const tickXs = [0.12, 0.32, 0.54, 0.74, 0.92]
-      ctx.strokeStyle = "rgba(250, 217, 186, 0.2)"
-      ctx.fillStyle = "rgba(250, 217, 186, 0.4)"
-      ctx.lineWidth = 1
-
-      for (const rx of tickXs) {
-        const x = logicalW * rx
-        const topY = logicalH * 0.56
-        const botY = logicalH * 0.64
-
-        ctx.beginPath()
-        ctx.moveTo(x, topY)
-        ctx.lineTo(x, botY)
-        ctx.stroke()
-
-        // Tiny arrowheads
-        ctx.beginPath()
-        ctx.moveTo(x - 3, topY + 5)
-        ctx.lineTo(x, topY)
-        ctx.lineTo(x + 3, topY + 5)
-        ctx.stroke()
-
-        ctx.beginPath()
-        ctx.moveTo(x - 3, botY - 5)
-        ctx.lineTo(x, botY)
-        ctx.lineTo(x + 3, botY - 5)
-        ctx.stroke()
-      }
+      // 5. Stage Overlays & Telemetry (Anchored gracefully on the living contour map)
 
       // =======================================================================
-      // STAGE 01 OVERLAY: Spatial Exploration Gap (16.2m Exploration Void Circle)
+      // STAGE 01 OVERLAY: The 16.2m Exploration Void Callout & Borehole Collars
       // =======================================================================
-      if (step === 0 || currentProg < 0.38) {
-        const alpha = Math.max(0, 1 - Math.abs(currentProg - 0.15) * 3.2)
-        const voidX = logicalW * 0.68
-        const voidY = logicalH * 0.48
-        const voidRadius = Math.min(logicalW, logicalH) * 0.22
+      if (tProg < 0.38) {
+        const alpha = Math.max(0, 1 - tProg * 2.8)
+        const voidCenterPxX = 0.58 * logicalW
+        const voidCenterPxY = 0.48 * logicalH
+        const voidRadiusPx = 0.18 * Math.min(logicalW, logicalH)
 
-        // Pulsing exploration void circle across the strata
-        const pulse = 1 + Math.sin(elapsed * 2.8) * 0.04
+        // Pulsing dashed range circle
+        const pulse = 1 + Math.sin(elapsed * 2.6) * 0.035
         ctx.strokeStyle = `rgba(231, 111, 81, ${0.75 * alpha})`
         ctx.lineWidth = 1.5
-        ctx.setLineDash([6, 6])
+        ctx.setLineDash([5, 5])
         ctx.beginPath()
-        ctx.arc(voidX, voidY, voidRadius * pulse, 0, Math.PI * 2)
+        ctx.arc(voidCenterPxX, voidCenterPxY, voidRadiusPx * pulse, 0, Math.PI * 2)
         ctx.stroke()
         ctx.setLineDash([])
 
-        // Subtle radial fill inside void
-        const voidFill = ctx.createRadialGradient(voidX, voidY, 10, voidX, voidY, voidRadius * pulse)
-        voidFill.addColorStop(0, `rgba(231, 111, 81, ${0.12 * alpha})`)
-        voidFill.addColorStop(1, "rgba(0, 0, 0, 0)")
-        ctx.fillStyle = voidFill
+        // Leader line & dimension label
+        ctx.strokeStyle = `rgba(250, 217, 186, ${0.65 * alpha})`
         ctx.beginPath()
-        ctx.arc(voidX, voidY, voidRadius * pulse, 0, Math.PI * 2)
-        ctx.fill()
-
-        // Radius measurement leader line & tag
-        ctx.strokeStyle = `rgba(250, 217, 186, ${0.7 * alpha})`
-        ctx.beginPath()
-        ctx.moveTo(voidX, voidY)
-        ctx.lineTo(voidX + voidRadius * pulse, voidY)
+        ctx.moveTo(voidCenterPxX, voidCenterPxY)
+        ctx.lineTo(voidCenterPxX + voidRadiusPx * pulse, voidCenterPxY)
         ctx.stroke()
 
-        // Architectural label tag
         ctx.fillStyle = `rgba(250, 217, 186, ${0.85 * alpha})`
-        ctx.font = "bold 11px monospace"
+        ctx.font = "bold 10px monospace"
         ctx.textAlign = "center"
-        ctx.fillText("R = 16.2M EXPLORATION VOID", voidX, voidY - voidRadius * pulse - 12)
+        ctx.fillText("R = 16.2M VOID", voidCenterPxX, voidCenterPxY - voidRadiusPx * pulse - 10)
 
         ctx.fillStyle = `rgba(231, 111, 81, ${0.85 * alpha})`
         ctx.font = "9px monospace"
-        ctx.fillText("ZERO SOUNDINGS WITHIN 16.0M RADIUS", voidX, voidY + 4)
-
-        // Existing borehole collars flanking the void (B-01, B-02, B-03)
-        const boreholes = [
-          { label: "B-01 (-24.5M)", x: logicalW * 0.42, y: logicalH * 0.38 },
-          { label: "B-03 (-22.8M)", x: logicalW * 0.88, y: logicalH * 0.36 },
-          { label: "B-02 (-25.0M)", x: logicalW * 0.78, y: logicalH * 0.72 },
-        ]
-        for (const bh of boreholes) {
-          ctx.fillStyle = `rgba(239, 231, 222, ${0.9 * alpha})`
-          ctx.beginPath()
-          ctx.arc(bh.x, bh.y, 4, 0, Math.PI * 2)
-          ctx.fill()
-
-          ctx.strokeStyle = `rgba(250, 217, 186, ${0.6 * alpha})`
-          ctx.lineWidth = 1.5
-          ctx.beginPath()
-          ctx.arc(bh.x, bh.y, 7, 0, Math.PI * 2)
-          ctx.stroke()
-
-          ctx.fillStyle = `rgba(239, 231, 222, ${0.65 * alpha})`
-          ctx.font = "9px monospace"
-          ctx.textAlign = "center"
-          ctx.fillText(bh.label, bh.x, bh.y - 12)
-        }
+        ctx.fillText("ZERO SOUNDINGS WITHIN 16M", voidCenterPxX, voidCenterPxY + 4)
       }
 
       // =======================================================================
-      // STAGE 02 OVERLAY: Fault Boundary Dip & Horizontal Shear Line (Rapidkert Image 2 style)
+      // STAGE 02 OVERLAY: Fault Dip Gradient Strike Line & Shear Direction
       // =======================================================================
-      if (step === 1 || (currentProg >= 0.28 && currentProg <= 0.72)) {
-        const alpha = Math.max(0, 1 - Math.abs(currentProg - 0.5) * 3.2)
+      if (tProg >= 0.28 && tProg <= 0.72) {
+        const alpha = Math.max(0, 1 - Math.abs(tProg - 0.5) * 3.2)
+        const p1x = logicalW * 0.36
+        const p1y = logicalH * 0.28
+        const p2x = logicalW * 0.88
+        const p2y = logicalH * 0.72
 
-        // Horizontal dashed geodetic datum line across the screen (like Rapidkert's blue irrigation line!)
-        const datumY = logicalH * 0.45
-        ctx.strokeStyle = `rgba(231, 111, 81, ${0.8 * alpha})`
-        ctx.lineWidth = 1.5
+        // Geological strike dashed axis
+        ctx.strokeStyle = `rgba(231, 111, 81, ${0.85 * alpha})`
+        ctx.lineWidth = 1.8
+        ctx.setLineDash([8, 5])
         ctx.beginPath()
-        ctx.moveTo(logicalW * 0.35, datumY)
-        ctx.lineTo(logicalW * 0.98, datumY + 36)
+        ctx.moveTo(p1x, p1y)
+        ctx.lineTo(p2x, p2y)
         ctx.stroke()
+        ctx.setLineDash([])
 
-        // Circular junction nodes along datum line
-        const datumNodes = [0.42, 0.62, 0.82]
-        for (const nx of datumNodes) {
-          const px = logicalW * nx
-          const py = datumY + (nx - 0.35) * 55
-          ctx.fillStyle = `rgba(231, 111, 81, ${0.9 * alpha})`
-          ctx.beginPath()
-          ctx.arc(px, py, 6, 0, Math.PI * 2)
-          ctx.fill()
+        // Directional dip arrows across the steep contour slope
+        const arrowNodes = [0.48, 0.66, 0.78]
+        const angle = Math.atan2(p2y - p1y, p2x - p1x) + Math.PI / 2
 
-          ctx.strokeStyle = `rgba(250, 217, 186, ${0.6 * alpha})`
-          ctx.lineWidth = 1
+        for (const f of arrowNodes) {
+          const px = p1x + (p2x - p1x) * f
+          const py = p1y + (p2y - p1y) * f
+          const len = 24
+          const ex = px + Math.cos(angle) * len
+          const ey = py + Math.sin(angle) * len
+
+          ctx.strokeStyle = `rgba(250, 217, 186, ${0.8 * alpha})`
+          ctx.lineWidth = 1.4
           ctx.beginPath()
-          ctx.arc(px, py, 11, 0, Math.PI * 2)
+          ctx.moveTo(px, py)
+          ctx.lineTo(ex, ey)
           ctx.stroke()
+
+          ctx.fillStyle = `rgba(250, 217, 186, ${0.8 * alpha})`
+          ctx.beginPath()
+          ctx.arc(ex, ey, 2.5, 0, Math.PI * 2)
+          ctx.fill()
         }
 
-        // Leader Line & Floating Annotation (Rapidkert style)
-        const leaderX = logicalW * 0.62
-        const leaderY = datumY + (0.62 - 0.35) * 55
-        ctx.strokeStyle = `rgba(250, 217, 186, ${0.6 * alpha})`
-        ctx.beginPath()
-        ctx.moveTo(leaderX, leaderY)
-        ctx.lineTo(leaderX + 45, leaderY - 45)
-        ctx.lineTo(leaderX + 160, leaderY - 45)
-        ctx.stroke()
-
+        // Architectural callout tag
         ctx.fillStyle = `rgba(250, 217, 186, ${0.9 * alpha})`
         ctx.font = "bold 10px monospace"
         ctx.textAlign = "left"
-        ctx.fillText("FAULT SHEAR BOUNDARY (-8.5M)", leaderX + 50, leaderY - 50)
-
+        ctx.fillText("FAULT SHEAR BOUNDARY (-8.5M)", p2x - 140, p2y - 20)
         ctx.fillStyle = `rgba(231, 111, 81, ${0.85 * alpha})`
         ctx.font = "9px monospace"
-        ctx.fillText("DIPPING CLEAN SAND → SOFT MARINE CLAY", leaderX + 50, leaderY - 34)
+        ctx.fillText("STEEP DIP: SAND → SOFT CLAY BASIN", p2x - 140, p2y - 6)
       }
 
       // =======================================================================
-      // STAGE 03 OVERLAY: Spot 2 Concentric Contour Ellipses & Telemetry Rays (Rapidkert Image 3 style!)
+      // STAGE 03 OVERLAY: Spot 2 High-Precision Target Reticle & Neural Rays
       // =======================================================================
-      if (step === 2 || currentProg > 0.62) {
-        const alpha = Math.max(0, Math.min(1, (currentProg - 0.6) * 3.0))
-        const targetX = logicalW * 0.72
-        const targetY = logicalH * 0.44
+      if (tProg > 0.6) {
+        const alpha = Math.max(0, Math.min(1, (tProg - 0.6) * 2.8))
+        const targetPxX = 0.68 * logicalW
+        const targetPxY = 0.44 * logicalH
 
-        // Concentric Topographic Moisture / Variance Reduction Ellipses
-        // (Exactly like the wetting zone ellipses in Rapidkert screenshot 3!)
-        const ellipseCount = 4
-        for (let e = 1; e <= ellipseCount; e++) {
-          const radX = e * 65 * (1 + Math.sin(elapsed * 2.5 + e * 0.5) * 0.03)
-          const radY = radX * 0.48
+        // Neural Trajectory Rays converging from B-01, B-02, B-03 into Spot 2
+        for (const marker of SOUNDING_MARKERS) {
+          if (marker.isSpot2) continue
+          const mx = marker.normX * logicalW
+          const my = marker.normY * logicalH
 
-          ctx.strokeStyle = `rgba(16, 185, 129, ${0.28 * alpha * (1 - e / 5)})`
+          ctx.strokeStyle = `rgba(16, 185, 129, ${0.45 * alpha})`
           ctx.lineWidth = 1.2
+          ctx.setLineDash([4, 4])
           ctx.beginPath()
-          ctx.ellipse(targetX, targetY, radX, radY, -0.12, 0, Math.PI * 2)
+          ctx.moveTo(mx, my)
+          ctx.lineTo(targetPxX, targetPxY)
           ctx.stroke()
+          ctx.setLineDash([])
 
-          // Subtle gradient tint for innermost ellipse
-          if (e === 1) {
-            ctx.fillStyle = `rgba(16, 185, 129, ${0.1 * alpha})`
-            ctx.fill()
-          }
+          // Animated photon pulse streaming toward Spot 2
+          const u = (elapsed * 0.8 + (marker.normX * 5)) % 1
+          const qx = mx + (targetPxX - mx) * u
+          const qy = my + (targetPxY - my) * u
+
+          ctx.fillStyle = `rgba(250, 217, 186, ${0.9 * alpha})`
+          ctx.beginPath()
+          ctx.arc(qx, qy, 2.5, 0, Math.PI * 2)
+          ctx.fill()
         }
 
-        // Triangular Telemetry Rays radiating down from the top edge into Spot 2
-        // (Exactly like the sensor rays in Rapidkert screenshot 3!)
-        const rayOrigins = [
-          logicalW * 0.55,
-          logicalW * 0.72,
-          logicalW * 0.88,
-        ]
-        ctx.strokeStyle = `rgba(250, 217, 186, ${0.35 * alpha})`
-        ctx.lineWidth = 1
-        for (const rx of rayOrigins) {
-          ctx.beginPath()
-          ctx.moveTo(rx, 0)
-          ctx.lineTo(targetX, targetY)
-          ctx.stroke()
-        }
-
-        // High-Precision Targeting Reticle on Spot 2
+        // High-Precision Targeting Reticle
         const pulse = 1 + Math.sin(elapsed * 4.2) * 0.08
         ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`
         ctx.beginPath()
-        ctx.arc(targetX, targetY, 6, 0, Math.PI * 2)
+        ctx.arc(targetPxX, targetPxY, 5.5, 0, Math.PI * 2)
         ctx.fill()
 
-        ctx.strokeStyle = `rgba(16, 185, 129, ${0.9 * alpha})`
+        ctx.strokeStyle = `rgba(16, 185, 129, ${0.95 * alpha})`
         ctx.lineWidth = 2
         ctx.beginPath()
-        ctx.arc(targetX, targetY, 18 * pulse, 0, Math.PI * 2)
+        ctx.arc(targetPxX, targetPxY, 18 * pulse, 0, Math.PI * 2)
         ctx.stroke()
 
         ctx.strokeStyle = `rgba(250, 217, 186, ${0.75 * alpha})`
         ctx.lineWidth = 1
         ctx.beginPath()
-        ctx.arc(targetX, targetY, 32 * pulse, 0, Math.PI * 2)
+        ctx.arc(targetPxX, targetPxY, 32 * pulse, 0, Math.PI * 2)
         ctx.stroke()
 
-        // Leader Line & Telemetry Callout (Rapidkert Image 3 style: DRIP LINE / WETTING ZONE)
-        ctx.strokeStyle = `rgba(250, 217, 186, ${0.7 * alpha})`
+        // Leader line & target telemetry
+        ctx.strokeStyle = `rgba(250, 217, 186, ${0.75 * alpha})`
         ctx.beginPath()
-        ctx.moveTo(targetX, targetY)
-        ctx.lineTo(targetX + 50, targetY - 45)
-        ctx.lineTo(targetX + 180, targetY - 45)
+        ctx.moveTo(targetPxX, targetPxY)
+        ctx.lineTo(targetPxX + 45, targetPxY - 45)
+        ctx.lineTo(targetPxX + 175, targetPxY - 45)
         ctx.stroke()
 
         ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`
         ctx.font = "bold 11px monospace"
         ctx.textAlign = "left"
-        ctx.fillText("TARGET RETICLE: SPOT 2", targetX + 55, targetY - 52)
+        ctx.fillText("TARGET RETICLE: SPOT 2", targetPxX + 50, targetPxY - 52)
 
-        ctx.fillStyle = `rgba(250, 217, 186, ${0.85 * alpha})`
+        ctx.fillStyle = `rgba(250, 217, 186, ${0.9 * alpha})`
         ctx.font = "9px monospace"
-        ctx.fillText("X=68.4M · Y=44.1M · GAIN +14.2%", targetX + 55, targetY - 36)
+        ctx.fillText("X=68.4M · Y=44.1M · GAIN +14.2%", targetPxX + 50, targetPxY - 36)
+      }
 
-        ctx.fillStyle = `rgba(239, 231, 222, ${0.5 * alpha})`
-        ctx.font = "9px monospace"
-        ctx.fillText("MAXIMUM VARIANCE REDUCTION ZONE", targetX - 110, targetY + 65)
+      // 6. Draw Fixed Ground Sounding Borehole Pins (B-01, B-02, B-03)
+      for (const marker of SOUNDING_MARKERS) {
+        if (marker.isSpot2 && tProg < 0.6) continue
+        const px = marker.normX * logicalW
+        const py = marker.normY * logicalH
+
+        if (!marker.isSpot2) {
+          ctx.fillStyle = "#EFE7DE"
+          ctx.beginPath()
+          ctx.arc(px, py, 3.5, 0, Math.PI * 2)
+          ctx.fill()
+
+          ctx.strokeStyle = "#5A3008"
+          ctx.lineWidth = 1.5
+          ctx.beginPath()
+          ctx.arc(px, py, 6.5, 0, Math.PI * 2)
+          ctx.stroke()
+
+          ctx.fillStyle = "rgba(239, 231, 222, 0.65)"
+          ctx.font = "9px monospace"
+          ctx.textAlign = "center"
+          ctx.fillText(marker.label, px, py - 10)
+        }
       }
 
       ctx.restore()

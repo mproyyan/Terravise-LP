@@ -1,10 +1,15 @@
-import { useState, useEffect, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { fetchFeedbacks, supabase, isSupabaseConfigured, cleanRoleText, type FeedbackDisplayItem } from "../../lib/supabase"
+import { useState, useEffect, useRef } from "react"
+import {
+  fetchFeedbacks,
+  supabase,
+  isSupabaseConfigured,
+  cleanRoleText,
+  type FeedbackDisplayItem,
+} from "../../lib/supabase"
 
 /**
  * Fallback showcase items used ONLY when no feedback entries exist yet
- * in Supabase or localStorage so the looping CPT rig display can be previewed immediately.
+ * in Supabase or localStorage so the infinite CPT drilling display works out of the box.
  */
 const FALLBACK_FEEDBACKS: FeedbackDisplayItem[] = [
   {
@@ -30,110 +35,100 @@ const FALLBACK_FEEDBACKS: FeedbackDisplayItem[] = [
   },
 ]
 
-interface DepthStationConfig {
-  depthM: number
-  topPct: number
-  stratumLabel: string
-  qcMpa: string
+interface ActiveSpawnedCard {
+  uid: string
+  spawnDistancePx: number
   side: "left" | "right"
+  offsetPct: number
+  item: FeedbackDisplayItem
 }
 
-const STATIONS_3: DepthStationConfig[] = [
-  {
-    depthM: 6.4,
-    topPct: 22,
-    stratumLabel: "Alluvial Silty Sand",
-    qcMpa: "8.4 MPa",
-    side: "left",
-  },
-  {
-    depthM: 14.8,
-    topPct: 52,
-    stratumLabel: "Stiff Clayey Silt",
-    qcMpa: "14.2 MPa",
-    side: "right",
-  },
-  {
-    depthM: 22.5,
-    topPct: 81,
-    stratumLabel: "Dense Bearing Stratum",
-    qcMpa: "21.6 MPa",
-    side: "left",
-  },
-]
+// Digging speed in pixels per second (earth moves upward at this speed)
+const DIG_SPEED_PX_PER_SEC = 58
+// Height of one seamless repeating geological soil strata tile (px)
+const SOIL_TILE_HEIGHT_PX = 960
+// Cone tip vertical anchor as a ratio of viewport height (66% from top — never hits the bottom)
+const CONE_TIP_Y_RATIO = 0.66
 
-const STATIONS_2: DepthStationConfig[] = [
-  {
-    depthM: 9.2,
-    topPct: 34,
-    stratumLabel: "Alluvial Silty Sand",
-    qcMpa: "11.0 MPa",
-    side: "left",
-  },
-  {
-    depthM: 19.6,
-    topPct: 72,
-    stratumLabel: "Dense Bearing Stratum",
-    qcMpa: "19.8 MPa",
-    side: "right",
-  },
-]
-
-const STATIONS_1: DepthStationConfig[] = [
-  {
-    depthM: 14.5,
-    topPct: 52,
-    stratumLabel: "Competent Bearing Stratum",
-    qcMpa: "18.5 MPa",
-    side: "right",
-  },
-]
+function randomBetween(min: number, max: number): number {
+  return min + Math.random() * (max - min)
+}
 
 export function FeedbackWallPage() {
   const [feedbacks, setFeedbacks] = useState<FeedbackDisplayItem[]>([])
-  const [isLoaded, setIsLoaded] = useState<boolean>(false)
+  const [viewportH, setViewportH] = useState<number>(() =>
+    typeof window !== "undefined" ? window.innerHeight : 900
+  )
 
-  // Cycle state: drives the looping CPT penetrometer descent
-  const [cycleIndex, setCycleIndex] = useState<number>(0)
-  const [coneProgress, setConeProgress] = useState<number>(0) // 0 to 100 (% of borehole depth)
-  const [isRetracting, setIsRetracting] = useState<boolean>(false)
+  // Continuous drilling distance (px) and active cards on screen
+  const [distanceDrilledPx, setDistanceDrilledPx] = useState<number>(420)
+  const [spawnedCards, setSpawnedCards] = useState<ActiveSpawnedCard[]>([])
+  const [pulseKey, setPulseKey] = useState<number>(0)
 
-  // Initial load + periodic refresh + realtime subscription
+  // Refs for the 60fps animation loop to avoid stale closures
+  const poolRef = useRef<FeedbackDisplayItem[]>(FALLBACK_FEEDBACKS)
+  const nextPoolIndexRef = useRef<number>(0)
+  const nextSpawnDistanceRef = useRef<number>(0)
+  const lastSideRef = useRef<"left" | "right">("right")
+  const uidCounterRef = useRef<number>(1)
+  const initializedRef = useRef<boolean>(false)
+
+  // Sync poolRef whenever feedbacks update
+  useEffect(() => {
+    poolRef.current = feedbacks.length > 0 ? feedbacks : FALLBACK_FEEDBACKS
+  }, [feedbacks])
+
+  // Track viewport resize
+  useEffect(() => {
+    const onResize = () => setViewportH(window.innerHeight)
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
+  }, [])
+
+  // Load feedbacks from Supabase / localStorage + Realtime listener + Polling
   useEffect(() => {
     let isMounted = true
 
     const loadData = async () => {
       const items = await fetchFeedbacks()
-      if (isMounted) {
+      if (isMounted && items.length > 0) {
         setFeedbacks(items)
-        setIsLoaded(true)
       }
     }
 
     loadData()
-
     const pollInterval = setInterval(loadData, 15000)
 
-    // Subscribe to realtime inserts if Supabase is configured
     const channel =
       supabase && isSupabaseConfigured
         ? supabase
-            .channel("public:feedback:wall")
+            .channel("public:feedback:infinite-wall")
             .on(
               "postgres_changes",
               { event: "INSERT", schema: "public", table: "feedback" },
               (payload) => {
                 const newRow = payload.new as Record<string, unknown>
-                if (newRow && typeof newRow.feedback_notes === "string" && newRow.feedback_notes.trim()) {
+                if (
+                  newRow &&
+                  typeof newRow.feedback_notes === "string" &&
+                  newRow.feedback_notes.trim()
+                ) {
                   const addedItem: FeedbackDisplayItem = {
                     id: String(newRow.id || Date.now()),
-                    full_name: newRow.full_name ? String(newRow.full_name).trim() : undefined,
+                    full_name: newRow.full_name
+                      ? String(newRow.full_name).trim()
+                      : undefined,
                     role: cleanRoleText(
                       typeof newRow.role === "string" ? newRow.role : undefined,
-                      typeof newRow.role_other === "string" ? newRow.role_other : undefined
+                      typeof newRow.role_other === "string"
+                        ? newRow.role_other
+                        : undefined
                     ),
                     feedback_notes: String(newRow.feedback_notes).trim(),
-                    created_at: typeof newRow.created_at === "string" ? newRow.created_at : undefined,
+                    created_at:
+                      typeof newRow.created_at === "string"
+                        ? newRow.created_at
+                        : undefined,
                   }
                   setFeedbacks((prev) => {
                     if (prev.some((item) => item.id === addedItem.id)) return prev
@@ -154,314 +149,325 @@ export function FeedbackWallPage() {
     }
   }, [])
 
-  const activePool = feedbacks.length > 0 ? feedbacks : FALLBACK_FEEDBACKS
+  // Helper to pull the next feedback item in an infinite circular loop
+  const pullNextFeedbackItem = (): FeedbackDisplayItem => {
+    const pool = poolRef.current.length > 0 ? poolRef.current : FALLBACK_FEEDBACKS
+    const idx = nextPoolIndexRef.current % pool.length
+    nextPoolIndexRef.current = (idx + 1) % pool.length
+    return pool[idx]
+  }
 
-  // Select station layout based on available items
-  const stations = useMemo(() => {
-    if (activePool.length === 1) return STATIONS_1
-    if (activePool.length === 2) return STATIONS_2
-    return STATIONS_3
-  }, [activePool.length])
-
-  // Compute current batch of feedbacks for this sounding cycle
-  const currentBatch = useMemo(() => {
-    const count = stations.length
-    const total = activePool.length
-    const startIdx = (cycleIndex * count) % total
-
-    return stations.map((station, idx) => {
-      const item = activePool[(startIdx + idx) % total]
-      // Alternate left/right on consecutive cycles so visual balance shifts dynamically
-      const effectiveSide: "left" | "right" =
-        cycleIndex % 2 === 0 ? station.side : station.side === "left" ? "right" : "left"
-      return {
-        ...station,
-        side: effectiveSide,
-        item,
-      }
-    })
-  }, [activePool, cycleIndex, stations])
-
-  // Continuous 60fps CPT drilling loop state machine
+  // Replace fallback cards immediately once real feedbacks finish loading
   useEffect(() => {
-    if (!isLoaded) return
+    if (feedbacks.length === 0) return
+    poolRef.current = feedbacks
+    nextPoolIndexRef.current = 0
+    setSpawnedCards((prev) =>
+      prev.map((card, i) => ({
+        ...card,
+        item: feedbacks[i % feedbacks.length],
+      }))
+    )
+    nextPoolIndexRef.current = 2 % feedbacks.length
+  }, [feedbacks])
 
-    // Timeline per cycle (in milliseconds):
-    // 0 -> 7000ms: CPT cone drills from 0% down to 94% depth, unlocking feedback stations as it passes their topPct
-    // 7000 -> 13000ms: CPT cone holds at target depth (94%) pulsing sonar while all uncovered cards remain readable
-    // 13000 -> 14200ms: Retraction & reset to 0% for next sounding cycle
-    const DRILL_DURATION_MS = 7000
-    const HOLD_DURATION_MS = 6000
-    const RETRACT_DURATION_MS = 1200
-    const TOTAL_CYCLE_MS = DRILL_DURATION_MS + HOLD_DURATION_MS + RETRACT_DURATION_MS
+  // Infinite 60fps CPT Drilling & Upward Earth Scroll Loop
+  useEffect(() => {
+    let dist = 420
 
-    let startTime = performance.now()
+    // Seed 2 initial cards on mount so the screen starts active immediately
+    if (!initializedRef.current) {
+      initializedRef.current = true
+      const item1 = pullNextFeedbackItem()
+      const item2 = pullNextFeedbackItem()
+      const initialCards: ActiveSpawnedCard[] = [
+        {
+          uid: `seed-${uidCounterRef.current++}`,
+          spawnDistancePx: 140,
+          side: "left",
+          offsetPct: 1.5,
+          item: item1,
+        },
+        {
+          uid: `seed-${uidCounterRef.current++}`,
+          spawnDistancePx: 390,
+          side: "right",
+          offsetPct: 2.2,
+          item: item2,
+        },
+      ]
+      lastSideRef.current = "right"
+      // Random depth gap until the next feedback is struck by the cone tip
+      nextSpawnDistanceRef.current = 390 + randomBetween(230, 360)
+      setSpawnedCards(initialCards)
+    }
+
+    let lastTime = performance.now()
     let rafId: number
 
-    const tick = (now: number) => {
-      const elapsed = now - startTime
+    const step = (now: number) => {
+      const dtSec = Math.min(0.1, (now - lastTime) / 1000)
+      lastTime = now
 
-      if (elapsed < DRILL_DURATION_MS) {
-        // Smooth penetration curve
-        const t = elapsed / DRILL_DURATION_MS
-        // Slightly ease through soil layers
-        const pct = t * 94
-        setIsRetracting(false)
-        setConeProgress(pct)
-      } else if (elapsed < DRILL_DURATION_MS + HOLD_DURATION_MS) {
-        // Hold at target bearing depth with subtle micro-oscillation
-        const holdElapsed = elapsed - DRILL_DURATION_MS
-        const microPulse = Math.sin(holdElapsed / 220) * 0.4
-        setIsRetracting(false)
-        setConeProgress(94 + microPulse)
-      } else if (elapsed < TOTAL_CYCLE_MS) {
-        // Retract penetrometer rod back to surface
-        const retractT = (elapsed - DRILL_DURATION_MS - HOLD_DURATION_MS) / RETRACT_DURATION_MS
-        const easeInOut = retractT < 0.5 ? 2 * retractT * retractT : 1 - Math.pow(-2 * retractT + 2, 2) / 2
-        setIsRetracting(true)
-        setConeProgress(94 * (1 - easeInOut))
-      } else {
-        // Advance to next cycle
-        startTime = now
-        setIsRetracting(false)
-        setConeProgress(0)
-        setCycleIndex((prev) => prev + 1)
+      dist += dtSec * DIG_SPEED_PX_PER_SEC
+      setDistanceDrilledPx(dist)
+
+      // Check if the CPT cone tip has reached the next random feedback depth pocket
+      if (dist >= nextSpawnDistanceRef.current) {
+        const spawnAt = nextSpawnDistanceRef.current
+        const nextItem = pullNextFeedbackItem()
+
+        // Alternate side most of the time, with occasional random variation when gap is large
+        const gapToNext = randomBetween(230, 390)
+        const nextSide: "left" | "right" =
+          lastSideRef.current === "left" ? "right" : "left"
+        lastSideRef.current = nextSide
+
+        const newCard: ActiveSpawnedCard = {
+          uid: `card-${uidCounterRef.current++}-${Date.now()}`,
+          spawnDistancePx: spawnAt,
+          side: nextSide,
+          offsetPct: randomBetween(0, 3.5),
+          item: nextItem,
+        }
+
+        nextSpawnDistanceRef.current = spawnAt + gapToNext
+        setPulseKey((k) => k + 1)
+
+        const maxRetentionDistance = window.innerHeight * CONE_TIP_Y_RATIO + 420
+        setSpawnedCards((prev) => {
+          const kept = prev.filter(
+            (c) => dist - c.spawnDistancePx < maxRetentionDistance
+          )
+          return [...kept, newCard]
+        })
       }
 
-      rafId = requestAnimationFrame(tick)
+      rafId = requestAnimationFrame(step)
     }
 
-    rafId = requestAnimationFrame(tick)
+    rafId = requestAnimationFrame(step)
     return () => cancelAnimationFrame(rafId)
-  }, [isLoaded])
+  }, [])
 
-  const liveDepthM = ((coneProgress / 94) * 25.0).toFixed(1)
-
-  // Determine which station was most recently unlocked
-  const latestUnlockedIndex = useMemo(() => {
-    if (isRetracting) return -1
-    let idx = -1
-    for (let i = 0; i < currentBatch.length; i++) {
-      if (coneProgress >= currentBatch[i].topPct - 2) {
-        idx = i
-      }
-    }
-    return idx
-  }, [coneProgress, currentBatch, isRetracting])
+  const coneTipY = viewportH * CONE_TIP_Y_RATIO
+  const tileOffsetY = -(distanceDrilledPx % SOIL_TILE_HEIGHT_PX)
+  const parallaxGrainOffsetY = -((distanceDrilledPx * 1.15) % 480)
+  // Subtle mechanical hydraulic ram micro-vibration on the cone
+  const coneVibrationY = Math.sin(distanceDrilledPx * 0.18) * 1.8
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#150E09] text-[#EFE7DE] font-sans select-none relative flex flex-col">
+    <div className="h-screen w-screen overflow-hidden bg-[#140D08] text-[#EFE7DE] font-sans select-none relative">
       {/* =====================================================================
-          1. SUBSURFACE STRATIGRAPHY LAYERS & GEOLOGICAL TEXTURE BACKGROUND
+          1. INFINITE UPWARD-MOVING SUBSURFACE SOIL STRATA BACKGROUND
          ===================================================================== */}
-      <div className="absolute inset-0 pointer-events-none z-0 flex flex-col">
-        {/* Top Ground Horizon Strip */}
-        <div className="h-16 sm:h-20 bg-[#1C130D] border-b-2 border-[#BD8564]/50 relative overflow-hidden shrink-0">
-          {/* Diagonal Ground Hatching along surface line */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-3 opacity-35"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(135deg, #FAD9BA 0px, #FAD9BA 1px, transparent 1px, transparent 8px)",
-            }}
-          />
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Two stacked seamless SVG geological strata tiles scrolling upward */}
+        <div
+          className="absolute left-0 right-0 w-full will-change-transform"
+          style={{
+            height: `${SOIL_TILE_HEIGHT_PX * 2}px`,
+            transform: `translate3d(0, ${tileOffsetY}px, 0)`,
+          }}
+        >
+          {[0, 1].map((tileIdx) => (
+            <div
+              key={tileIdx}
+              className="w-full relative overflow-hidden"
+              style={{ height: `${SOIL_TILE_HEIGHT_PX}px` }}
+            >
+              {/* Layered earthen sediment gradients & organic strata wave bands */}
+              <svg
+                className="w-full h-full"
+                viewBox="0 0 1440 960"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id={`soilBase-${tileIdx}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#1A110A" />
+                    <stop offset="25%" stopColor="#23160E" />
+                    <stop offset="50%" stopColor="#170F09" />
+                    <stop offset="75%" stopColor="#21150D" />
+                    <stop offset="100%" stopColor="#1A110A" />
+                  </linearGradient>
+                </defs>
+
+                {/* Base Soil Fill */}
+                <rect width="1440" height="960" fill={`url(#soilBase-${tileIdx})`} />
+
+                {/* Undulating Geological Soil Horizon Band 1 */}
+                <path
+                  d="M0,120 C360,95 720,145 1080,115 C1260,100 1350,110 1440,120 L1440,290 C1080,315 720,265 360,295 C180,310 90,300 0,290 Z"
+                  fill="#2B1B11"
+                  fillOpacity="0.55"
+                />
+
+                {/* Undulating Geological Soil Horizon Band 2 */}
+                <path
+                  d="M0,430 C420,465 840,400 1220,440 C1330,450 1390,440 1440,430 L1440,610 C1020,580 620,640 240,605 C120,595 60,605 0,610 Z"
+                  fill="#120B06"
+                  fillOpacity="0.65"
+                />
+
+                {/* Undulating Geological Soil Horizon Band 3 */}
+                <path
+                  d="M0,740 C380,710 790,770 1160,735 C1300,722 1380,730 1440,740 L1440,890 C1060,920 680,860 310,895 C150,910 70,900 0,890 Z"
+                  fill="#291A10"
+                  fillOpacity="0.5"
+                />
+
+                {/* Stratigraphic Contour Lines */}
+                <path
+                  d="M0,120 C360,95 720,145 1080,115 C1260,100 1350,110 1440,120"
+                  stroke="#BD8564"
+                  strokeOpacity="0.14"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <path
+                  d="M0,290 C180,310 360,295 720,265 C1080,315 1260,295 1440,290"
+                  stroke="#FAD9BA"
+                  strokeOpacity="0.1"
+                  strokeWidth="1"
+                  fill="none"
+                  strokeDasharray="6 6"
+                />
+                <path
+                  d="M0,430 C420,465 840,400 1220,440 C1330,450 1390,440 1440,430"
+                  stroke="#BD8564"
+                  strokeOpacity="0.14"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <path
+                  d="M0,610 C120,595 240,605 620,640 C1020,580 1250,600 1440,610"
+                  stroke="#FAD9BA"
+                  strokeOpacity="0.09"
+                  strokeWidth="1"
+                  fill="none"
+                />
+                <path
+                  d="M0,740 C380,710 790,770 1160,735 C1300,722 1380,730 1440,740"
+                  stroke="#BD8564"
+                  strokeOpacity="0.13"
+                  strokeWidth="1.5"
+                  fill="none"
+                  strokeDasharray="10 8"
+                />
+              </svg>
+            </div>
+          ))}
         </div>
 
-        {/* Underground Soil Strata Bands */}
-        <div className="flex-1 relative flex flex-col">
-          {/* Layer 1: Topsoil & Alluvial Sand (0m - 8m) */}
-          <div className="h-[32%] bg-gradient-to-b from-[#251810] to-[#1F140E] border-b border-[#EFE7DE]/[0.06] relative">
-            <span className="hidden sm:block absolute right-6 top-3 font-mono text-[10px] uppercase tracking-widest text-[#EFE7DE]/20">
-              STRATUM I · ALLUVIAL SILTY SAND (0.0m - 8.0m)
-            </span>
-          </div>
+        {/* Parallax Soil Mineral Grains & Sediment Speckles Moving Upward */}
+        <div
+          className="absolute left-0 right-0 w-full opacity-25 will-change-transform"
+          style={{
+            height: "1440px",
+            transform: `translate3d(0, ${parallaxGrainOffsetY}px, 0)`,
+            backgroundImage:
+              "radial-gradient(#FAD9BA 1px, transparent 1px), radial-gradient(#BD8564 1.5px, transparent 1.5px)",
+            backgroundSize: "64px 64px, 96px 96px",
+            backgroundPosition: "0 0, 32px 40px",
+          }}
+        />
 
-          {/* Layer 2: Stiff Clayey Silt (8m - 17m) */}
-          <div className="h-[36%] bg-gradient-to-b from-[#1F140E] to-[#19100B] border-b border-[#EFE7DE]/[0.06] relative">
-            <span className="hidden sm:block absolute right-6 top-3 font-mono text-[10px] uppercase tracking-widest text-[#EFE7DE]/20">
-              STRATUM II · STIFF CLAYEY SILT (8.0m - 17.0m)
-            </span>
-          </div>
-
-          {/* Layer 3: Competent Bearing Stratum (17m - 25m) */}
-          <div className="h-[32%] bg-gradient-to-b from-[#19100B] to-[#120B07] relative">
-            <span className="hidden sm:block absolute right-6 top-3 font-mono text-[10px] uppercase tracking-widest text-[#EFE7DE]/20">
-              STRATUM III · DENSE BEARING STRATUM (17.0m - 25.0m)
-            </span>
-          </div>
-
-          {/* Subtle Blueprint Subsurface Grid Overlay */}
-          <div
-            className="absolute inset-0 opacity-[0.045]"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, #FAD9BA 1px, transparent 1px), linear-gradient(to bottom, #FAD9BA 1px, transparent 1px)",
-              backgroundSize: "48px 48px",
-            }}
-          />
-        </div>
+        {/* Subtle radial vignette to frame the subterranean cavern */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 62%, transparent 25%, rgba(12, 7, 4, 0.55) 100%)",
+          }}
+        />
       </div>
 
       {/* =====================================================================
-          2. TOP GEOTECHNICAL TELEMETRY HEADER BAR (NO NAVIGATION BUTTONS)
+          2. EXCAVATED BOREHOLE CAVITY & INFINITE DRILLING CPT CONE
+             - Centered on Desktop (lg:left-1/2)
+             - Left-aligned on Mobile/Tablet (left-10 sm:left-14)
          ===================================================================== */}
-      <header className="relative z-30 h-16 sm:h-20 px-4 sm:px-8 lg:px-12 flex items-center justify-between border-b border-[#BD8564]/40 bg-[#1C130D]/90 backdrop-blur-md shrink-0">
-        <div className="flex items-center gap-3.5">
-          <img
-            src="/terravise-logo.png"
-            alt="Terravise"
-            className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
-          />
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-sans font-black text-sm sm:text-base tracking-tight uppercase text-[#EFE7DE]">
-                Terravise
-              </span>
-              <span className="text-[#BD8564] font-mono text-[10px] uppercase px-1.5 py-0.5 bg-[#271C14] border border-[#BD8564]/40">
-                CPT Sounding Feedback Log
-              </span>
-            </div>
-            <p className="font-mono text-[10px] text-[#EFE7DE]/55 hidden sm:block">
-              Continuous Subsurface Cone Penetration Test · Field Feedback Extraction
-            </p>
-          </div>
-        </div>
-
-        {/* Center Rig Head Datum Indicator (Desktop) */}
-        <div className="hidden lg:flex items-center gap-2 bg-[#150E09] border border-[#FAD9BA]/30 px-3.5 py-1.5 font-mono text-[11px]">
-          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-          <span className="text-[#EFE7DE]/60 uppercase">RIG STATUS:</span>
-          <span className="text-[#FAD9BA] font-bold uppercase">
-            {isRetracting ? "RETRACTING RODS" : coneProgress >= 93.5 ? "HOLDING TARGET DEPTH" : "PENETRATING SOIL"}
-          </span>
-        </div>
-
-        {/* Right Telemetry Metrics */}
-        <div className="flex items-center gap-4 sm:gap-6 font-mono text-xs">
-          <div>
-            <span className="text-[9px] text-[#EFE7DE]/50 block uppercase">CONE DEPTH</span>
-            <span className="text-sm sm:text-base font-bold text-[#FAD9BA] tabular-nums">
-              -{liveDepthM} m
-            </span>
-          </div>
-          <div className="h-7 w-[1px] bg-[#EFE7DE]/15" />
-          <div>
-            <span className="text-[9px] text-[#EFE7DE]/50 block uppercase">SOUNDING HOLE</span>
-            <span className="text-sm sm:text-base font-bold text-[#EFE7DE] tabular-nums">
-              CPT-{String((cycleIndex % Math.max(1, Math.ceil(activePool.length / stations.length))) + 1).padStart(2, "0")}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      {/* =====================================================================
-          3. MAIN SUBSURFACE BOREHOLE STAGE & FEEDBACK CARDS
-         ===================================================================== */}
-      <main className="relative z-10 flex-1 w-full max-w-[1600px] mx-auto overflow-hidden">
-        {/* -----------------------------------------------------------------
-            BOREHOLE SHAFT & MOVING CPT CONE ASSEMBLY
-            - Centered on Desktop (lg:left-1/2)
-            - Left-aligned on Mobile/Tablet (left-10 sm:left-14)
-           ----------------------------------------------------------------- */}
+      <div className="relative z-10 w-full h-full max-w-[1600px] mx-auto">
         <div className="absolute top-0 bottom-0 left-10 sm:left-14 lg:left-1/2 -translate-x-1/2 w-24 flex justify-center pointer-events-none z-20">
-          {/* Surface Hydraulic Rig Guide Collar at 0.0m */}
-          <div className="absolute top-0 w-10 h-3 bg-gradient-to-r from-[#381800] via-[#BD8564] to-[#381800] border-x border-b border-[#FAD9BA]/60 shadow-md z-30" />
-
-          {/* Full Un-drilled Borehole Target Axis Guide Line */}
-          <div className="absolute top-0 bottom-0 w-4 bg-[#0D0805]/90 border-x border-[#EFE7DE]/15 shadow-inner overflow-hidden">
-            {/* Subtle vertical guide center line */}
-            <div className="w-[1px] h-full mx-auto border-l border-dashed border-[#FAD9BA]/15" />
+          {/* A. Excavated Borehole Shaft Wall (From top of screen down to Cone Tip) */}
+          <div
+            className="absolute top-0 w-7 sm:w-8 bg-[#0B0604] border-x border-[#BD8564]/35 shadow-[inset_0_0_16px_rgba(0,0,0,0.95)] overflow-hidden"
+            style={{ height: `${coneTipY}px` }}
+          >
+            {/* Borehole wall soil scratch marks moving upward as the cone digs */}
+            <div
+              className="w-full will-change-transform opacity-40"
+              style={{
+                height: `${SOIL_TILE_HEIGHT_PX * 2}px`,
+                transform: `translate3d(0, ${tileOffsetY}px, 0)`,
+                backgroundImage:
+                  "repeating-linear-gradient(to bottom, transparent 0px, transparent 18px, rgba(189,133,100,0.35) 18px, rgba(189,133,100,0.35) 20px)",
+              }}
+            />
           </div>
 
-          {/* Depth Ruler Notches Along Borehole Wall */}
-          {[
-            { label: "0.0m", pct: "2%" },
-            { label: "-5.0m", pct: "20%" },
-            { label: "-10.0m", pct: "38%" },
-            { label: "-15.0m", pct: "56%" },
-            { label: "-20.0m", pct: "74%" },
-            { label: "-25.0m", pct: "92%" },
-          ].map((tick) => (
-            <div
-              key={tick.label}
-              className="absolute left-1/2 -translate-x-1/2 w-24 flex items-center justify-between font-mono text-[9px] text-[#BD8564]/70"
-              style={{ top: tick.pct }}
-            >
-              <div className="flex items-center gap-1">
-                <span className="text-[8px] hidden sm:inline">{tick.label}</span>
-                <span className="w-2 h-[1px] bg-[#FAD9BA]/30" />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="w-2 h-[1px] bg-[#FAD9BA]/30" />
-                <span className="text-[8px]">{tick.label}</span>
-              </div>
-            </div>
-          ))}
-
-          {/* Active Steel Push Rod String (Extends from 0.0m down to the Cone Tip) */}
+          {/* B. Uncut Soil Target Projection Line Below Cone Tip */}
           <div
-            className="absolute top-0 w-2 sm:w-2.5 bg-gradient-to-r from-[#5A3008] via-[#FAD9BA] to-[#381800] border-x border-[#FAD9BA]/50 shadow-[0_0_15px_rgba(250,217,186,0.25)] z-20"
+            className="absolute bottom-0 w-[1px] border-l border-dashed border-[#FAD9BA]/15"
+            style={{ top: `${coneTipY + 24}px` }}
+          />
+
+          {/* C. Steel CPT Push Rod String (Extends from top of screen down to Cone Tip) */}
+          <div
+            className="absolute top-0 w-3 sm:w-3.5 border-x border-[#FAD9BA]/60 shadow-[0_0_20px_rgba(250,217,186,0.2)] z-20"
             style={{
-              height: `${Math.max(0, coneProgress)}%`,
+              height: `${coneTipY + coneVibrationY}px`,
               backgroundImage:
-                "repeating-linear-gradient(to bottom, transparent 0px, transparent 54px, rgba(28,19,13,0.85) 54px, rgba(28,19,13,0.85) 56px), linear-gradient(to right, #5A3008, #FAD9BA, #381800)",
+                "repeating-linear-gradient(to bottom, transparent 0px, transparent 68px, rgba(20,13,8,0.9) 68px, rgba(20,13,8,0.9) 71px), linear-gradient(to right, #4A280A 0%, #BD8564 25%, #FAD9BA 50%, #8C583A 78%, #2E1805 100%)",
             }}
           />
 
-          {/* Station Target Nodes on the Borehole Spine */}
-          {currentBatch.map((station) => {
-            const isReached = !isRetracting && coneProgress >= station.topPct - 2
-            return (
-              <div
-                key={`node-${station.depthM}`}
-                className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-                style={{ top: `${station.topPct}%` }}
-              >
-                <div
-                  className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-300 ${
-                    isReached
-                      ? "bg-[#10B981] border-[#FAD9BA] shadow-[0_0_14px_#10B981] scale-110"
-                      : "bg-[#1C130D] border-[#EFE7DE]/30 scale-90"
-                  }`}
-                />
-              </div>
-            )
-          })}
-
-          {/* THE ASTM D5778 60-DEGREE CPT CONE PENETROMETER TIP ASSEMBLY */}
+          {/* D. THE ASTM D5778 60-DEGREE CPT CONE PENETROMETER TIP ASSEMBLY */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 z-30 flex flex-col items-center"
-            style={{ top: `${coneProgress}%` }}
+            className="absolute left-1/2 -translate-x-1/2 z-30 flex flex-col items-center will-change-transform"
+            style={{
+              top: `${coneTipY + coneVibrationY - 22}px`,
+            }}
           >
-            {/* Friction Sleeve Collar (fs) */}
-            <div className="w-4 sm:w-5 h-5 bg-gradient-to-r from-[#271C14] via-[#BD8564] to-[#1C130D] border border-[#FAD9BA]/80 flex flex-col items-center justify-between py-0.5 shadow-md">
-              <div className="w-full h-[1px] bg-[#FAD9BA]/40" />
+            {/* Tapered Rod-to-Sleeve Coupling Ring */}
+            <div className="w-4 sm:w-5 h-2 bg-gradient-to-r from-[#381800] via-[#FAD9BA] to-[#381800] border-x border-t border-[#FAD9BA]/80" />
+
+            {/* Friction Sleeve Collar (Selimut Gesek) */}
+            <div className="w-5 sm:w-6 h-7 bg-gradient-to-r from-[#271C14] via-[#D8A47F] to-[#1C130D] border border-[#FAD9BA]/85 flex flex-col items-center justify-between py-1 shadow-lg">
+              <div className="w-full h-[1px] bg-[#FAD9BA]/50" />
+              <div className="w-full h-[1px] bg-[#FAD9BA]/30" />
               {/* Piezocone u2 Pore Pressure Filter Element */}
-              <div className="w-full h-1 bg-[#10B981]" />
+              <div className="w-full h-1.5 bg-[#10B981] shadow-[0_0_10px_#10B981]" />
             </div>
 
-            {/* 60-Degree Conical Penetrometer Point (qc) */}
+            {/* 60-Degree Conical Penetrometer Point (Konus 60°) */}
             <div className="relative flex flex-col items-center">
               <svg
-                className="w-6 sm:w-7 h-6 drop-shadow-[0_6px_16px_rgba(250,217,186,0.55)]"
-                viewBox="0 0 28 24"
+                className="w-7 sm:w-8 h-7 drop-shadow-[0_8px_20px_rgba(250,217,186,0.65)]"
+                viewBox="0 0 32 28"
                 fill="none"
               >
                 <polygon
-                  points="2,1 26,1 14,22"
-                  fill="url(#wallCptConeGrad)"
+                  points="2,1 30,1 16,26"
+                  fill="url(#infiniteCptConeGrad)"
                   stroke="#FAD9BA"
-                  strokeWidth="1.5"
+                  strokeWidth="1.6"
                 />
-                <polygon points="14,1 26,1 14,22" fill="#FFFFFF" fillOpacity="0.18" />
-                <circle cx="14" cy="20" r="1.8" fill="#10B981" />
+                {/* Metallic Bevel Highlight */}
+                <polygon
+                  points="16,1 30,1 16,26"
+                  fill="#FFFFFF"
+                  fillOpacity="0.22"
+                />
+                {/* Cone Apex Tip Sensor */}
+                <circle cx="16" cy="24" r="2" fill="#10B981" />
                 <defs>
                   <linearGradient
-                    id="wallCptConeGrad"
+                    id="infiniteCptConeGrad"
                     x1="2"
                     y1="1"
-                    x2="26"
-                    y2="22"
+                    x2="30"
+                    y2="26"
                     gradientUnits="userSpaceOnUse"
                   >
                     <stop stopColor="#FAD9BA" />
@@ -471,134 +477,135 @@ export function FeedbackWallPage() {
                 </defs>
               </svg>
 
-              {/* Radial Seismic / Acoustic Pressure Waves Emitted while Drilling */}
-              {!isRetracting && (
-                <>
-                  <span className="absolute top-3 w-8 h-8 rounded-full border border-[#FAD9BA]/50 animate-ping pointer-events-none" />
-                  <span className="absolute top-2 w-14 h-14 rounded-full border border-[#10B981]/30 animate-pulse pointer-events-none" />
-                </>
-              )}
-            </div>
+              {/* Continuous Drilling Pressure Waves at the Cone Tip */}
+              <span className="absolute top-3 w-10 h-10 rounded-full border border-[#FAD9BA]/55 animate-ping pointer-events-none" />
+              <span className="absolute top-1 w-16 h-16 rounded-full border border-[#10B981]/35 animate-pulse pointer-events-none" />
 
-            {/* Live Depth Tag Attached to Cone Tip */}
-            <div className="mt-1 bg-[#150E09]/95 border border-[#FAD9BA]/80 px-2 py-0.5 shadow-xl font-mono text-[10px] whitespace-nowrap flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-              <span className="text-[#FAD9BA] font-bold tabular-nums">-{liveDepthM} m</span>
+              {/* Displaced Soil Particles Flowing Upward Past the Cone Tip */}
+              {[
+                { left: "-14px", delay: "0s", size: "w-1.5 h-1.5" },
+                { left: "16px", delay: "0.3s", size: "w-1 h-1" },
+                { left: "-20px", delay: "0.55s", size: "w-1 h-1" },
+                { left: "22px", delay: "0.15s", size: "w-1.5 h-1.5" },
+              ].map((p, i) => (
+                <span
+                  key={i}
+                  className={`absolute top-4 ${p.size} rounded-full bg-[#FAD9BA]/70 animate-bounce pointer-events-none`}
+                  style={{
+                    marginLeft: p.left,
+                    animationDelay: p.delay,
+                    animationDuration: "0.75s",
+                  }}
+                />
+              ))}
+
+              {/* Extra Sonar Burst when a Feedback Pocket is Struck */}
+              <span
+                key={`burst-${pulseKey}`}
+                className="absolute -top-2 w-24 h-24 rounded-full border-2 border-[#10B981]/70 animate-ping pointer-events-none"
+                style={{ animationDuration: "0.9s", animationIterationCount: 1 }}
+              />
             </div>
           </div>
         </div>
 
-        {/* -----------------------------------------------------------------
-            DISCOVERED FEEDBACK CARDS (EMERGE AS CONE PENETRATES EACH DEPTH)
-           ----------------------------------------------------------------- */}
-        {currentBatch.map((station, idx) => {
-          const isUnlocked = !isRetracting && coneProgress >= station.topPct - 2
-          const isMostRecent = latestUnlockedIndex === idx
-          const { item, side, topPct, depthM } = station
+        {/* =====================================================================
+            3. FEEDBACK CARDS MOVING UPWARD WITH THE EXCAVATED SOIL
+           ===================================================================== */}
+        <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+          {spawnedCards.map((card) => {
+            // Distance the cone has drilled past this feedback card's depth pocket
+            const drilledPastPx = distanceDrilledPx - card.spawnDistancePx
+            // Card Y coordinate moves upward at the exact same speed as the soil background
+            const cardY = coneTipY - drilledPastPx
 
-          return (
-            <div
-              key={`${cycleIndex}-${item.id}-${depthM}`}
-              className="absolute left-0 right-0 -translate-y-1/2 px-4 sm:px-8 lg:px-14 pointer-events-none"
-              style={{ top: `${topPct}%` }}
-            >
-              <AnimatePresence>
-                {isUnlocked && (
+            // Smooth entrance scale/opacity right as the cone uncovers it at coneTipY
+            const entranceProgress = Math.max(0, Math.min(1, drilledPastPx / 55))
+            // Smooth fade-out near the very top edge as it exits the screen
+            const exitProgress = cardY < 60 ? Math.max(0, Math.min(1, (cardY + 120) / 180)) : 1
+            const opacity = entranceProgress * exitProgress
+            const scale = 0.92 + 0.08 * entranceProgress
+
+            const isFreshlyStruck = drilledPastPx >= 0 && drilledPastPx < 190
+
+            return (
+              <div
+                key={card.uid}
+                className="absolute left-0 right-0 px-4 sm:px-8 lg:px-14 will-change-transform"
+                style={{
+                  transform: `translate3d(0, ${cardY}px, 0) translateY(-50%)`,
+                  opacity,
+                }}
+              >
+                <div
+                  className={`w-full flex items-center relative pl-14 sm:pl-20 lg:pl-0 ${
+                    card.side === "left" ? "lg:justify-start" : "lg:justify-end"
+                  }`}
+                >
+                  {/* Node Pin on the Borehole Wall */}
                   <div
-                    className={`w-full flex items-center ${
-                      side === "left" ? "lg:justify-start" : "lg:justify-end"
+                    className={`absolute left-6 sm:left-6 lg:left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 transition-colors duration-300 ${
+                      isFreshlyStruck
+                        ? "bg-[#10B981] border-[#FAD9BA] shadow-[0_0_14px_#10B981]"
+                        : "bg-[#271C14] border-[#BD8564]"
+                    }`}
+                  />
+
+                  {/* Desktop Horizontal Connector Beam from Center Borehole to Card */}
+                  <div
+                    className={`hidden lg:block absolute top-1/2 -translate-y-1/2 h-[1px] w-[7.5%] bg-gradient-to-r ${
+                      card.side === "left"
+                        ? "right-1/2 mr-3 from-[#FAD9BA]/80 to-[#10B981]"
+                        : "left-1/2 ml-3 from-[#10B981] to-[#FAD9BA]/80"
+                    }`}
+                  />
+
+                  {/* Mobile/Tablet Connector Beam from Left Borehole to Card */}
+                  <div className="lg:hidden absolute left-6 sm:left-6 top-1/2 -translate-y-1/2 h-[1px] w-8 sm:w-14 bg-[#10B981]/80" />
+
+                  {/* Feedback Card (Only Nama if present, Latar Belakang, and Masukan) */}
+                  <article
+                    style={{
+                      transform: `scale(${scale})`,
+                    }}
+                    className={`pointer-events-auto w-full lg:w-[41%] bg-[#21160F]/95 backdrop-blur-md border p-4 sm:p-6 shadow-2xl transition-colors duration-500 relative overflow-hidden ${
+                      isFreshlyStruck
+                        ? "border-[#FAD9BA] shadow-[0_12px_38px_rgba(250,217,186,0.16)]"
+                        : "border-[#EFE7DE]/20"
                     }`}
                   >
-                    {/* Desktop Connector Beam from Center Borehole to Card */}
-                    <motion.div
-                      initial={{ scaleX: 0, opacity: 0 }}
-                      animate={{ scaleX: 1, opacity: 1 }}
-                      exit={{ scaleX: 0, opacity: 0 }}
-                      transition={{ duration: 0.35, ease: "easeOut" }}
-                      style={{
-                        originX: side === "left" ? 1 : 0,
-                      }}
-                      className={`hidden lg:block absolute top-1/2 -translate-y-1/2 h-[1px] w-[7%] bg-gradient-to-r ${
-                        side === "left"
-                          ? "right-1/2 mr-3 from-[#FAD9BA]/80 to-[#10B981]"
-                          : "left-1/2 ml-3 from-[#10B981] to-[#FAD9BA]/80"
+                    {/* Top Highlight Strip */}
+                    <div
+                      className={`absolute top-0 left-0 right-0 h-1 transition-colors duration-500 ${
+                        isFreshlyStruck
+                          ? "bg-gradient-to-r from-[#10B981] via-[#FAD9BA] to-[#BD8564]"
+                          : "bg-[#BD8564]/35"
                       }`}
                     />
 
-                    {/* Mobile/Tablet Connector Beam from Left Borehole to Card */}
-                    <motion.div
-                      initial={{ scaleX: 0, opacity: 0 }}
-                      animate={{ scaleX: 1, opacity: 1 }}
-                      exit={{ scaleX: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      style={{ originX: 0 }}
-                      className="lg:hidden absolute left-10 sm:left-14 top-1/2 -translate-y-1/2 h-[1px] w-8 sm:w-10 bg-[#10B981]"
-                    />
+                    {/* Header: Nama (jika ada) & Latar Belakang */}
+                    <div className="flex flex-wrap items-center gap-2.5 pb-3 mb-3 border-b border-[#EFE7DE]/12">
+                      {card.item.full_name && (
+                        <h2 className="font-sans font-bold text-base sm:text-lg text-[#FAD9BA] tracking-tight">
+                          {card.item.full_name}
+                        </h2>
+                      )}
+                      <span className="font-mono text-[11px] uppercase tracking-wider px-2.5 py-0.5 bg-[#140D08] border border-[#BD8564]/50 text-[#EFE7DE]/90 font-semibold">
+                        {card.item.role}
+                      </span>
+                    </div>
 
-                    {/* Feedback Card */}
-                    <motion.article
-                      initial={{
-                        opacity: 0,
-                        x: side === "left" ? 28 : -28,
-                        scale: 0.96,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        x: 0,
-                        scale: 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        y: -10,
-                        scale: 0.96,
-                      }}
-                      transition={{
-                        duration: 0.45,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      className={`pointer-events-auto ml-14 sm:ml-20 lg:ml-0 w-full lg:w-[42%] bg-[#221710]/95 backdrop-blur-md border p-4 sm:p-6 shadow-2xl transition-colors duration-500 relative overflow-hidden ${
-                        isMostRecent
-                          ? "border-[#FAD9BA] shadow-[0_12px_36px_rgba(250,217,186,0.14)]"
-                          : "border-[#EFE7DE]/20"
-                      }`}
-                    >
-                      {/* Top Accent Progress Bar */}
-                      <div
-                        className={`absolute top-0 left-0 right-0 h-1 transition-colors duration-500 ${
-                          isMostRecent ? "bg-gradient-to-r from-[#10B981] via-[#FAD9BA] to-[#BD8564]" : "bg-[#BD8564]/40"
-                        }`}
-                      />
-
-                      {/* Card Header: Name (if any) & Latar Belakang */}
-                      <div className="flex flex-wrap items-baseline justify-between gap-2 pb-3 mb-3 border-b border-[#EFE7DE]/12">
-                        <div className="flex flex-wrap items-center gap-2.5">
-                          {item.full_name && (
-                            <h2 className="font-sans font-bold text-base sm:text-lg text-[#FAD9BA] tracking-tight">
-                              {item.full_name}
-                            </h2>
-                          )}
-                          <span className="font-mono text-[11px] uppercase tracking-wider px-2.5 py-0.5 bg-[#150E09] border border-[#BD8564]/50 text-[#EFE7DE]/90 font-semibold">
-                            {item.role}
-                          </span>
-                        </div>
-
-                        <span className="font-mono text-[10px] text-[#BD8564] tabular-nums">
-                          -{depthM.toFixed(1)} m
-                        </span>
-                      </div>
-
-                      {/* Card Body: Masukan */}
-                      <p className="font-sans text-sm sm:text-base text-[#EFE7DE]/95 leading-relaxed line-clamp-4">
-                        "{item.feedback_notes}"
-                      </p>
-                    </motion.article>
-                  </div>
-                )}
-              </AnimatePresence>
-            </div>
-          )
-        })}
-      </main>
+                    {/* Body: Masukan */}
+                    <p className="font-sans text-sm sm:text-base text-[#EFE7DE]/95 leading-relaxed">
+                      "{card.item.feedback_notes}"
+                    </p>
+                  </article>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

@@ -9,11 +9,8 @@ import {
   Volume2,
   VolumeX,
   Maximize2,
-  CheckCircle2,
-  Cpu,
   Radio,
   Layers,
-  Quote,
 } from "lucide-react"
 
 export function AppDemoSection() {
@@ -160,13 +157,9 @@ export function AppDemoSection() {
               {currentScene.title.toUpperCase()}
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1 text-[#10B981]">
-                <Cpu className="w-3 h-3 text-[#10B981]" />
-                <span className="hidden sm:inline">100% Offline (Core ML)</span>
-              </span>
-              <span className="text-[9px] bg-[#271C14] border border-[#EFE7DE]/15 px-1.5 py-0.5 text-[#FAD9BA] font-bold">
-                UTM Zone 48S
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] bg-[#271C14] border border-[#EFE7DE]/15 px-2 py-0.5 text-[#FAD9BA] font-bold">
+                1080P HD
               </span>
             </div>
           </div>
@@ -215,34 +208,6 @@ export function AppDemoSection() {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Subtitle Ribbon inside the Video Frame (Top-tier cinematic presentation) */}
-            <div className="absolute bottom-11 inset-x-0 z-20 px-3 sm:px-6 pointer-events-none">
-              <div className="bg-[#150E09]/90 border border-[#FAD9BA]/30 p-2.5 sm:p-3 backdrop-blur-md shadow-2xl space-y-1 max-w-3xl mx-auto pointer-events-auto">
-                <div className="flex items-center justify-between text-[9px] font-mono">
-                  <span className="flex items-center gap-1.5 text-[#BD8564] font-bold uppercase tracking-wider">
-                    <Quote className="w-3 h-3 text-[#FAD9BA]" />
-                    VOICEOVER · SCENE {currentScene.sceneNumber} ({currentScene.time})
-                  </span>
-                  <span className="text-[#EFE7DE]/50 hidden sm:inline">
-                    {isPlaying ? "SYNCHRONIZED" : "PAUSED"}
-                  </span>
-                </div>
-
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentScene.sceneNumber}
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -3 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-xs sm:text-sm font-sans text-[#FAD9BA] italic leading-snug font-medium"
-                  >
-                    “{currentScene.narration}”
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
 
             {/* Bottom Custom Playback Scrubber & Controls Toolbar */}
             <div className="absolute bottom-0 inset-x-0 z-30 bg-[#150E09]/95 border-t border-[#EFE7DE]/15 p-2 sm:p-2.5 backdrop-blur-md flex flex-col gap-2 font-mono text-[10px]">
@@ -398,23 +363,6 @@ export function AppDemoSection() {
                 </button>
               )
             })}
-          </div>
-        </div>
-
-        {/* =========================================================================
-            BOTTOM TAKEAWAYS RIBBON
-           ========================================================================= */}
-        <div className="max-w-5xl mx-auto pt-6 border-t border-[#EFE7DE]/15">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono text-[#EFE7DE]/80">
-            {appDemo.takeaways.map((item) => (
-              <div
-                key={item}
-                className="bg-[#1C130D] border border-[#EFE7DE]/10 p-2.5 flex items-center gap-2"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
-                <span className="text-[10px] leading-tight text-pretty">{item}</span>
-              </div>
-            ))}
           </div>
         </div>
       </div>

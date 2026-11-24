@@ -149,8 +149,6 @@ export interface AppDemoContent {
   subheading: string
   slogan: string
   videoUrl?: string
-  driveUrl?: string
-  driveEmbedUrl?: string
   scenes: AppDemoScene[]
   takeaways: string[]
 }

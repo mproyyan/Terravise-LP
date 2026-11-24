@@ -210,8 +210,6 @@ export const SITE_CONTENT = {
       "Before designing a foundation, engineers need to understand the ground it will stand on. Watch how Terravise transforms isolated CPT soundings into site-wide intelligence and recommends where to test next.",
     slogan: "See Beneath. Decide Better.",
     videoUrl: "/videos/terravise-demo.mp4",
-    driveUrl: "https://drive.google.com/file/d/1IIuLzJ0np1tmyvEGZ0jSVmVfdQg_IGe7/view?usp=sharing",
-    driveEmbedUrl: "https://drive.google.com/file/d/1IIuLzJ0np1tmyvEGZ0jSVmVfdQg_IGe7/preview",
     scenes: [
       {
         time: "00:00",

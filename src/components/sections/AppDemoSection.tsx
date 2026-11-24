@@ -9,7 +9,6 @@ import {
   Volume2,
   VolumeX,
   Maximize2,
-  ExternalLink,
   CheckCircle2,
   Cpu,
   Radio,
@@ -24,8 +23,6 @@ export function AppDemoSection() {
   const [activeSceneIndex, setActiveSceneIndex] = useState<number>(0)
   const [currentTimeSec, setCurrentTimeSec] = useState<number>(0)
   const [durationSec, setDurationSec] = useState<number>(74.3) // 74s based on 67-last.mp4
-  const [useDriveEmbed, setUseDriveEmbed] = useState<boolean>(false)
-  const [videoError, setVideoError] = useState<boolean>(false)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -56,10 +53,7 @@ export function AppDemoSection() {
     if (isPlaying) {
       videoRef.current.pause()
     } else {
-      videoRef.current.play().catch(() => {
-        // Fallback if browser blocks autoplay or local path issue
-        setUseDriveEmbed(true)
-      })
+      videoRef.current.play().catch(() => {})
     }
   }
 
@@ -93,12 +87,6 @@ export function AppDemoSection() {
     } else {
       containerRef.current.requestFullscreen().catch(() => {})
     }
-  }
-
-  // Handle video element error by automatically offering Google Drive embed fallback
-  const handleVideoError = () => {
-    setVideoError(true)
-    setUseDriveEmbed(true)
   }
 
   const formatTime = (totalSec: number) => {
@@ -172,240 +160,191 @@ export function AppDemoSection() {
               {currentScene.title.toUpperCase()}
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Toggle Embed Mode / External Link */}
-              {appDemo.driveUrl && (
-                <a
-                  href={appDemo.driveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[9px] text-[#FAD9BA] hover:text-[#EFE7DE] transition-colors bg-[#271C14] border border-[#EFE7DE]/15 px-2 py-0.5"
-                  title="Open original video on Google Drive"
-                >
-                  <span>Drive</span>
-                  <ExternalLink className="w-2.5 h-2.5" />
-                </a>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setUseDriveEmbed(!useDriveEmbed)}
-                className="hidden sm:inline-block text-[9px] text-[#EFE7DE]/70 hover:text-[#FAD9BA] transition-colors border border-[#EFE7DE]/15 px-2 py-0.5 bg-[#251810]"
-              >
-                {useDriveEmbed ? "Use Native Player" : "Drive Embed"}
-              </button>
-
+            <div className="flex items-center gap-3">
               <span className="flex items-center gap-1 text-[#10B981]">
                 <Cpu className="w-3 h-3 text-[#10B981]" />
-                <span className="hidden sm:inline">100% Offline</span>
+                <span className="hidden sm:inline">100% Offline (Core ML)</span>
+              </span>
+              <span className="text-[9px] bg-[#271C14] border border-[#EFE7DE]/15 px-1.5 py-0.5 text-[#FAD9BA] font-bold">
+                UTM Zone 48S
               </span>
             </div>
           </div>
 
           {/* Video Player Display Area (16:9 Aspect Ratio) */}
           <div className="relative aspect-16/9 bg-[#0E0704] overflow-hidden flex flex-col justify-between group">
-            {useDriveEmbed ? (
-              /* Google Drive Iframe Embed Mode */
-              <div className="w-full h-full relative">
-                <iframe
-                  src={appDemo.driveEmbedUrl || "https://drive.google.com/file/d/1IIuLzJ0np1tmyvEGZ0jSVmVfdQg_IGe7/preview"}
-                  title="Terravise Application Demo Video"
-                  allow="autoplay"
-                  className="w-full h-full border-0"
-                />
-              </div>
-            ) : (
-              /* Native HTML5 Video Player Mode */
-              <>
-                <video
-                  ref={videoRef}
-                  src={appDemo.videoUrl || "/videos/terravise-demo.mp4"}
-                  playsInline
-                  preload="metadata"
-                  onTimeUpdate={handleTimeUpdate}
-                  onLoadedMetadata={handleLoadedMetadata}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  onEnded={() => {
-                    setIsPlaying(false)
-                    setActiveSceneIndex(0)
-                  }}
-                  onError={handleVideoError}
+            <video
+              ref={videoRef}
+              src={appDemo.videoUrl || "/videos/terravise-demo.mp4"}
+              playsInline
+              preload="metadata"
+              onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={handleLoadedMetadata}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onEnded={() => {
+                setIsPlaying(false)
+                setActiveSceneIndex(0)
+              }}
+              onClick={togglePlay}
+              className="w-full h-full object-cover cursor-pointer"
+            />
+
+            {/* Center Play Overlay (when paused or stopped) */}
+            <AnimatePresence>
+              {!isPlaying && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   onClick={togglePlay}
-                  className="w-full h-full object-cover cursor-pointer"
-                />
-
-                {/* Center Play Overlay (when paused or stopped) */}
-                <AnimatePresence>
-                  {!isPlaying && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={togglePlay}
-                      className="absolute inset-0 bg-[#0E0704]/40 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer z-10 p-4"
-                    >
-                      <motion.button
-                        type="button"
-                        whileHover={{ scale: 1.08 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label="Play application walkthrough video"
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1C130D]/95 border-2 border-[#FAD9BA] text-[#FAD9BA] shadow-[0_0_35px_rgba(250,217,186,0.35)] flex items-center justify-center transition-all group-hover:bg-[#5A3008] group-hover:border-[#EFE7DE]"
-                      >
-                        <Play className="w-6 h-6 sm:w-8 sm:h-8 fill-current ml-1 text-[#FAD9BA]" />
-                      </motion.button>
-                      <div className="mt-3 bg-[#150E09]/90 border border-[#EFE7DE]/20 px-3.5 py-1 font-mono text-[10px] sm:text-xs font-bold text-[#FAD9BA] tracking-wider uppercase backdrop-blur-md">
-                        WATCH TERRAVISE APPLICATION DEMO (01:14)
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Subtitle Ribbon inside the Video Frame (Top-tier cinematic presentation) */}
-                <div className="absolute bottom-11 inset-x-0 z-20 px-3 sm:px-6 pointer-events-none">
-                  <div className="bg-[#150E09]/90 border border-[#FAD9BA]/30 p-2.5 sm:p-3 backdrop-blur-md shadow-2xl space-y-1 max-w-3xl mx-auto pointer-events-auto">
-                    <div className="flex items-center justify-between text-[9px] font-mono">
-                      <span className="flex items-center gap-1.5 text-[#BD8564] font-bold uppercase tracking-wider">
-                        <Quote className="w-3 h-3 text-[#FAD9BA]" />
-                        VOICEOVER · SCENE {currentScene.sceneNumber} ({currentScene.time})
-                      </span>
-                      <span className="text-[#EFE7DE]/50 hidden sm:inline">
-                        {isPlaying ? "SYNCHRONIZED" : "PAUSED"}
-                      </span>
-                    </div>
-
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentScene.sceneNumber}
-                        initial={{ opacity: 0, y: 3 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -3 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-xs sm:text-sm font-sans text-[#FAD9BA] italic leading-snug font-medium"
-                      >
-                        “{currentScene.narration}”
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                {/* Bottom Custom Playback Scrubber & Controls Toolbar */}
-                <div className="absolute bottom-0 inset-x-0 z-30 bg-[#150E09]/95 border-t border-[#EFE7DE]/15 p-2 sm:p-2.5 backdrop-blur-md flex flex-col gap-2 font-mono text-[10px]">
-                  {/* Scrubbing Timeline Bar with Scene Demarcations */}
-                  <div
-                    role="slider"
-                    tabIndex={0}
-                    aria-label="Video timeline scrubber"
-                    aria-valuemin={0}
-                    aria-valuemax={Math.round(durationSec)}
-                    aria-valuenow={Math.round(currentTimeSec)}
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
-                      const targetSec = pct * durationSec
-                      if (videoRef.current) {
-                        videoRef.current.currentTime = targetSec
-                      }
-                      for (let i = appDemo.scenes.length - 1; i >= 0; i--) {
-                        if (targetSec >= appDemo.scenes[i].seconds) {
-                          setActiveSceneIndex(i)
-                          break
-                        }
-                      }
-                    }}
-                    className="relative h-2 bg-[#271C14] border border-[#EFE7DE]/15 cursor-pointer overflow-hidden group/bar"
+                  className="absolute inset-0 bg-[#0E0704]/40 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer z-10 p-4"
+                >
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Play application walkthrough video"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1C130D]/95 border-2 border-[#FAD9BA] text-[#FAD9BA] shadow-[0_0_35px_rgba(250,217,186,0.35)] flex items-center justify-center transition-all group-hover:bg-[#5A3008] group-hover:border-[#EFE7DE]"
                   >
-                    {/* Active Progress Bar */}
-                    <div
-                      className="h-full bg-gradient-to-r from-[#BD8564] via-[#FAD9BA] to-[#10B981] transition-all duration-100"
-                      style={{ width: `${Math.round(progressRatio * 100)}%` }}
-                    />
-                    {/* Scene Tick Marks */}
-                    {appDemo.scenes.map((sc) => {
-                      const tickPct = (sc.seconds / durationSec) * 100
-                      return (
-                        <div
-                          key={sc.time}
-                          style={{ left: `${tickPct}%` }}
-                          title={`Scene ${sc.sceneNumber}: ${sc.title}`}
-                          className="absolute top-0 bottom-0 w-[1.5px] bg-[#EFE7DE]/50 pointer-events-none"
-                        />
-                      )
-                    })}
+                    <Play className="w-6 h-6 sm:w-8 sm:h-8 fill-current ml-1 text-[#FAD9BA]" />
+                  </motion.button>
+                  <div className="mt-3 bg-[#150E09]/90 border border-[#EFE7DE]/20 px-3.5 py-1 font-mono text-[10px] sm:text-xs font-bold text-[#FAD9BA] tracking-wider uppercase backdrop-blur-md">
+                    WATCH TERRAVISE APPLICATION DEMO (01:14)
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-                  {/* Controls Toolbar: Play/Pause, Timecode, Chapters, Audio, Fullscreen */}
-                  <div className="flex items-center justify-between text-[#EFE7DE]/70">
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={togglePlay}
-                        aria-label={isPlaying ? "Pause video" : "Play video"}
-                        className="hover:text-[#FAD9BA] cursor-pointer transition-colors"
-                      >
-                        {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleRestart}
-                        aria-label="Restart video from beginning"
-                        className="hover:text-[#FAD9BA] cursor-pointer transition-colors"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                      </button>
-
-                      <span className="tabular-nums font-bold text-[#EFE7DE]">
-                        {formatTime(currentTimeSec)} <span className="text-[#EFE7DE]/40">/ {formatTime(durationSec)}</span>
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-[9px]">
-                      <span className="hidden sm:inline text-[#FAD9BA] font-bold">
-                        {currentScene.title}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={toggleMute}
-                        aria-label={isMuted ? "Unmute video sound" : "Mute video sound"}
-                        className="hover:text-[#FAD9BA] cursor-pointer transition-colors p-1"
-                      >
-                        {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleFullscreen}
-                        aria-label="Toggle theater fullscreen"
-                        className="hover:text-[#FAD9BA] cursor-pointer transition-colors p-1"
-                      >
-                        <Maximize2 className="w-3.5 h-3.5" />
-                      </button>
-
-                      <span className="px-1.5 py-0.5 bg-[#271C14] border border-[#EFE7DE]/15 text-[#EFE7DE]/60 text-[8px] uppercase">
-                        1080P FHD
-                      </span>
-                    </div>
-                  </div>
+            {/* Subtitle Ribbon inside the Video Frame (Top-tier cinematic presentation) */}
+            <div className="absolute bottom-11 inset-x-0 z-20 px-3 sm:px-6 pointer-events-none">
+              <div className="bg-[#150E09]/90 border border-[#FAD9BA]/30 p-2.5 sm:p-3 backdrop-blur-md shadow-2xl space-y-1 max-w-3xl mx-auto pointer-events-auto">
+                <div className="flex items-center justify-between text-[9px] font-mono">
+                  <span className="flex items-center gap-1.5 text-[#BD8564] font-bold uppercase tracking-wider">
+                    <Quote className="w-3 h-3 text-[#FAD9BA]" />
+                    VOICEOVER · SCENE {currentScene.sceneNumber} ({currentScene.time})
+                  </span>
+                  <span className="text-[#EFE7DE]/50 hidden sm:inline">
+                    {isPlaying ? "SYNCHRONIZED" : "PAUSED"}
+                  </span>
                 </div>
-              </>
-            )}
-          </div>
 
-          {/* Video Error Alert Bar if local video cannot be read */}
-          {videoError && (
-            <div className="bg-[#271C14] border-t border-[#F59E0B]/30 p-2 text-center text-xs text-[#FAD9BA] font-mono flex items-center justify-center gap-2">
-              <span>Local video stream switched to Google Drive player embed.</span>
-              <button
-                type="button"
-                onClick={() => setUseDriveEmbed(true)}
-                className="underline text-[#EFE7DE] hover:text-[#FAD9BA]"
-              >
-                Reload Embed
-              </button>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentScene.sceneNumber}
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -3 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-xs sm:text-sm font-sans text-[#FAD9BA] italic leading-snug font-medium"
+                  >
+                    “{currentScene.narration}”
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
-          )}
+
+            {/* Bottom Custom Playback Scrubber & Controls Toolbar */}
+            <div className="absolute bottom-0 inset-x-0 z-30 bg-[#150E09]/95 border-t border-[#EFE7DE]/15 p-2 sm:p-2.5 backdrop-blur-md flex flex-col gap-2 font-mono text-[10px]">
+              {/* Scrubbing Timeline Bar with Scene Demarcations */}
+              <div
+                role="slider"
+                tabIndex={0}
+                aria-label="Video timeline scrubber"
+                aria-valuemin={0}
+                aria-valuemax={Math.round(durationSec)}
+                aria-valuenow={Math.round(currentTimeSec)}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+                  const targetSec = pct * durationSec
+                  if (videoRef.current) {
+                    videoRef.current.currentTime = targetSec
+                  }
+                  for (let i = appDemo.scenes.length - 1; i >= 0; i--) {
+                    if (targetSec >= appDemo.scenes[i].seconds) {
+                      setActiveSceneIndex(i)
+                      break
+                    }
+                  }
+                }}
+                className="relative h-2 bg-[#271C14] border border-[#EFE7DE]/15 cursor-pointer overflow-hidden group/bar"
+              >
+                {/* Active Progress Bar */}
+                <div
+                  className="h-full bg-gradient-to-r from-[#BD8564] via-[#FAD9BA] to-[#10B981] transition-all duration-100"
+                  style={{ width: `${Math.round(progressRatio * 100)}%` }}
+                />
+                {/* Scene Tick Marks */}
+                {appDemo.scenes.map((sc) => {
+                  const tickPct = (sc.seconds / durationSec) * 100
+                  return (
+                    <div
+                      key={sc.time}
+                      style={{ left: `${tickPct}%` }}
+                      title={`Scene ${sc.sceneNumber}: ${sc.title}`}
+                      className="absolute top-0 bottom-0 w-[1.5px] bg-[#EFE7DE]/50 pointer-events-none"
+                    />
+                  )
+                })}
+              </div>
+
+              {/* Controls Toolbar: Play/Pause, Timecode, Chapters, Audio, Fullscreen */}
+              <div className="flex items-center justify-between text-[#EFE7DE]/70">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={togglePlay}
+                    aria-label={isPlaying ? "Pause video" : "Play video"}
+                    className="hover:text-[#FAD9BA] cursor-pointer transition-colors"
+                  >
+                    {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleRestart}
+                    aria-label="Restart video from beginning"
+                    className="hover:text-[#FAD9BA] cursor-pointer transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                  </button>
+
+                  <span className="tabular-nums font-bold text-[#EFE7DE]">
+                    {formatTime(currentTimeSec)} <span className="text-[#EFE7DE]/40">/ {formatTime(durationSec)}</span>
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 text-[9px]">
+                  <span className="hidden sm:inline text-[#FAD9BA] font-bold">
+                    {currentScene.title}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={toggleMute}
+                    aria-label={isMuted ? "Unmute video sound" : "Mute video sound"}
+                    className="hover:text-[#FAD9BA] cursor-pointer transition-colors p-1"
+                  >
+                    {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleFullscreen}
+                    aria-label="Toggle theater fullscreen"
+                    className="hover:text-[#FAD9BA] cursor-pointer transition-colors p-1"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </button>
+
+                  <span className="px-1.5 py-0.5 bg-[#271C14] border border-[#EFE7DE]/15 text-[#EFE7DE]/60 text-[8px] uppercase">
+                    1080P FHD
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* =========================================================================

@@ -1,7 +1,13 @@
 import { useEffect, useRef } from "react"
 import * as THREE from "three"
 import { useSubsurface3D } from "../../context/Subsurface3DContext"
-import { smoothstep } from "./geology3DUtils"
+import {
+  STRATA_LAYER_SPECS,
+  createRealisticStrataPBRTextures,
+  createConcretePBRTextures,
+  applyBoxProjectedUVs,
+  smoothstep,
+} from "./geology3DUtils"
 
 interface BearingPileVisual {
   id: string
@@ -30,24 +36,38 @@ export function BearingHeatmapStage() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(width, height)
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.08
+    renderer.toneMappingExposure = 1.1
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFShadowMap
     renderer.setClearColor(0x000000, 0)
     container.appendChild(renderer.domElement)
+
+    const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8)
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 100)
     camera.position.set(6.4, 3.8, 7.8)
     camera.lookAt(0, -0.35, 0)
 
-    const ambientLight = new THREE.AmbientLight(0xfbf7f2, 0.95)
+    const ambientLight = new THREE.AmbientLight(0xfbf7f2, 1.02)
     scene.add(ambientLight)
 
-    const hemiLight = new THREE.HemisphereLight(0xfad9ba, 0x381800, 0.6)
+    const hemiLight = new THREE.HemisphereLight(0xfff3e6, 0x381800, 0.72)
     scene.add(hemiLight)
 
-    const keyLight = new THREE.DirectionalLight(0xfff5eb, 2.3)
-    keyLight.position.set(7, 12, 8)
+    const keyLight = new THREE.DirectionalLight(0xfff7ed, 2.6)
+    keyLight.position.set(7, 13, 8)
+    keyLight.castShadow = true
+    keyLight.shadow.mapSize.set(1024, 1024)
+    keyLight.shadow.camera.left = -5
+    keyLight.shadow.camera.right = 5
+    keyLight.shadow.camera.top = 5
+    keyLight.shadow.camera.bottom = -5
     scene.add(keyLight)
+
+    const fillLight = new THREE.DirectionalLight(0xffe4c4, 1.25)
+    fillLight.position.set(-6, 4, 6)
+    scene.add(fillLight)
 
     const BLOCK_W = 4.2
     const BLOCK_D = 3.2
@@ -58,18 +78,35 @@ export function BearingHeatmapStage() {
 
     const disposableGeometries: THREE.BufferGeometry[] = []
     const disposableMaterials: THREE.Material[] = []
+    const disposableTextures: THREE.Texture[] = []
 
-    // 1. Top Structural Pile Cap Reference Frame (+0.0m Ground Footprint)
-    const pileCapGeo = new THREE.BoxGeometry(3.7, 0.14, 2.8)
+    // Concrete & Geological PBR Textures
+    const concreteTex = createConcretePBRTextures("#EFE7DE", maxAnisotropy)
+    const bearingPBR = createRealisticStrataPBRTextures("#E76F51", "bearing", maxAnisotropy)
+    disposableTextures.push(
+      concreteTex.map,
+      concreteTex.bumpMap,
+      bearingPBR.map,
+      bearingPBR.bumpMap,
+      bearingPBR.roughnessMap
+    )
+
+    // 1. Top Structural Concrete Pile Cap Reference Frame (+0.0m Ground Footprint)
+    const pileCapGeo = new THREE.BoxGeometry(3.75, 0.16, 2.85)
     const pileCapMat = new THREE.MeshStandardMaterial({
-      color: 0xefe7de,
-      roughness: 0.5,
-      metalness: 0.15,
+      color: 0xffffff,
+      map: concreteTex.map,
+      bumpMap: concreteTex.bumpMap,
+      bumpScale: 0.018,
+      roughness: 0.58,
+      metalness: 0.08,
       transparent: true,
-      opacity: 0.88,
+      opacity: 0.94,
     })
     const pileCap = new THREE.Mesh(pileCapGeo, pileCapMat)
     pileCap.position.y = 1.05
+    pileCap.castShadow = true
+    pileCap.receiveShadow = true
     stratumRoot.add(pileCap)
 
     const pileCapEdges = new THREE.EdgesGeometry(pileCapGeo)
@@ -80,11 +117,63 @@ export function BearingHeatmapStage() {
     })
     pileCap.add(new THREE.LineSegments(pileCapEdges, pileCapLineMat))
 
-    // 2. 8 Reinforced Concrete Driven Piles (Map 1:1 to MOCK_BEARING_POINTS: b-01, b-02, b-03, spot-2-rec + 4 perimeter piles)
+    // Back-Wall Stratified Soil Cutaway Backdrop (Shows the overburden sand, silt & soft clay layers behind the piles)
+    const backdropWallWidth = BLOCK_W + 0.25
+    const backdropWallDepth = BLOCK_D + 0.25
+    let backdropCursorY = 0.96
+    const overburdenSpecs = STRATA_LAYER_SPECS.slice(0, 3)
+    const overburdenHeights = [0.38, 0.56, 0.88]
+
+    for (let bIdx = 0; bIdx < overburdenSpecs.length; bIdx++) {
+      const spec = overburdenSpecs[bIdx]
+      const h = overburdenHeights[bIdx]
+      const layerTex = createRealisticStrataPBRTextures(spec.colorHex, spec.pattern, maxAnisotropy)
+      disposableTextures.push(layerTex.map, layerTex.bumpMap, layerTex.roughnessMap)
+
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: layerTex.map,
+        bumpMap: layerTex.bumpMap,
+        bumpScale: spec.bumpScale,
+        roughness: spec.roughness,
+        transparent: true,
+        opacity: 0.34,
+        side: THREE.DoubleSide,
+      })
+
+      // North back wall (-Z)
+      const backZGeo = new THREE.PlaneGeometry(backdropWallWidth, h)
+      const backZMesh = new THREE.Mesh(backZGeo, wallMat)
+      backZMesh.position.set(0, backdropCursorY - h / 2, -backdropWallDepth / 2)
+      stratumRoot.add(backZMesh)
+
+      // West back wall (-X)
+      const backXGeo = new THREE.PlaneGeometry(backdropWallDepth, h)
+      const backXMesh = new THREE.Mesh(backXGeo, wallMat)
+      backXMesh.rotation.y = Math.PI / 2
+      backXMesh.position.set(-backdropWallWidth / 2, backdropCursorY - h / 2, 0)
+      stratumRoot.add(backXMesh)
+
+      backdropCursorY -= h
+      disposableGeometries.push(backZGeo, backXGeo)
+      disposableMaterials.push(wallMat)
+    }
+
+    // 2. 8 Reinforced Concrete Driven Piles with Steel Pile Shoes & Pedestal Caps
     const PILE_LEN = 2.55
-    const pileCylGeo = new THREE.CylinderGeometry(0.11, 0.11, PILE_LEN, 20)
-    const toeRingGeo = new THREE.RingGeometry(0.16, 0.25, 28)
+    const pileCylGeo = new THREE.CylinderGeometry(0.115, 0.105, PILE_LEN, 22)
+    const pilePedestalGeo = new THREE.BoxGeometry(0.32, 0.12, 0.32)
+    const pileShoeGeo = new THREE.ConeGeometry(0.115, 0.22, 22)
+    pileShoeGeo.rotateX(Math.PI)
+    const toeRingGeo = new THREE.RingGeometry(0.16, 0.26, 28)
     toeRingGeo.rotateX(-Math.PI / 2)
+
+    const steelShoeMat = new THREE.MeshStandardMaterial({
+      color: 0x3b2f26,
+      roughness: 0.28,
+      metalness: 0.72,
+    })
+    disposableMaterials.push(steelShoeMat)
 
     const bearingPointSpecs: Array<{ id: string; pos: [number, number] }> = [
       { id: "b-01", pos: [-1.2, -0.82] },
@@ -101,22 +190,37 @@ export function BearingHeatmapStage() {
 
     for (const spec of bearingPointSpecs) {
       const pMat = new THREE.MeshStandardMaterial({
-        color: 0xfbf7f2,
+        color: 0xffffff,
+        map: concreteTex.map,
+        bumpMap: concreteTex.bumpMap,
+        bumpScale: 0.02,
         emissive: 0x7a421d,
-        emissiveIntensity: 0.2,
-        roughness: 0.35,
-        metalness: 0.3,
+        emissiveIntensity: 0.18,
+        roughness: 0.48,
+        metalness: 0.15,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.96,
       })
       const pMesh = new THREE.Mesh(pileCylGeo, pMat)
       pMesh.position.set(spec.pos[0], 1.05 - PILE_LEN / 2, spec.pos[1])
+      pMesh.castShadow = true
+      pMesh.receiveShadow = true
+
+      // Concrete pile head pedestal cap under main slab
+      const pedestalMesh = new THREE.Mesh(pilePedestalGeo, pMat)
+      pedestalMesh.position.y = PILE_LEN / 2 - 0.06
+      pMesh.add(pedestalMesh)
+
+      // Conical steel pile driving shoe at pile toe
+      const shoeMesh = new THREE.Mesh(pileShoeGeo, steelShoeMat)
+      shoeMesh.position.y = -PILE_LEN / 2 - 0.05
+      pMesh.add(shoeMesh)
 
       const rMat = new THREE.MeshBasicMaterial({
         color: 0x10b981,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.88,
         toneMapped: false,
       })
       const tRing = new THREE.Mesh(toeRingGeo, rMat)
@@ -134,8 +238,8 @@ export function BearingHeatmapStage() {
       })
     }
 
-    // 3. High-Resolution 3D Topographic Bearing Depth Heatmap Surface (38 x 30 grid with VertexColors)
-    const terrainGeo = new THREE.BoxGeometry(BLOCK_W + 0.25, 1.05, BLOCK_D + 0.25, 38, 4, 30)
+    // 3. High-Resolution 3D Topographic Bearing Depth Heatmap Surface (42 x 32 grid with PBR Gravel Bump & VertexColors)
+    const terrainGeo = new THREE.BoxGeometry(BLOCK_W + 0.25, 1.12, BLOCK_D + 0.25, 42, 6, 32)
     const tPos = terrainGeo.attributes.position
     const baseTerrainY = new Float32Array(tPos.count)
     for (let i = 0; i < tPos.count; i++) {
@@ -150,6 +254,7 @@ export function BearingHeatmapStage() {
     const hmColorDeep = new THREE.Color(0xe76f51)    // -16.0m to -17.2m (Coral Orange)
     const hmColorAbyss = new THREE.Color(0x9a3412)   // -17.2m to -19.0m (Deep Rust Crimson)
     const hmColorUnmet = new THREE.Color(0x231710)   // Criteria Not Met (Dark Void)
+    const hmSideRockColor = new THREE.Color(0xb85d38) // Dense bearing sandstone/gravel side wall tone
     const hmTempColor = new THREE.Color()
 
     const updateBearingHeatmap = (
@@ -186,9 +291,9 @@ export function BearingHeatmapStage() {
         const isVerified =
           localPeakQc >= minQc && localMinIc <= maxIc && localMaxThickness >= minThickness
 
-        if (vy0 > -0.45) {
+        if (vy0 > -0.48) {
           const dispY = THREE.MathUtils.clamp((15.2 - localDepthM) * 0.24, -0.55, 0.45)
-          const ny = (vy0 + 0.525) / 1.05
+          const ny = (vy0 + 0.56) / 1.12
           posArr.setY(i, vy0 + dispY * ny * reliefAmplitude)
         }
 
@@ -204,12 +309,18 @@ export function BearingHeatmapStage() {
             hmTempColor.lerpColors(hmColorDeep, hmColorAbyss, (tDepth - 0.66) / 0.34)
           }
 
-          const contourPhase = Math.abs(((localDepthM * 1.33) % 1) - 0.5)
-          if (contourPhase < 0.06 && vy0 > 0.2) {
-            hmTempColor.multiplyScalar(1.25)
+          // Crisp topographic elevation isolines on the top bearing surface
+          const contourPhase = Math.abs(((localDepthM * 1.4) % 1) - 0.5)
+          if (contourPhase < 0.055 && vy0 > 0.25) {
+            hmTempColor.multiplyScalar(1.28)
           }
-          if (vy0 < 0.15) {
-            hmTempColor.multiplyScalar(0.68)
+
+          // Blend vertical side walls into a realistic stratified sandstone/gravel bedrock color
+          if (vy0 < 0.25) {
+            const wallFactor = THREE.MathUtils.clamp((0.25 - vy0) / 0.7, 0, 1)
+            const beddingStripe = 0.88 + 0.12 * Math.sin(vy0 * 28.0 + vx * 2.5)
+            hmTempColor.lerp(hmSideRockColor, wallFactor * 0.65)
+            hmTempColor.multiplyScalar(beddingStripe * 0.82)
           }
 
           colArr.setXYZ(i, hmTempColor.r, hmTempColor.g, hmTempColor.b)
@@ -218,25 +329,30 @@ export function BearingHeatmapStage() {
 
       posArr.needsUpdate = true
       colArr.needsUpdate = true
-      terrainGeo.computeVertexNormals()
+      applyBoxProjectedUVs(terrainGeo, 0.52, 0.95)
     }
 
     updateBearingHeatmap(15.0, 1.8, 2.0, 1)
 
     const terrainMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
-      roughness: 0.46,
+      bumpMap: bearingPBR.bumpMap,
+      bumpScale: 0.048,
+      roughnessMap: bearingPBR.roughnessMap,
+      roughness: 0.58,
       metalness: 0.08,
     })
     const terrainMesh = new THREE.Mesh(terrainGeo, terrainMat)
     terrainMesh.position.y = -1.45
+    terrainMesh.castShadow = true
+    terrainMesh.receiveShadow = true
     stratumRoot.add(terrainMesh)
 
     const terrainWireGeo = new THREE.WireframeGeometry(terrainGeo)
     const terrainWireMat = new THREE.LineBasicMaterial({
       color: 0x1c130d,
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.14,
     })
     terrainMesh.add(new THREE.LineSegments(terrainWireGeo, terrainWireMat))
 
@@ -245,7 +361,7 @@ export function BearingHeatmapStage() {
       color: 0x10b981,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.16,
       depthWrite: false,
     })
     const datumLaser = new THREE.Mesh(datumLaserGeo, datumLaserMat)
@@ -264,6 +380,8 @@ export function BearingHeatmapStage() {
       pileCapGeo,
       pileCapEdges,
       pileCylGeo,
+      pilePedestalGeo,
+      pileShoeGeo,
       toeRingGeo,
       terrainGeo,
       terrainWireGeo,
@@ -328,9 +446,6 @@ export function BearingHeatmapStage() {
       const elapsed = timer.getElapsed()
       const state = sceneStateRef.current
 
-      // Physical Scroll Entry Transformation:
-      // Heatmap unfolds from a flat 2D contour sheet into a 3D topographic relief basin
-      // while the 8 driven foundation piles plunge down to lock onto the bearing horizon!
       const rect = container.getBoundingClientRect()
       const vpH = window.innerHeight
       const rawEntry = (vpH - rect.top) / Math.max(1, vpH * 0.65)
@@ -367,7 +482,7 @@ export function BearingHeatmapStage() {
         bPile.mesh.position.y =
           1.05 - PILE_LEN / 2 - qcShift * 0.45 + (1 - easedDrive) * 1.9
         bPile.mat.emissive.setHex(isHighlighted ? 0x10b981 : 0x7a421d)
-        bPile.mat.emissiveIntensity = isHighlighted ? 0.85 : 0.2
+        bPile.mat.emissiveIntensity = isHighlighted ? 0.85 : 0.18
 
         bPile.ringMat.color.setHex(isHighlighted ? 0xfad9ba : 0x10b981)
         const rScale = isHighlighted ? 1.45 + Math.sin(elapsed * 4.5) * 0.22 : 1.0
@@ -402,6 +517,7 @@ export function BearingHeatmapStage() {
 
       for (const g of disposableGeometries) g.dispose()
       for (const m of disposableMaterials) m.dispose()
+      for (const t of disposableTextures) t.dispose()
       renderer.dispose()
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement)

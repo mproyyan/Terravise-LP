@@ -27,15 +27,15 @@ function randomBetween(min: number, max: number): number {
 }
 
 /**
- * Returns the vertical pixel gap to the next feedback card:
- * - 70% chance: between 1.5s (87px) and 4.0s (232px)
- * - 30% chance: above 4.0s (232px) up to ~6.55s (380px)
+ * Returns the vertical pixel gap to the next feedback card (at 58px/s):
+ * - 80% chance: between 1.0s (58px) and 3.5s (203px)
+ * - 20% chance: above 3.5s (203px) up to ~6.55s (380px)
  */
 function getWeightedSpawnGapPx(): number {
-  if (Math.random() < 0.7) {
-    return randomBetween(87, 232)
+  if (Math.random() < 0.8) {
+    return randomBetween(58, 203)
   }
-  return randomBetween(232, 380)
+  return randomBetween(203, 380)
 }
 
 export function FeedbackWallPage() {

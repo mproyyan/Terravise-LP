@@ -214,23 +214,23 @@ export function FeedbackWallPage() {
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#140D08] text-[#EFE7DE] font-sans select-none relative">
       {/* =====================================================================
-          0. TOP-RIGHT FLOATING QR INVITATION CARD
+          0. TOP-RIGHT FLOATING QR INVITATION CARD (2X SCALE)
          ===================================================================== */}
       <aside
         aria-label="Scan QR Code untuk mengisi feedback"
-        className="fixed top-4 right-4 sm:top-6 sm:right-8 z-40 max-w-[320px] sm:max-w-[360px] bg-[#1C130D]/95 backdrop-blur-md border border-[#FAD9BA]/55 shadow-[0_16px_48px_rgba(0,0,0,0.75)] p-4 sm:p-5"
+        className="fixed top-4 right-4 sm:top-6 sm:right-8 z-40 max-w-[340px] sm:max-w-[620px] lg:max-w-[700px] bg-[#1C130D]/95 backdrop-blur-md border-2 border-[#FAD9BA]/60 shadow-[0_24px_64px_rgba(0,0,0,0.85)] p-5 sm:p-8 lg:p-9"
       >
         {/* Top Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#10B981] via-[#FAD9BA] to-[#BD8564]" />
+        <div className="absolute top-0 left-0 right-0 h-1.5 sm:h-2 bg-gradient-to-r from-[#10B981] via-[#FAD9BA] to-[#BD8564]" />
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5 sm:gap-8">
           {/* Narrative Invitation Copy */}
-          <div className="flex-1 space-y-1.5">
-            <h2 className="font-sans font-black text-sm sm:text-base text-[#EFE7DE] uppercase tracking-tight leading-snug">
+          <div className="flex-1 space-y-2 sm:space-y-3">
+            <h2 className="font-sans font-black text-lg sm:text-2xl lg:text-3xl text-[#EFE7DE] uppercase tracking-tight leading-tight">
               Feedback untuk Terravise
             </h2>
 
-            <p className="font-sans text-[11px] sm:text-xs text-[#EFE7DE]/80 leading-relaxed">
+            <p className="font-sans text-xs sm:text-base lg:text-lg text-[#EFE7DE]/85 leading-relaxed">
               Scan QR code di samping untuk menyampaikan pandangan, saran fitur, atau peluang kolaborasi bersama kami.
             </p>
           </div>
@@ -241,18 +241,19 @@ export function FeedbackWallPage() {
             target="_blank"
             rel="noopener noreferrer"
             title={feedbackTargetUrl}
-            className="shrink-0 bg-[#FAF5EE] p-2.5 border-2 border-[#FAD9BA] shadow-md hover:scale-[1.03] transition-transform"
+            className="shrink-0 bg-[#FAF5EE] p-3 sm:p-4 border-2 border-[#FAD9BA] shadow-xl hover:scale-[1.03] transition-transform"
           >
             <QRCodeSVG
               value={feedbackTargetUrl}
-              size={96}
+              size={192}
+              className="w-28 h-28 sm:w-44 sm:h-44 lg:w-48 lg:h-48"
               bgColor="#FAF5EE"
               fgColor="#1C130D"
               level="H"
               imageSettings={{
                 src: "/terravise-logo.png",
-                height: 22,
-                width: 22,
+                height: 44,
+                width: 44,
                 excavate: true,
               }}
             />
@@ -526,7 +527,7 @@ export function FeedbackWallPage() {
               Math.min(1, drilledPastPx / 55)
             )
             // Right-side cards fade out smoothly before reaching the top-right floating QR card
-            const topFadeThreshold = card.side === "right" ? 210 : 60
+            const topFadeThreshold = card.side === "right" ? 310 : 60
             const exitProgress =
               cardY < topFadeThreshold
                 ? Math.max(0, Math.min(1, (cardY + 80) / (topFadeThreshold + 80)))

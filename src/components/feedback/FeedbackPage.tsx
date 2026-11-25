@@ -82,6 +82,35 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
     return true
   }
 
+  const isCollabDetailsRequired =
+    collaborationInterest === "Ya, saya pribadi tertarik berkolaborasi" ||
+    collaborationInterest ===
+      "Ya, saya memiliki rekan / kenalan / institusi yang relevan untuk dikenalkan"
+
+  // Step 6 Validation: When option 1 or 2 is selected, collaboration types & contact info are required
+  const validateStep6 = () => {
+    if (!isCollabDetailsRequired) {
+      setValidationError("")
+      return true
+    }
+    if (collaborationTypes.length === 0) {
+      setValidationError("Silakan pilih minimal satu bentuk kolaborasi yang memungkinkan.")
+      return false
+    }
+    if (
+      !collaborationContactName.trim() ||
+      !collaborationContactOrg.trim() ||
+      !collaborationContactInfo.trim()
+    ) {
+      setValidationError(
+        "Mohon lengkapi seluruh informasi kontak (Nama Kontak, Instansi, dan Kontak yang bisa dihubungi)."
+      )
+      return false
+    }
+    setValidationError("")
+    return true
+  }
+
   // Step 7 Validation: Feedback Notes is Required
   const validateStep7 = () => {
     if (!feedbackNotes.trim()) {
@@ -95,6 +124,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
   const handleNext = () => {
     setValidationError("")
     if (currentStep === 2 && !validateStep2()) return
+    if (currentStep === 6 && !validateStep6()) return
 
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep((prev) => prev + 1)
@@ -112,8 +142,9 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
 
   const handleSkip = () => {
     setValidationError("")
-    // Steps 2 and 7 cannot be skipped
+    // Steps 2 and 7 cannot be skipped; Step 6 cannot be skipped if option 1 or 2 is selected
     if (currentStep === 2 || currentStep === 7) return
+    if (currentStep === 6 && isCollabDetailsRequired && !validateStep6()) return
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep((prev) => prev + 1)
       window.scrollTo({ top: 0, behavior: "smooth" })
@@ -130,6 +161,7 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
   }
 
   const toggleCollabType = (typeTitle: string) => {
+    if (validationError) setValidationError("")
     if (collaborationTypes.includes(typeTitle)) {
       setCollaborationTypes(collaborationTypes.filter((t) => t !== typeTitle))
     } else {
@@ -311,7 +343,9 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
               </div>
 
               {/* Skip label for optional steps */}
-              {currentStep !== 2 && currentStep !== 7 && (
+              {currentStep !== 2 &&
+                currentStep !== 7 &&
+                !(currentStep === 6 && isCollabDetailsRequired) && (
                 <button
                   type="button"
                   onClick={handleSkip}
@@ -732,7 +766,10 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                           name="collab-interest"
                           value={item}
                           checked={collaborationInterest === item}
-                          onChange={() => setCollaborationInterest(item)}
+                          onChange={() => {
+                            setCollaborationInterest(item)
+                            if (validationError) setValidationError("")
+                          }}
                           className="w-4 h-4 accent-[#BD8564]"
                         />
                         <span className="font-sans text-sm font-semibold">{item}</span>
@@ -801,7 +838,10 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                             <input
                               type="text"
                               value={collaborationContactName}
-                              onChange={(e) => setCollaborationContactName(e.target.value)}
+                              onChange={(e) => {
+                                setCollaborationContactName(e.target.value)
+                                if (validationError) setValidationError("")
+                              }}
                               placeholder="Nama lengkap..."
                               className="w-full bg-[#FAF5EE] border border-[#1C130D]/20 p-2.5 text-xs font-sans text-[#1C130D] focus:outline-hidden focus:border-[#7A421D]"
                             />
@@ -814,7 +854,10 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                             <input
                               type="text"
                               value={collaborationContactOrg}
-                              onChange={(e) => setCollaborationContactOrg(e.target.value)}
+                              onChange={(e) => {
+                                setCollaborationContactOrg(e.target.value)
+                                if (validationError) setValidationError("")
+                              }}
                               placeholder="Nama instansi/organisasi..."
                               className="w-full bg-[#FAF5EE] border border-[#1C130D]/20 p-2.5 text-xs font-sans text-[#1C130D] focus:outline-hidden focus:border-[#7A421D]"
                             />
@@ -828,7 +871,10 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
                           <input
                             type="text"
                             value={collaborationContactInfo}
-                            onChange={(e) => setCollaborationContactInfo(e.target.value)}
+                            onChange={(e) => {
+                              setCollaborationContactInfo(e.target.value)
+                              if (validationError) setValidationError("")
+                            }}
                             placeholder="Contoh: 0812xxxx atau email@instansi.com..."
                             className="w-full bg-[#FAF5EE] border border-[#1C130D]/20 p-2.5 text-xs font-sans text-[#1C130D] focus:outline-hidden focus:border-[#7A421D]"
                           />
@@ -896,7 +942,9 @@ export function FeedbackPage({ onBackToHome }: FeedbackPageProps) {
 
               <div className="flex items-center gap-2 sm:gap-3 ml-auto">
                 {/* Skip button for optional steps */}
-                {currentStep !== 2 && currentStep !== 7 && (
+                {currentStep !== 2 &&
+                  currentStep !== 7 &&
+                  !(currentStep === 6 && isCollabDetailsRequired) && (
                   <button
                     type="button"
                     onClick={handleSkip}

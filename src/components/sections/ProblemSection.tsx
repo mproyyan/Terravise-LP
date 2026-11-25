@@ -43,9 +43,9 @@ export function ProblemSection() {
     <section
       id="problem"
       aria-label="Section 01: Investigation limits"
-      className="py-24 border-b border-[#1C130D]/15 scroll-mt-12 relative"
+      className="min-h-screen min-h-[100dvh] flex flex-col justify-center py-24 lg:py-28 border-b border-[#1C130D]/15 scroll-mt-12 relative"
     >
-      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+      <div className="max-w-[1560px] w-full mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
         {/* Architectural Plate Header */}
         <PlateHeader
           number="01"

@@ -22,11 +22,11 @@ export function HeroSection({ onOpenAppStore }: HeroSectionProps) {
     <section
       id="hero"
       aria-label="Terravise hero introduction"
-      className="relative pt-28 pb-16 md:pt-36 md:pb-20 border-b border-[#1C130D]/15"
+      className="relative min-h-screen min-h-[100dvh] flex flex-col justify-between pt-28 pb-12 md:pt-36 md:pb-16 border-b border-[#1C130D]/15"
     >
-      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+      <div className="max-w-[1560px] w-full mx-auto px-4 sm:px-6 lg:px-12 relative z-10 flex-1 flex flex-col justify-between">
         {/* Main 6:6 Split: Left Monumental Copy | Right Open Borderless 3D Monolith Stage */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center my-auto py-4">
           {/* Left 6 Columns: Headline, Value Proposition & App Store CTA */}
           <div className="lg:col-span-6 space-y-8">
             {/* Monumental Typography with Rapidkert-style asymmetrical indentation */}

@@ -592,20 +592,25 @@ export function HeroProblemGroundCanvas() {
 
         const heroCY = heroRect.top + heroRect.height * 0.5
         const probCY = probRect.top + probRect.height * 0.5
+        // Anchor hero start threshold to its resting Y at scrollY=0 so tall monitors start at tProblem=0
+        const heroStartCY = Math.min(vpCenterY, heroCY + window.scrollY)
 
-        if (heroCY >= vpCenterY) {
+        if (heroCY >= heroStartCY) {
           targetTProblem = 0
           targetCenterX = heroRect.left + heroRect.width * 0.5
           targetCenterY = heroCY
         } else if (probCY >= vpCenterY) {
-          const raw = (vpCenterY - heroCY) / Math.max(1, probCY - heroCY)
+          const scrolledPastHero = heroStartCY - heroCY
+          const remainingToProb = probCY - vpCenterY
+          const raw =
+            scrolledPastHero / Math.max(1, scrolledPastHero + remainingToProb)
           targetTProblem = smoothstep(raw)
           targetCenterX =
             heroRect.left +
             heroRect.width * 0.5 +
             (probRect.left + probRect.width * 0.5 - (heroRect.left + heroRect.width * 0.5)) *
               targetTProblem
-          targetCenterY = heroCY + (probCY - heroCY) * raw
+          targetCenterY = heroCY + (probCY - heroCY) * targetTProblem
         } else {
           targetTProblem = 1
           targetCenterX = probRect.left + probRect.width * 0.5

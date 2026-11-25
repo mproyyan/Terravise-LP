@@ -577,35 +577,35 @@ export function FeedbackWallPage() {
                     style={{
                       transform: `scale(${scale})`,
                     }}
-                    className={`pointer-events-auto w-full lg:w-[41%] bg-[#21160F]/95 backdrop-blur-md border p-4 sm:p-6 shadow-2xl transition-colors duration-500 relative overflow-hidden ${
+                    className={`pointer-events-auto w-full lg:w-[44%] bg-[#21160F]/95 backdrop-blur-md border-2 p-6 sm:p-8 lg:p-9 shadow-2xl transition-colors duration-500 relative overflow-hidden ${
                       isFreshlyStruck
-                        ? "border-[#FAD9BA] shadow-[0_12px_38px_rgba(250,217,186,0.16)]"
-                        : "border-[#EFE7DE]/20"
+                        ? "border-[#FAD9BA] shadow-[0_16px_48px_rgba(250,217,186,0.2)]"
+                        : "border-[#EFE7DE]/25"
                     }`}
                   >
                     {/* Top Highlight Strip */}
                     <div
-                      className={`absolute top-0 left-0 right-0 h-1 transition-colors duration-500 ${
+                      className={`absolute top-0 left-0 right-0 h-1.5 transition-colors duration-500 ${
                         isFreshlyStruck
                           ? "bg-gradient-to-r from-[#10B981] via-[#FAD9BA] to-[#BD8564]"
-                          : "bg-[#BD8564]/35"
+                          : "bg-[#BD8564]/40"
                       }`}
                     />
 
                     {/* Header: Nama (jika ada) & Latar Belakang */}
-                    <div className="flex flex-wrap items-center gap-2.5 pb-3 mb-3 border-b border-[#EFE7DE]/12">
+                    <div className="flex flex-wrap items-center gap-3 pb-4 mb-4 border-b border-[#EFE7DE]/15">
                       {card.item.full_name && (
-                        <h2 className="font-sans font-bold text-base sm:text-lg text-[#FAD9BA] tracking-tight">
+                        <h2 className="font-sans font-bold text-xl sm:text-2xl lg:text-[26px] text-[#FAD9BA] tracking-tight">
                           {card.item.full_name}
                         </h2>
                       )}
-                      <span className="font-mono text-[11px] uppercase tracking-wider px-2.5 py-0.5 bg-[#140D08] border border-[#BD8564]/50 text-[#EFE7DE]/90 font-semibold">
+                      <span className="font-mono text-xs sm:text-sm uppercase tracking-wider px-3 py-1 bg-[#140D08] border border-[#BD8564]/60 text-[#EFE7DE]/95 font-semibold">
                         {card.item.role}
                       </span>
                     </div>
 
                     {/* Body: Masukan */}
-                    <p className="font-sans text-sm sm:text-base text-[#EFE7DE]/95 leading-relaxed">
+                    <p className="font-sans text-lg sm:text-xl lg:text-2xl font-medium text-[#EFE7DE] leading-relaxed">
                       "{card.item.feedback_notes}"
                     </p>
                   </article>

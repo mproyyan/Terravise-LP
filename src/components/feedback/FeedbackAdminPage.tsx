@@ -11,12 +11,19 @@ import {
   LogOut,
   Copy,
   Check,
+  Play,
+  Square,
 } from "lucide-react"
 import {
   fetchAllFeedbacksForAdmin,
   updateFeedbackDisplayFlag,
   type FeedbackAdminItem,
 } from "../../lib/supabase"
+import {
+  getAutoScrollEnabled,
+  setAutoScrollEnabled,
+  AUTOSCROLL_STORAGE_KEY,
+} from "../../lib/autoScroll"
 
 const ADMIN_PASSWORD = "ujangkedu"
 const SESSION_AUTH_KEY = "terravise_feedback_admin_auth"
@@ -55,6 +62,25 @@ export function FeedbackAdminPage() {
   const [togglingIds, setTogglingIds] = useState<Record<string, boolean>>({})
   const [filterMode, setFilterMode] = useState<"all" | "displayed" | "hidden">("all")
   const [copiedSql, setCopiedSql] = useState<boolean>(false)
+  const [autoScrollOn, setAutoScrollOn] = useState<boolean>(() =>
+    getAutoScrollEnabled()
+  )
+
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === AUTOSCROLL_STORAGE_KEY) {
+        setAutoScrollOn(e.newValue === "true")
+      }
+    }
+    window.addEventListener("storage", handleStorage)
+    return () => window.removeEventListener("storage", handleStorage)
+  }, [])
+
+  const handleToggleAutoScroll = () => {
+    const next = !autoScrollOn
+    setAutoScrollOn(next)
+    setAutoScrollEnabled(next)
+  }
 
   const loadFeedbacks = useCallback(async () => {
     setIsLoading(true)
@@ -261,6 +287,62 @@ export function FeedbackAdminPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6">
+        {/* Hidden Landing Page Auto-Scroll Control Panel */}
+        <div className="bg-[#1C130D] text-[#EFE7DE] border border-[#BD8564]/50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${
+                  autoScrollOn ? "bg-[#10B981] animate-ping" : "bg-[#EFE7DE]/30"
+                }`}
+              />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#FAD9BA]">
+                Mode Auto-Scroll Landing Page:{" "}
+                <strong className={autoScrollOn ? "text-[#10B981]" : "text-[#EFE7DE]/60"}>
+                  {autoScrollOn ? "ON (AKTIF)" : "OFF (NONAKTIF)"}
+                </strong>
+              </span>
+            </div>
+            <p className="font-sans text-xs text-[#EFE7DE]/70">
+              Jika diaktifkan, halaman utama (/) otomatis bergerak halus dari section ke section, berhenti sejenak di tiap section, dan kembali ke atas saat mencapai bawah.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0 font-mono text-xs">
+            <button
+              type="button"
+              onClick={handleToggleAutoScroll}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                autoScrollOn
+                  ? "bg-[#991B1B] text-white hover:bg-[#7F1D1D]"
+                  : "bg-[#10B981] text-white hover:bg-[#059669]"
+              }`}
+            >
+              {autoScrollOn ? (
+                <>
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                  <span>Matikan Auto-Scroll</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Aktifkan Auto-Scroll</span>
+                </>
+              )}
+            </button>
+
+            <a
+              href={autoScrollOn ? "/?autoscroll=on" : "/"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-[#271C14] border border-[#BD8564]/50 text-[#FAD9BA] hover:bg-[#38271B] transition-colors font-bold"
+            >
+              <span>Buka Landing Page</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+
         {/* Alert if SQL Migration / RLS Policy is needed */}
         {(missingFlagColumn || errorMsg) && (
           <div className="bg-[#21160F] text-[#EFE7DE] border-2 border-[#EF4444] p-5 space-y-3 shadow-lg">

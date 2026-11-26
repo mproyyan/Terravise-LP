@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Navbar } from "./components/layout/Navbar"
 import { DepthSidebarTracker } from "./components/layout/DepthSidebarTracker"
+import { LandingAutoScrollController } from "./components/layout/LandingAutoScrollController"
 import { Footer } from "./components/layout/Footer"
 import { HeroSection } from "./components/sections/HeroSection"
 import { ProblemSection } from "./components/sections/ProblemSection"
@@ -74,6 +75,9 @@ export function App() {
   return (
     <Subsurface3DProvider>
       <div className="min-h-screen bg-[#FBF7F2] text-[#1C130D] font-sans antialiased selection:bg-[#FAD9BA] selection:text-[#381800] relative">
+        {/* Headless Auto-Scroll Presentation Controller (Toggled from /feedback/admin) */}
+        <LandingAutoScrollController />
+
         {/* Dynamic Subsurface Depth Meter (Fixed Sidebar) */}
         <DepthSidebarTracker />
 
